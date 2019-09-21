@@ -1,11 +1,10 @@
-package io.github.indicode.fabric.anticheat;
+package io.github.indicode.fabric.itsmine;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -16,7 +15,22 @@ public class Claim {
     public BlockPos min, max;
     public Map<UUID, ClaimPermissions> permssionsMap = new HashMap();
     public ClaimSettings settings = new ClaimSettings();
-
+    public UUID owner;
+    public void expand(BlockPos min, BlockPos max) {
+        this.min = this.min.add(min);
+        this.max = this.max.add(max);
+    }
+    public BlockPos getSize() {
+        return min.subtract(max);
+    }
+    public void expand(BlockPos modifier) {
+        (modifier.getX() > 0 ? max : min).add(modifier.getX(), 0, 0);
+        (modifier.getY() > 0 ? max : min).add(0, modifier.getY(), 0);
+        (modifier.getZ() > 0 ? max : min).add(0, 0, modifier.getZ());
+    }
+    public void expand(Direction direction, int distance) {
+        expand(new BlockPos(direction.getOffsetX() * distance, direction.getOffsetY() * distance, direction.getOffsetZ() * distance));
+    }
     public CompoundTag toTag() {
         CompoundTag tag =  new CompoundTag();
         {
@@ -34,6 +48,7 @@ public class Claim {
             CompoundTag permissions = new CompoundTag();
             permssionsMap.forEach((id, perms) -> permissions.put(id.toString(), perms.toTag()));
             tag.put("permissions", permissions);
+            tag.putUuid("owner", owner);
         }
         return tag;
     }
@@ -54,6 +69,7 @@ public class Claim {
             this.permssionsMap = new HashMap<>();
             CompoundTag permissions = new CompoundTag();
             permissions.getKeys().forEach(key -> permssionsMap.put(UUID.fromString(key), new ClaimPermissions(permissions.getCompound(key))));
+            this.owner = tag.getUuid("owner");
         }
     }
 
@@ -71,7 +87,7 @@ public class Claim {
 
         }
     }
-    public static class ClaimSettings {
+    public static class ClaimSettings extends ClaimPermissions{
         public ClaimSettings(CompoundTag tag) {
             fromTag(tag);
         }
@@ -79,10 +95,11 @@ public class Claim {
         }
         public CompoundTag toTag() {
             CompoundTag tag =  new CompoundTag();
+            tag.put("permissions", super.toTag());
             return tag;
         }
         public void fromTag(CompoundTag tag) {
-
+            super.fromTag(tag.getCompound("permissions"));
         }
     }
 }
