@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "id": "modid",
+  "id": "itsmine",
   "version": "${version}",
 
-  "name": "Example Mod",
-  "description": "This is an example description! Tell everyone what your mod is about!",
+  "name": "Its Mine!",
+  "description": "Land claims.",
   "authors": [
-    "Me!"
+    "Indicode"
   ],
   "contact": {
     "homepage": "https://fabricmc.net/",
@@ -14,21 +14,15 @@
   },
 
   "license": "CC0-1.0",
-  "icon": "assets/modid/icon.png",
+  "icon": "assets/itsmine/icon.png",
 
   "environment": "*",
-  "entrypoints": {
-    "main": [
-      "net.fabricmc.example.ExampleMod"
-    ]
-  },
   "mixins": [
-    "modid.mixins.json"
+    "itsmine.mixins.json"
   ],
 
   "depends": {
-    "fabricloader": ">=0.4.0",
-    "fabric": "*"
+    "fabricloader": ">=0.4.0"
   },
   "suggests": {
     "flamingo": "*"
