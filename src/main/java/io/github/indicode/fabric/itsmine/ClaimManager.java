@@ -32,6 +32,12 @@ public class ClaimManager {
         claimsByName.values().forEach(claim -> tag.add(claim.toTag()));
         return tag;
     }
+    public Claim getClaimAt(BlockPos pos) {
+        for (Claim claim : claimsByName.values()) {
+            if (claim.includesPosition(pos)) return claim;
+        }
+        return null;
+    }
     public void fromNBT(ListTag tag) {
         claimsByName.clear();
         tag.forEach(it -> {

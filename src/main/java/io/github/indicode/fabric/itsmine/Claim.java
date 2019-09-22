@@ -1,5 +1,6 @@
 package io.github.indicode.fabric.itsmine;
 
+import net.minecraft.entity.ai.goal.MoveToTargetPosGoal;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -25,6 +26,10 @@ public class Claim {
         this.max = max;
         this.owner = owner;
         this.name = name;
+    }
+    public boolean includesPosition(BlockPos pos) {
+        return pos.getX() >= min.getX() && pos.getY() >= min.getY() && pos.getZ() >= min.getZ() &&
+                pos.getX() <= max.getX() && pos.getY() <= max.getY() && pos.getZ() <= max.getZ();
     }
     public void expand(BlockPos min, BlockPos max) {
         this.min = this.min.add(min);
