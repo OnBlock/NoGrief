@@ -20,12 +20,7 @@ public class ClaimManager {
         });
         return list;
     }
-    public void createClaim(String name, UUID owner, BlockPos min, BlockPos max) {
-        Claim claim = new Claim();
-        claim.min = min;
-        claim.max = max;
-        claim.owner = owner;
-        claim.name = name;
-        claimsByName.put(name, claim);
+    public void addClaim(Claim claim) {
+        claimsByName.put(claim.name, claim);
     }
 }

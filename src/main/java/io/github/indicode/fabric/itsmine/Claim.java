@@ -17,6 +17,15 @@ public class Claim {
     public Map<UUID, ClaimPermissions> permssionsMap = new HashMap();
     public ClaimSettings settings = new ClaimSettings();
     public UUID owner;
+    public Claim() {
+
+    }
+    public Claim(String name, UUID owner, BlockPos min, BlockPos max) {
+        this.min = min;
+        this.max = max;
+        this.owner = owner;
+        this.name = name;
+    }
     public void expand(BlockPos min, BlockPos max) {
         this.min = this.min.add(min);
         this.max = this.max.add(max);
