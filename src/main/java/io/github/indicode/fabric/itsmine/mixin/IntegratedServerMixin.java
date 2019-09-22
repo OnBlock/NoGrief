@@ -27,7 +27,7 @@ public class IntegratedServerMixin {
         ClaimManager.INSTANCE = new ClaimManager();
         if (!claims.exists()) return;
         try {
-            ListTag tag = (ListTag) NbtIo.readCompressed(new FileInputStream(claims)).getTag("data");
+            ListTag tag = (ListTag) NbtIo.readCompressed(new FileInputStream(claims)).getTag("claims");
             ClaimManager.INSTANCE.fromNBT(tag);
         } catch (IOException e) {
             e.printStackTrace();
