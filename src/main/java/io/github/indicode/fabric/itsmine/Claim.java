@@ -12,6 +12,7 @@ import java.util.UUID;
  * @author Indigo Amann
  */
 public class Claim {
+    public String name;
     public BlockPos min, max;
     public Map<UUID, ClaimPermissions> permssionsMap = new HashMap();
     public ClaimSettings settings = new ClaimSettings();
@@ -50,6 +51,7 @@ public class Claim {
             tag.put("permissions", permissions);
             tag.putUuid("owner", owner);
         }
+        tag.putString("name", name);
         return tag;
     }
     public void fromTag(CompoundTag tag) {
@@ -71,6 +73,7 @@ public class Claim {
             permissions.getKeys().forEach(key -> permssionsMap.put(UUID.fromString(key), new ClaimPermissions(permissions.getCompound(key))));
             this.owner = tag.getUuid("owner");
         }
+        name = tag.getString("name");
     }
 
     public static class ClaimPermissions {
