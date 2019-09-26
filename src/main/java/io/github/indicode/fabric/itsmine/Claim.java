@@ -34,6 +34,11 @@ public class Claim {
         return pos.getX() >= min.getX() && pos.getY() >= min.getY() && pos.getZ() >= min.getZ() &&
                 pos.getX() <= max.getX() && pos.getY() <= max.getY() && pos.getZ() <= max.getZ();
     }
+    public void addSubzone(Claim claim) {
+        if (includesPosition(claim.min) && includesPosition(claim.max)) {
+            children.add(claim);
+        } else throw new IllegalArgumentException("Subzone must be inside the original claim");
+    }
     public void expand(BlockPos min, BlockPos max) {
         this.min = this.min.add(min);
         this.max = this.max.add(max);
