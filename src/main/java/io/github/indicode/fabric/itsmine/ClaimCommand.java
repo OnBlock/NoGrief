@@ -6,6 +6,7 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import io.github.indicode.fabric.itsmine.mixin.BlockUpdatePacketMixin;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.network.packet.BlockUpdateS2CPacket;
@@ -51,10 +52,7 @@ public class ClaimCommand {
         }
         dispatcher.register(command);
     }
-    private static int createClaim(String name, UUID owner, BlockPos min, BlockPos max) {
-        ClaimManager.INSTANCE.addClaim(new Claim(name, owner, min, max));
-        return 0;
-    }
+    
     private static int showClaim(ServerPlayerEntity player, Claim claim) {
         System.out.println(claim);
         if (claim != null) {
@@ -83,5 +81,33 @@ public class ClaimCommand {
         BlockUpdateS2CPacket packet =  new BlockUpdateS2CPacket(player.world, pos);
         if (state != null) ((BlockUpdatePacketMixin)packet).setState(state);
         player.networkHandler.sendPacket(packet);
+    }
+    private static int createClaim(String name, UUID owner, BlockPos posA, BlockPos posB) {
+        int x, y, z, mx, my, mz;
+        if (posA.getX() > posB.getX()) {
+            x = posB.getX();
+            mx = posA.getX();
+        } else {
+            x =  posA.getX();
+            mx = posB.getX();
+        }
+        if (posA.getY() > posB.getY()) {
+            y = posB.getY();
+            my = posA.getY();
+        } else {
+            y =  posA.getY();
+            my = posB.getY();
+        }
+        if (posA.getZ() > posB.getZ()) {
+            z = posB.getZ();
+            mz = posA.getZ();
+        } else {
+            z =  posA.getZ();
+            mz = posB.getZ();
+        }
+        BlockPos min = new BlockPos(x,y, z);
+        BlockPos max = new BlockPos(mx, my, mz);
+        ClaimManager.INSTANCE.addClaim(new Claim(name, owner, min, max));
+        return 0;
     }
 }
