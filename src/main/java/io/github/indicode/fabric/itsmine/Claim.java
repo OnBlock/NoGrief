@@ -43,6 +43,22 @@ public class Claim {
             return this;
         } else return null;
     }
+    public ClaimSettings getSettingsAt(BlockPos pos) {
+        Claim at = getZoneCovering(pos);
+        if (at != null) {
+            return at.settings;
+        } else return null;
+    }
+    public ClaimPermissions getPermissionsAt(UUID player, BlockPos pos) {
+        Claim at = getZoneCovering(pos);
+        if (at != null) {
+            return at.getPlayerPermissions(player);
+        } else return null;
+    }
+    public ClaimPermissions getPlayerPermissions(UUID player) {
+        if (permssionsMap.containsKey(player)) return permssionsMap.get(player);
+        else return settings;
+    }
     public void addSubzone(Claim claim) {
         if (includesPosition(claim.min) && includesPosition(claim.max)) {
             children.add(claim);
