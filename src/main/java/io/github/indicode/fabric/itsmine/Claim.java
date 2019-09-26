@@ -34,6 +34,15 @@ public class Claim {
         return pos.getX() >= min.getX() && pos.getY() >= min.getY() && pos.getZ() >= min.getZ() &&
                 pos.getX() <= max.getX() && pos.getY() <= max.getY() && pos.getZ() <= max.getZ();
     }
+    public Claim getZoneCovering(BlockPos pos) {
+        if (includesPosition(pos)) {
+            for (Claim child : children) {
+                Claim value = child.getZoneCovering(pos);
+                if (value != null) return value;
+            }
+            return this;
+        } else return null;
+    }
     public void addSubzone(Claim claim) {
         if (includesPosition(claim.min) && includesPosition(claim.max)) {
             children.add(claim);
