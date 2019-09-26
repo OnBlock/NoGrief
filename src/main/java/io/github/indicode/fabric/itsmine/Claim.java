@@ -2,12 +2,11 @@ package io.github.indicode.fabric.itsmine;
 
 import net.minecraft.entity.ai.goal.MoveToTargetPosGoal;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author Indigo Amann
@@ -16,10 +15,14 @@ public class Claim {
     public String name;
     public BlockPos min, max;
     public Map<UUID, ClaimPermissions> permssionsMap = new HashMap();
+    public List<Claim> children = new ArrayList<>();
     public ClaimSettings settings = new ClaimSettings();
     public UUID owner;
     public Claim() {
 
+    }
+    public Claim(CompoundTag tag) {
+        fromTag(tag);
     }
     public Claim(String name, UUID owner, BlockPos min, BlockPos max) {
         this.min = min;
@@ -59,6 +62,11 @@ public class Claim {
             tag.put("position", pos);
         }
         {
+            ListTag subzoneList = new ListTag();
+            children.forEach(it -> subzoneList.add(it.toTag()));
+            tag.put("subzones", subzoneList);
+        }
+        {
             tag.put("settings", settings.toTag());
             CompoundTag permissions = new CompoundTag();
             permssionsMap.forEach((id, perms) -> permissions.put(id.toString(), perms.toTag()));
@@ -79,6 +87,13 @@ public class Claim {
             int maxZ = pos.getInt("maxZ");
             this.min = new BlockPos(minX, minY, minZ);
             this.max = new BlockPos(maxX, maxY, maxZ);
+        }
+        {
+            children = new ArrayList<>();
+            ListTag subzoneList = (ListTag) tag.getTag("subzones");
+            if (subzoneList != null) {
+                subzoneList.forEach(it -> children.add(new Claim((CompoundTag) it)));
+            }
         }
         {
             this.settings = new ClaimSettings(tag.getCompound("settings"));
