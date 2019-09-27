@@ -35,7 +35,29 @@ public class Claim {
                 pos.getX() <= max.getX() && pos.getY() <= max.getY() && pos.getZ() <= max.getZ();
     }
     public boolean intersects(Claim claim) {
-        return claim.includesPosition(min) || claim.includesPosition(max) || this.includesPosition(claim.max) || this.includesPosition(claim.min);
+        return intersects(claim, true);
+    }
+    public boolean intersects(Claim claim, boolean checkOther) {
+        if (claim == null) return false;
+        BlockPos a = min,
+                b = max,
+                c = new BlockPos(max.getX(), min.getY(), min.getZ()),
+                d = new BlockPos(min.getX(), max.getY(), min.getZ()),
+                e = new BlockPos(min.getX(), min.getY(), max.getZ()),
+                f = new BlockPos(max.getX(), max.getY(), min.getZ()),
+                g = new BlockPos(max.getX(), min.getY(), max.getZ()),
+                h = new BlockPos(min.getX(), max.getY(), max.getZ());
+        if (
+                claim.includesPosition(a) ||
+                claim.includesPosition(b) ||
+                claim.includesPosition(c) ||
+                claim.includesPosition(d) ||
+                claim.includesPosition(e) ||
+                claim.includesPosition(f) ||
+                claim.includesPosition(g) ||
+                claim.includesPosition(h)
+        ) return true;
+        else return checkOther ? claim.intersects(this, false) : null;
     }
     public Claim getZoneCovering(BlockPos pos) {
         if (includesPosition(pos)) {
