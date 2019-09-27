@@ -26,7 +26,12 @@ public class WorldSaveHandlerMixin {
     private void onSaveWorld(LevelProperties levelProperties_1, CompoundTag compoundTag_1, CallbackInfo ci) {
         if (ClaimManager.INSTANCE != null) {
             File claimDataFile = new File(worldDir, "claims.dat");
-            if (claimDataFile.exists()) claimDataFile.delete();
+            if (claimDataFile.exists()) {
+                File old = new File(worldDir, "claims.dat_old");
+                if (old.exists()) old.delete();
+                claimDataFile.renameTo(old);
+                claimDataFile.delete();
+            }
             try {
                 claimDataFile.createNewFile();
                 CompoundTag tag = new CompoundTag();
