@@ -24,8 +24,8 @@ import java.io.IOException;
 public abstract class MinecraftServerMixin {
     @Inject(method = "loadWorld", at = @At("RETURN"))
     private void loadClaims(String string_1, String string_2, long long_1, LevelGeneratorType levelGeneratorType_1, JsonElement jsonElement_1, CallbackInfo ci) {
-        File claims = new File(((MinecraftServer)(Object)this).getLevelStorage().getSavesDirectory() + "/" + string_1 + "/claims.dat");
-        File claims_old = new File(((MinecraftServer)(Object)this).getLevelStorage().getSavesDirectory() + "/" + string_1 + "/claims.dat_old");
+        File claims = new File(gameDir.getPath() + "/" + string_1 + "/claims.dat");
+        File claims_old = new File(gameDir.getPath() + "/" + string_1 + "/claims.dat_old");
         ClaimManager.INSTANCE = new ClaimManager();
         if (!claims.exists()) {
             if (claims_old.exists()) {}
@@ -50,4 +50,6 @@ public abstract class MinecraftServerMixin {
             }
         }
     }
+    @Shadow
+    private File gameDir;
 }
