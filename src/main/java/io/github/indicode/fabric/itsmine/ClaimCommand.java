@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.indicode.fabric.itsmine.mixin.BlockUpdatePacketMixin;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -16,6 +17,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.LiteralText;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.UUID;
@@ -33,7 +36,7 @@ public class ClaimCommand {
             RequiredArgumentBuilder<ServerCommandSource, PosArgument> max = CommandManager.argument("max", BlockPosArgumentType.blockPos());
             max.executes(context -> createClaim(
                     StringArgumentType.getString(context, "name"),
-                    context.getSource().getPlayer().getGameProfile().getId(),
+                    context.getSource(),
                     BlockPosArgumentType.getBlockPos(context, "min"),
                     BlockPosArgumentType.getBlockPos(context, "max")
             ));
@@ -44,18 +47,19 @@ public class ClaimCommand {
         }
         {
             LiteralArgumentBuilder<ServerCommandSource> show = CommandManager.literal("show");
-            show.executes(context -> showClaim(context.getSource().getPlayer(), ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos())));
+            show.executes(context -> showClaim(context.getSource(), ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos())));
             RequiredArgumentBuilder<ServerCommandSource, String> name = CommandManager.argument("name", StringArgumentType.word());
-            name.executes(context -> showClaim(context.getSource().getPlayer(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "name"))));
+            name.executes(context -> showClaim(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "name"))));
             show.then(name);
             command.then(show);
         }
         dispatcher.register(command);
     }
     
-    private static int showClaim(ServerPlayerEntity player, Claim claim) {
-        System.out.println(claim);
+    private static int showClaim(ServerCommandSource source, Claim claim) throws CommandSyntaxException {
+        ServerPlayerEntity player = source.getPlayer();
         if (claim != null) {
+            source.sendFeedback(new LiteralText("Showing claim: " + claim.name).formatted(Formatting.GREEN), false);
             for (int x = claim.min.getX(); x < claim.max.getX(); x++) {
                 sendBlockPacket(player, new BlockPos(x, claim.min.getY(), claim.min.getZ()), Blocks.SPONGE.getDefaultState());
                 sendBlockPacket(player, new BlockPos(x, claim.max.getY(), claim.min.getZ()), Blocks.SPONGE.getDefaultState());
@@ -74,6 +78,8 @@ public class ClaimCommand {
                 sendBlockPacket(player, new BlockPos(claim.min.getX(), claim.max.getY(), z), Blocks.REDSTONE_BLOCK.getDefaultState());
                 sendBlockPacket(player, new BlockPos(claim.max.getX(), claim.max.getY(), z), Blocks.REDSTONE_BLOCK.getDefaultState());
             }
+        } else {
+            source.sendFeedback(new LiteralText("That is not a valid claim").formatted(Formatting.RED), false);
         }
         return 0;
     }
@@ -82,7 +88,8 @@ public class ClaimCommand {
         if (state != null) ((BlockUpdatePacketMixin)packet).setState(state);
         player.networkHandler.sendPacket(packet);
     }
-    private static int createClaim(String name, UUID owner, BlockPos posA, BlockPos posB) {
+    private static int createClaim(String name, ServerCommandSource owner, BlockPos posA, BlockPos posB) throws CommandSyntaxException {
+        UUID ownerID = owner.getPlayer().getGameProfile().getId();
         int x, y, z, mx, my, mz;
         if (posA.getX() > posB.getX()) {
             x = posB.getX();
@@ -107,7 +114,11 @@ public class ClaimCommand {
         }
         BlockPos min = new BlockPos(x,y, z);
         BlockPos max = new BlockPos(mx, my, mz);
-        ClaimManager.INSTANCE.addClaim(new Claim(name, owner, min, max));
+        if (ClaimManager.INSTANCE.addClaim(new Claim(name, ownerID, min, max))) {
+            owner.sendFeedback(new LiteralText("Your claim was created.").formatted(Formatting.GREEN), false);
+        } else {
+            owner.sendFeedback(new LiteralText("Your claim would overlap with another claim.").formatted(Formatting.RED), false);
+        }
         return 0;
     }
 }
