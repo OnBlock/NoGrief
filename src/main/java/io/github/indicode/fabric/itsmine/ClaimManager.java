@@ -24,8 +24,12 @@ public class ClaimManager {
         });
         return list;
     }
-    public void addClaim(Claim claim) {
+    public boolean addClaim(Claim claim) {
+        for (Claim value : claimsByName.values()) {
+            if(claim.intersects(value)) return false;
+        }
         claimsByName.put(claim.name, claim);
+        return true;
     }
     public ListTag toNBT() {
         ListTag tag = new ListTag();

@@ -34,6 +34,9 @@ public class Claim {
         return pos.getX() >= min.getX() && pos.getY() >= min.getY() && pos.getZ() >= min.getZ() &&
                 pos.getX() <= max.getX() && pos.getY() <= max.getY() && pos.getZ() <= max.getZ();
     }
+    public boolean intersects(Claim claim) {
+        return claim.includesPosition(min) || claim.includesPosition(max) || this.includesPosition(claim.max) || this.includesPosition(claim.min);
+    }
     public Claim getZoneCovering(BlockPos pos) {
         if (includesPosition(pos)) {
             for (Claim child : children) {
