@@ -164,6 +164,7 @@ public class Claim {
     }
 
     public static class ClaimPermissions {
+        public boolean modifyBlocks = false;
         public ClaimPermissions(CompoundTag tag) {
             fromTag(tag);
         }
@@ -171,10 +172,11 @@ public class Claim {
         }
         public CompoundTag toTag() {
             CompoundTag tag =  new CompoundTag();
+            tag.putBoolean("modifyBlocks", modifyBlocks);
             return tag;
         }
         public void fromTag(CompoundTag tag) {
-
+            modifyBlocks = tag.getBoolean("modifyBlocks");
         }
     }
     public static class ClaimSettings extends ClaimPermissions{

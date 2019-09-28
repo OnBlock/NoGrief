@@ -6,7 +6,9 @@
     "MinecraftServerMixin",
     "WorldSaveHandlerMixin",
     "CommandManagerMixin",
-    "BlockUpdatePacketMixin"
+    "BlockUpdatePacketMixin",
+
+    "ServerWorldMixin"
   ],
   "client": [
     "IntegratedServerMixin"
