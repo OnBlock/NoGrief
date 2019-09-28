@@ -57,7 +57,7 @@ public class Claim {
                 claim.includesPosition(g) ||
                 claim.includesPosition(h)
         ) return true;
-        else return checkOther ? claim.intersects(this, false) : false;
+        else return checkOther && claim.intersects(this, false);
     }
     public Claim getZoneCovering(BlockPos pos) {
         if (includesPosition(pos)) {

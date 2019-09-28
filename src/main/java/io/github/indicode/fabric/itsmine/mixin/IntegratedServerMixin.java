@@ -33,16 +33,14 @@ public class IntegratedServerMixin {
         }
         try {
             if (!claims.exists() && claims_old.exists()) throw new FileNotFoundException();
-            ListTag tag = (ListTag) NbtIo.readCompressed(new FileInputStream(claims)).getTag("claims");
-            ClaimManager.INSTANCE.fromNBT(tag);
+            ClaimManager.INSTANCE.fromNBT(NbtIo.readCompressed(new FileInputStream(claims_old)));
         } catch (IOException e) {
             System.err.println("Could not load claims.dat:");
             e.printStackTrace();
             if (claims_old.exists()) {
                 System.out.println("Attempting to load backup claims...");
                 try {
-                    ListTag tag = (ListTag) NbtIo.readCompressed(new FileInputStream(claims_old)).getTag("claims");
-                    ClaimManager.INSTANCE.fromNBT(tag);
+                    ClaimManager.INSTANCE.fromNBT(NbtIo.readCompressed(new FileInputStream(claims_old)));
                 } catch (IOException e2) {
                     throw new RuntimeException("Could not load claims.dat_old - Crashing server to save data. Remove or fix claims.dat or claims.dat_old to continue");
 

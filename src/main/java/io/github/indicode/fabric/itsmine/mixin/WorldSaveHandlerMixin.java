@@ -34,8 +34,7 @@ public class WorldSaveHandlerMixin {
             }
             try {
                 claimDataFile.createNewFile();
-                CompoundTag tag = new CompoundTag();
-                tag.put("claims", ClaimManager.INSTANCE.toNBT());
+                CompoundTag tag = ClaimManager.INSTANCE.toNBT();
                 NbtIo.writeCompressed(tag, new FileOutputStream(claimDataFile));
             } catch (IOException e) {
                 e.printStackTrace();
