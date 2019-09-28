@@ -17,6 +17,11 @@
   "icon": "assets/itsmine/icon.png",
 
   "environment": "*",
+  "entrypoints": {
+    "main": [
+      "io.github.indicode.fabric.itsmine.ItsMine"
+    ]
+  },
   "mixins": [
     "itsmine.mixins.json"
   ],
