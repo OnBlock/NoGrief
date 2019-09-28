@@ -7,17 +7,22 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.indicode.fabric.itsmine.mixin.BlockUpdatePacketMixin;
+import io.github.indicode.fabric.permissions.Thimble;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.network.packet.BlockUpdateS2CPacket;
+import net.minecraft.command.EntitySelector;
 import net.minecraft.command.arguments.BlockPosArgumentType;
+import net.minecraft.command.arguments.EntityArgumentType;
 import net.minecraft.command.arguments.PosArgument;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.HoverEvent;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.Style;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 
@@ -38,8 +43,19 @@ public class ClaimCommand {
                     StringArgumentType.getString(context, "name"),
                     context.getSource(),
                     BlockPosArgumentType.getBlockPos(context, "min"),
-                    BlockPosArgumentType.getBlockPos(context, "max")
+                    BlockPosArgumentType.getBlockPos(context, "max"),
+                    false
             ));
+            LiteralArgumentBuilder<ServerCommandSource> ignoreLimits = CommandManager.literal("ignore_limits");
+            ignoreLimits.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.infinite_blocks", 4));
+            ignoreLimits.executes(context -> createClaim(
+                    StringArgumentType.getString(context, "name"),
+                    context.getSource(),
+                    BlockPosArgumentType.getBlockPos(context, "min"),
+                    BlockPosArgumentType.getBlockPos(context, "max"),
+                    true
+            ));
+            max.then(ignoreLimits);
             min.then(max);
             name.then(min);
             create.then(name);
@@ -52,6 +68,15 @@ public class ClaimCommand {
             name.executes(context -> showClaim(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "name"))));
             show.then(name);
             command.then(show);
+        }
+        {
+            LiteralArgumentBuilder<ServerCommandSource> check = CommandManager.literal("check_blocks");
+            RequiredArgumentBuilder<ServerCommandSource, EntitySelector> other = CommandManager.argument("player", EntityArgumentType.player());
+            other.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.checkothers", 2));
+            other.executes(ctx -> checkPlayer(ctx.getSource(), EntityArgumentType.getPlayer(ctx, "player").getGameProfile().getId()));
+            check.then(other);
+            check.executes(ctx -> checkPlayer(ctx.getSource(), ctx.getSource().getPlayer().getGameProfile().getId()));
+            command.then(check);
         }
         dispatcher.register(command);
     }
@@ -88,12 +113,8 @@ public class ClaimCommand {
         if (state != null) ((BlockUpdatePacketMixin)packet).setState(state);
         player.networkHandler.sendPacket(packet);
     }
-    private static int createClaim(String name, ServerCommandSource owner, BlockPos posA, BlockPos posB) throws CommandSyntaxException {
+    private static int createClaim(String name, ServerCommandSource owner, BlockPos posA, BlockPos posB, boolean ignoreLimits) throws CommandSyntaxException {
         UUID ownerID = owner.getPlayer().getGameProfile().getId();
-        if (!ItsMine.hasPermissionForNewClaim(owner, ClaimManager.INSTANCE.getClaimsUsed(ownerID))) {
-            owner.sendFeedback(new LiteralText("You have claimed the maximum amount of blocks. Try removing an earlier claim.").formatted(Formatting.RED), false);
-            return 0;
-        }
         int x, y, z, mx, my, mz;
         if (posA.getX() > posB.getX()) {
             x = posB.getX();
@@ -118,12 +139,29 @@ public class ClaimCommand {
         }
         BlockPos min = new BlockPos(x,y, z);
         BlockPos max = new BlockPos(mx, my, mz);
-        if (ClaimManager.INSTANCE.addClaim(new Claim(name, ownerID, min, max))) {
-            ClaimManager.INSTANCE.usedClaims.put(ownerID, ClaimManager.INSTANCE.getClaimsUsed(ownerID) + 1);
-            owner.sendFeedback(new LiteralText("Your claim was created.").formatted(Formatting.GREEN), false);
+        BlockPos sub = max.subtract(min);
+        int subInt = sub.getX() * sub.getY() * sub.getZ();
+        System.out.println("X" + sub.getX() + "Y" + sub.getY() + "Z" + sub.getZ() + "T" + subInt);
+        Claim claim = new Claim(name, ownerID, min, max);
+        if (!ClaimManager.INSTANCE.wouldIntersect(claim)) {
+            // works because only the first statemet is evaluated if true
+            if ((ignoreLimits && Thimble.hasPermissionOrOp(owner, "itsmine.infiniteblocks", 4)) || ClaimManager.INSTANCE.useClaimBlocks(ownerID, subInt)) {
+                ClaimManager.INSTANCE.addClaim(claim);
+                owner.sendFeedback(new LiteralText("").append(new LiteralText("Your claim was created.").formatted(Formatting.GREEN)).append(new LiteralText("(Area: " + sub.getX() + "x" + sub.getY() + "x" + sub.getZ() + ")").setStyle(new Style()
+                        .setColor(Formatting.GREEN).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(subInt + " blocks").formatted(Formatting.YELLOW))))), false);
+                checkPlayer(owner, owner.getPlayer().getGameProfile().getId());
+            } else {
+                owner.sendFeedback(new LiteralText("You don't have enough claim blocks. You have " + ClaimManager.INSTANCE.getClaimBlocks(ownerID) + ", you need " + subInt + "(" + (subInt - ClaimManager.INSTANCE.getClaimBlocks(ownerID)) + " more)").formatted(Formatting.RED), false);
+            }
         } else {
             owner.sendFeedback(new LiteralText("Your claim would overlap with another claim.").formatted(Formatting.RED), false);
         }
+        return 0;
+    }
+    private static int checkPlayer(ServerCommandSource ret, UUID player) throws CommandSyntaxException {
+        int blocks = ClaimManager.INSTANCE.getClaimBlocks(player);
+        ret.sendFeedback(new LiteralText((ret.getPlayer().getGameProfile().getId().equals(player) ? "You have " : "They have ") + ClaimManager.INSTANCE.getClaimBlocks(player) + " blocks left").setStyle(new Style()
+                .setColor(Formatting.YELLOW).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Area of " + ItsMine.blocksToAreaString(ClaimManager.INSTANCE.getClaimBlocks(player))).formatted(Formatting.YELLOW)))), false);
         return 0;
     }
 }

@@ -15,9 +15,15 @@ import java.util.UUID;
  */
 public class ClaimManager {
     public static ClaimManager INSTANCE = null;
-    public HashMap<UUID, Integer> usedClaims = new HashMap<>();
-    public int getClaimsUsed(UUID id) {
-        return usedClaims.getOrDefault(id, 0);
+    private HashMap<UUID, Integer> blocksLeft = new HashMap<>();
+    public int getClaimBlocks(UUID id) {
+        return blocksLeft.getOrDefault(id, Config.baseClaimBlocks);
+    }
+    public boolean useClaimBlocks(UUID player, int amount) {
+        int blocks = getClaimBlocks(player) - amount;
+        if (blocks < 0) return false;
+        blocksLeft.put(player, blocks);
+        return true;
     }
     public HashMap<String, Claim> claimsByName = new HashMap<>();
     public List<Claim> getPlayerClaims(UUID id) {
@@ -28,20 +34,24 @@ public class ClaimManager {
         return list;
     }
     public boolean addClaim(Claim claim) {
-        for (Claim value : claimsByName.values()) {
-            if(claim.intersects(value)) return false;
-        }
+        if (wouldIntersect(claim)) return false;
         claimsByName.put(claim.name, claim);
         return true;
+    }
+    public boolean wouldIntersect(Claim claim) {
+        for (Claim value : claimsByName.values()) {
+            if(claim.intersects(value)) return true;
+        }
+        return false;
     }
     public CompoundTag toNBT() {
         CompoundTag tag =  new CompoundTag();
         ListTag list = new ListTag();
         claimsByName.values().forEach(claim -> list.add(claim.toTag()));
         tag.put("claims", list);
-        CompoundTag usedClaimsTag = new CompoundTag();
-        usedClaims.forEach((id, amount) -> usedClaimsTag.putInt(id.toString(), amount));
-        tag.put("usedClaims", usedClaimsTag);
+        CompoundTag blocksLeftTag = new CompoundTag();
+        blocksLeft.forEach((id, amount) -> blocksLeftTag.putInt(id.toString(), amount));
+        tag.put("blocksLeft", blocksLeftTag);
         return tag;
     }
     public Claim getClaimAt(BlockPos pos) {
@@ -58,8 +68,8 @@ public class ClaimManager {
             claim.fromTag((CompoundTag) it);
             claimsByName.put(claim.name, claim);
         });
-        CompoundTag usedClaimsTag = tag.getCompound("usedClaims");
-        usedClaims.clear();
-        usedClaimsTag.getKeys().forEach(key -> usedClaims.put(UUID.fromString(key), usedClaimsTag.getInt(key)));
+        CompoundTag blocksLeftTag = tag.getCompound("blocksLeft");
+        blocksLeft.clear();
+        blocksLeftTag.getKeys().forEach(key -> blocksLeft.put(UUID.fromString(key), blocksLeftTag.getInt(key)));
     }
 }

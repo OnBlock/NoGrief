@@ -1,6 +1,7 @@
 package io.github.indicode.fabric.itsmine;
 
 import io.github.indicode.fabric.permissions.Thimble;
+import io.github.indicode.fabric.permissions.command.CommandPermission;
 import io.github.indicode.fabric.permissions.command.NoSavePermission;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.server.command.ServerCommandSource;
@@ -17,24 +18,19 @@ public class ItsMine implements ModInitializer {
         Config.sync(false);
         Thimble.permissionWriters.add(pair -> {
             try {
-                for (int it : Config.claimCountPerms) {
-                    pair.getLeft().getPermission("itsmine.claimamount." + it, NoSavePermission.class);
-                }
-                pair.getLeft().getPermission("itsmine.claimamount.infinite", NoSavePermission.class);
+                pair.getLeft().getPermission("itsmine.infinite_blocks", CommandPermission.class);
+                pair.getLeft().getPermission("itsmine.checkothers", CommandPermission.class);
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
                 System.err.println("Claim permissions could not be loaded:");
                 e.printStackTrace();
             }
         });
     }
-    public static boolean hasPermissionForNewClaim(ServerCommandSource player, int number) {
-        if (Thimble.hasPermissionOrOp(player, "itsmine.claimamount.infinite", 3)) return true;
-        for (int i: Config.claimCountPerms) {
-            if (i <= number) continue;
-            if (Thimble.hasPermissionOrOp(player, "itsmine.claimamount." + i, 2)) {
-                return true;
-            }
-        }
-        return false;
+    public static String blocksToAreaString(int blocks) {
+        int base = (int) Math.floor(Math.cbrt(blocks));
+        int additionalBlocks = blocks - (int) Math.pow(base, 3);
+        int extraRows = (int) Math.floor(Math.cbrt(Math.floor((float)additionalBlocks / base)));
+        int leftoverBlocks = additionalBlocks % base;
+        return (base + extraRows) + "x" + base + "x" + base + "(+" + leftoverBlocks + ")";
     }
 }
