@@ -3,9 +3,12 @@ package io.github.indicode.fabric.itsmine.mixin;
 import com.mojang.authlib.GameProfile;
 import io.github.indicode.fabric.itsmine.Claim;
 import io.github.indicode.fabric.itsmine.ClaimManager;
+import io.github.indicode.fabric.permissions.Thimble;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.LiteralText;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.World;
@@ -24,7 +27,8 @@ public abstract class ServerWorldMixin {
     public void canMine(PlayerEntity player, BlockPos blockPos_1, CallbackInfoReturnable ci) {
         Claim claim = ClaimManager.INSTANCE.getClaimAt(blockPos_1);
         if (claim != null) {
-            if (!player.getGameProfile().getId().equals(claim.owner) && !claim.getPermissionsAt(player.getGameProfile().getId(), blockPos_1).modifyBlocks) {
+            if (!claim.hasPermission(player.getGameProfile().getId(), Claim.ClaimPermissions.Permission.MODIFY_WORLD)) {
+                player.sendMessage(new LiteralText("").append(new LiteralText("You can't use that here. You are in a claim. ").formatted(Formatting.RED)).append(new LiteralText("(Use /claim show to see an outline)").formatted(Formatting.YELLOW)));
                 ci.setReturnValue(false);
             }
         }

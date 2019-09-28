@@ -1,8 +1,8 @@
 package io.github.indicode.fabric.itsmine;
 
-import net.minecraft.entity.ai.goal.MoveToTargetPosGoal;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
@@ -84,6 +84,12 @@ public class Claim {
         if (permssionsMap.containsKey(player)) return permssionsMap.get(player);
         else return settings;
     }
+    public boolean hasPermission(UUID player, ClaimPermissions.Permission permission) {
+        return player.equals(owner) || ClaimManager.INSTANCE.ignoringClaims.contains(player) || getPlayerPermissions(player).hasPermission(permission);
+    }
+    public boolean hasPermissionAt(UUID player, ClaimPermissions.Permission permission, BlockPos pos) {
+        return player.equals(owner) || ClaimManager.INSTANCE.ignoringClaims.contains(player) || getPermissionsAt(player, pos).hasPermission(permission);
+    }
     public void addSubzone(Claim claim) {
         if (includesPosition(claim.min) && includesPosition(claim.max)) {
             children.add(claim);
@@ -164,7 +170,15 @@ public class Claim {
     }
 
     public static class ClaimPermissions {
-        public boolean modifyBlocks = false;
+        public enum Permission {
+            MODIFY_WORLD("modify_world", "Modify Blocks");
+            String id, name;
+            Permission(String id, String name) {
+                this.id = id;
+                this.name =  name;
+            }
+        }
+        protected  List<Permission> perms = new ArrayList<>();
         public ClaimPermissions(CompoundTag tag) {
             fromTag(tag);
         }
@@ -172,11 +186,24 @@ public class Claim {
         }
         public CompoundTag toTag() {
             CompoundTag tag =  new CompoundTag();
-            tag.putBoolean("modifyBlocks", modifyBlocks);
+            ListTag listTag =  new ListTag();
+            perms.forEach(perm -> listTag.add(new StringTag(perm.id)));
+            tag.put("permissions", listTag);
             return tag;
         }
         public void fromTag(CompoundTag tag) {
-            modifyBlocks = tag.getBoolean("modifyBlocks");
+            perms.clear();
+            if (tag.containsKey("permissions")) ((ListTag)tag.getTag("permissions")).forEach(key -> perms.add(Permission.valueOf(key.toString())));
+        }
+        public boolean hasPermission(Permission permission) {
+            return perms.contains(permission);
+        }
+        public void setPermission(Permission permission, boolean value) {
+            if (value && !hasPermission(permission)) {
+                perms.add(permission);
+                return;
+            }
+            if (!value) perms.remove(permission);
         }
     }
     public static class ClaimSettings extends ClaimPermissions{

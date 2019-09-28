@@ -2,6 +2,7 @@ package io.github.indicode.fabric.itsmine;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
@@ -17,6 +18,7 @@ import java.util.UUID;
 public class ClaimManager {
     public static ClaimManager INSTANCE = null;
     private HashMap<UUID, Integer> blocksLeft = new HashMap<>();
+    public List<UUID> ignoringClaims = new ArrayList<>();
     public int getClaimBlocks(UUID id) {
         return blocksLeft.getOrDefault(id, Config.baseClaimBlocks);
     }
@@ -65,6 +67,9 @@ public class ClaimManager {
         CompoundTag blocksLeftTag = new CompoundTag();
         blocksLeft.forEach((id, amount) -> blocksLeftTag.putInt(id.toString(), amount));
         tag.put("blocksLeft", blocksLeftTag);
+        ListTag ignoring = new ListTag();
+        ignoringClaims.forEach(id -> ignoring.add(new StringTag(id.toString())));
+        tag.put("ignoring", ignoring);
         return tag;
     }
     public Claim getClaimAt(BlockPos pos) {
@@ -84,5 +89,7 @@ public class ClaimManager {
         CompoundTag blocksLeftTag = tag.getCompound("blocksLeft");
         blocksLeft.clear();
         blocksLeftTag.getKeys().forEach(key -> blocksLeft.put(UUID.fromString(key), blocksLeftTag.getInt(key)));
+        ListTag ignoringTag = (ListTag) tag.getTag("ignoring");
+        ignoringTag.forEach(it -> ignoringClaims.add(UUID.fromString(it.toString())));
     }
 }

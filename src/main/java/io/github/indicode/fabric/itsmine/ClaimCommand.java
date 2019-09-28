@@ -161,6 +161,19 @@ public class ClaimCommand {
                 create.then(name);
                 admin.then(create);
             }
+            {
+                LiteralArgumentBuilder<ServerCommandSource> ignore = CommandManager.literal("ignore_claims");
+                ignore.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.ignore_claims", 4));
+                ignore.executes(context -> {
+                    UUID id = context.getSource().getPlayer().getGameProfile().getId();
+                    boolean isIgnoring = ClaimManager.INSTANCE.ignoringClaims.contains(id);
+                    if (isIgnoring) ClaimManager.INSTANCE.ignoringClaims.remove(id);
+                    else ClaimManager.INSTANCE.ignoringClaims.add(id);
+                    context.getSource().sendFeedback(new LiteralText("You are " + (isIgnoring ? "no longer" : "now") + " ignoring claims.").formatted(Formatting.GREEN), false);
+                    return 0;
+                });
+                admin.then(ignore);
+            }
             command.then(admin);
         }
         dispatcher.register(command);
