@@ -33,7 +33,7 @@ public class IntegratedServerMixin {
         }
         try {
             if (!claims.exists() && claims_old.exists()) throw new FileNotFoundException();
-            ClaimManager.INSTANCE.fromNBT(NbtIo.readCompressed(new FileInputStream(claims_old)));
+            ClaimManager.INSTANCE.fromNBT(NbtIo.readCompressed(new FileInputStream(claims)));
         } catch (IOException e) {
             System.err.println("Could not load claims.dat:");
             e.printStackTrace();
