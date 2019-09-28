@@ -20,7 +20,7 @@ public class ItsMine implements ModInitializer {
             try {
                 pair.getLeft().getPermission("itsmine", CommandPermission.class);
                 pair.getLeft().getPermission("itsmine.admin", CommandPermission.class);
-                pair.getLeft().getPermission("itsmine.infinite_blocks", CommandPermission.class);
+                pair.getLeft().getPermission("itsmine.admin.infinite_claim", CommandPermission.class);
                 pair.getLeft().getPermission("itsmine.admin.check_others", CommandPermission.class);
                 pair.getLeft().getPermission("itsmine.admin.modify_balance", CommandPermission.class);
                 pair.getLeft().getPermission("itsmine.admin.destroy", CommandPermission.class);

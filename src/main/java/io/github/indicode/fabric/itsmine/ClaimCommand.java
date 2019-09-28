@@ -48,16 +48,6 @@ public class ClaimCommand {
                     BlockPosArgumentType.getBlockPos(context, "max"),
                     false
             ));
-            LiteralArgumentBuilder<ServerCommandSource> ignoreLimits = CommandManager.literal("ignore_limits");
-            ignoreLimits.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.infinite_blocks", 4));
-            ignoreLimits.executes(context -> createClaim(
-                    StringArgumentType.getString(context, "name"),
-                    context.getSource(),
-                    BlockPosArgumentType.getBlockPos(context, "min"),
-                    BlockPosArgumentType.getBlockPos(context, "max"),
-                    true
-            ));
-            max.then(ignoreLimits);
             min.then(max);
             name.then(min);
             create.then(name);
@@ -153,6 +143,24 @@ public class ClaimCommand {
                 delete.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition())), true));
                 admin.then(delete);
             }
+            {
+                LiteralArgumentBuilder<ServerCommandSource> create = CommandManager.literal("create_free");
+                create.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.infinite_claim", 4));
+                ArgumentBuilder name = CommandManager.argument("name", StringArgumentType.word());
+                ArgumentBuilder min = CommandManager.argument("min", BlockPosArgumentType.blockPos());
+                RequiredArgumentBuilder<ServerCommandSource, PosArgument> max = CommandManager.argument("max", BlockPosArgumentType.blockPos());
+                max.executes(context -> createClaim(
+                        StringArgumentType.getString(context, "name"),
+                        context.getSource(),
+                        BlockPosArgumentType.getBlockPos(context, "min"),
+                        BlockPosArgumentType.getBlockPos(context, "max"),
+                        true
+                ));
+                min.then(max);
+                name.then(min);
+                create.then(name);
+                admin.then(create);
+            }
             command.then(admin);
         }
         dispatcher.register(command);
@@ -227,6 +235,7 @@ public class ClaimCommand {
                 owner.sendFeedback(new LiteralText("").append(new LiteralText("Your claim was created.").formatted(Formatting.GREEN)).append(new LiteralText("(Area: " + sub.getX() + "x" + sub.getY() + "x" + sub.getZ() + ")").setStyle(new Style()
                         .setColor(Formatting.GREEN).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(subInt + " blocks").formatted(Formatting.YELLOW))))), false);
                 checkPlayer(owner, owner.getPlayer().getGameProfile().getId());
+                if (ignoreLimits)owner.getMinecraftServer().sendMessage(new LiteralText(owner.getPlayer().getGameProfile().getName() + " Has created a new claim(" + claim.name + ") using the admin command."));
             } else {
                 owner.sendFeedback(new LiteralText("You don't have enough claim blocks. You have " + ClaimManager.INSTANCE.getClaimBlocks(ownerID) + ", you need " + subInt + "(" + (subInt - ClaimManager.INSTANCE.getClaimBlocks(ownerID)) + " more)").formatted(Formatting.RED), false);
             }
@@ -258,7 +267,7 @@ public class ClaimCommand {
                 .append(new LiteralText("[I'M SURE]").setStyle(new Style()
                         .setColor(Formatting.DARK_RED)
                         .setBold(true)
-                        .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, (admin ? "/claim" : "/claim admin") + " destroy " + claim.name + " confirm")))), false);
+                        .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, (admin ? "/claim admin" : "/claim") + " destroy " + claim.name + " confirm")))), false);
         return 0;
     }
     private static int delete(ServerCommandSource sender, Claim claim, boolean admin) throws CommandSyntaxException {
@@ -267,7 +276,7 @@ public class ClaimCommand {
             return 0;
         }
         if (claim.owner != sender.getPlayer().getGameProfile().getId()) {
-            if (admin && Thimble.hasPermissionOrOp(sender, "itsmine.admin.delete_others", 4)) {
+            if (admin && Thimble.hasPermissionOrOp(sender, "itsmine.admin.destroy", 4)) {
                 sender.sendFeedback(new LiteralText("Deleting a claim belonging to somebody else.").formatted(Formatting.DARK_RED, Formatting.BOLD), false);
             } else {
                 sender.sendFeedback(new LiteralText("That is not your claim.").formatted(Formatting.RED), false);
