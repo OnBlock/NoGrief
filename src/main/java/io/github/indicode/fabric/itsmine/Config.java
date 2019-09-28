@@ -5,6 +5,7 @@ import blue.endless.jankson.JsonPrimitive;
 import io.github.indicode.fabric.tinyconfig.DefaultedJsonArray;
 import io.github.indicode.fabric.tinyconfig.ModConfig;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +24,7 @@ public class Config {
                     claimCountPerms.forEach(it -> def.add(new JsonPrimitive(it)));
                     return def;
                 }, "Requires Restart");
-                claimCountPerms.clear();
+                claimCountPerms = new ArrayList<>();
                 for (int i = 0; i < countPermsArray.size(); i++) {
                     claimCountPerms.add(countPermsArray.getInt(i));
                 }

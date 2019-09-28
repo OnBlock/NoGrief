@@ -27,10 +27,10 @@ public class ItsMine implements ModInitializer {
             }
         });
     }
-    public boolean hasPermissionForNewClaim(ServerCommandSource player, int number) {
+    public static boolean hasPermissionForNewClaim(ServerCommandSource player, int number) {
         if (Thimble.hasPermissionOrOp(player, "itsmine.claimamount.infinite", 3)) return true;
         for (int i: Config.claimCountPerms) {
-            if (i < number) continue;
+            if (i <= number) continue;
             if (Thimble.hasPermissionOrOp(player, "itsmine.claimamount." + i, 2)) {
                 return true;
             }

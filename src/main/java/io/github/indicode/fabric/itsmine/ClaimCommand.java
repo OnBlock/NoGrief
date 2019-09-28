@@ -90,6 +90,10 @@ public class ClaimCommand {
     }
     private static int createClaim(String name, ServerCommandSource owner, BlockPos posA, BlockPos posB) throws CommandSyntaxException {
         UUID ownerID = owner.getPlayer().getGameProfile().getId();
+        if (!ItsMine.hasPermissionForNewClaim(owner, ClaimManager.INSTANCE.getClaimsUsed(ownerID))) {
+            owner.sendFeedback(new LiteralText("You have claimed the maximum amount of blocks. Try removing an earlier claim.").formatted(Formatting.RED), false);
+            return 0;
+        }
         int x, y, z, mx, my, mz;
         if (posA.getX() > posB.getX()) {
             x = posB.getX();
@@ -115,6 +119,7 @@ public class ClaimCommand {
         BlockPos min = new BlockPos(x,y, z);
         BlockPos max = new BlockPos(mx, my, mz);
         if (ClaimManager.INSTANCE.addClaim(new Claim(name, ownerID, min, max))) {
+            ClaimManager.INSTANCE.usedClaims.put(ownerID, ClaimManager.INSTANCE.getClaimsUsed(ownerID) + 1);
             owner.sendFeedback(new LiteralText("Your claim was created.").formatted(Formatting.GREEN), false);
         } else {
             owner.sendFeedback(new LiteralText("Your claim would overlap with another claim.").formatted(Formatting.RED), false);

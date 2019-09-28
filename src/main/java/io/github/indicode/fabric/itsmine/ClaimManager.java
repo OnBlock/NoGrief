@@ -16,6 +16,9 @@ import java.util.UUID;
 public class ClaimManager {
     public static ClaimManager INSTANCE = null;
     public HashMap<UUID, Integer> usedClaims = new HashMap<>();
+    public int getClaimsUsed(UUID id) {
+        return usedClaims.getOrDefault(id, 0);
+    }
     public HashMap<String, Claim> claimsByName = new HashMap<>();
     public List<Claim> getPlayerClaims(UUID id) {
         List<Claim> list = new ArrayList<>();
