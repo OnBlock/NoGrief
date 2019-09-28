@@ -26,8 +26,17 @@ public class ClaimManager {
         blocksLeft.put(player, blocks);
         return true;
     }
+    public void addClaimBlocks(UUID player, int amount) {
+        useBlocksUntil0(player, -amount);
+    }
+    public void useBlocksUntil0(UUID player, int amount) {
+        if (!useClaimBlocks(player, amount)) blocksLeft.put(player, 0);
+    }
+    public void setClaimBlocks(UUID player, int amount) {
+        blocksLeft.put(player, amount < 0 ? 0 : amount);
+    }
     public void releaseBlocksToOwner(Claim claim) {
-        blocksLeft.put(claim.owner, getClaimBlocks(claim.owner) + claim.getArea());
+        addClaimBlocks(claim.owner, claim.getArea());
     }
     public HashMap<String, Claim> claimsByName = new HashMap<>();
     public List<Claim> getPlayerClaims(UUID id) {

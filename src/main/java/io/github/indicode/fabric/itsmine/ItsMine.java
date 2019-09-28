@@ -18,9 +18,12 @@ public class ItsMine implements ModInitializer {
         Config.sync(false);
         Thimble.permissionWriters.add(pair -> {
             try {
+                pair.getLeft().getPermission("itsmine", CommandPermission.class);
+                pair.getLeft().getPermission("itsmine.admin", CommandPermission.class);
                 pair.getLeft().getPermission("itsmine.infinite_blocks", CommandPermission.class);
-                pair.getLeft().getPermission("itsmine.check_others", CommandPermission.class);
-                pair.getLeft().getPermission("itsmine.delete_others", CommandPermission.class);
+                pair.getLeft().getPermission("itsmine.admin.check_others", CommandPermission.class);
+                pair.getLeft().getPermission("itsmine.admin.modify_balance", CommandPermission.class);
+                pair.getLeft().getPermission("itsmine.admin.destroy", CommandPermission.class);
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
                 System.err.println("Claim permissions could not be loaded:");
                 e.printStackTrace();

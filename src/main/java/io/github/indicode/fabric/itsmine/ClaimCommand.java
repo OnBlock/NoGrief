@@ -1,6 +1,7 @@
 package io.github.indicode.fabric.itsmine;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -83,11 +84,11 @@ public class ClaimCommand {
             LiteralArgumentBuilder<ServerCommandSource> delete = CommandManager.literal("destroy");
             RequiredArgumentBuilder<ServerCommandSource, String> claim = CommandManager.argument("claim", StringArgumentType.word());
             LiteralArgumentBuilder<ServerCommandSource> confirm = CommandManager.literal("confirm");
-            confirm.executes(context -> delete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"))));
-            claim.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"))));
+            confirm.executes(context -> delete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")), false));
+            claim.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")), false));
             claim.then(confirm);
             delete.then(claim);
-            delete.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition()))));
+            delete.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition())), false));
             command.then(delete);
         }
         {
@@ -95,7 +96,65 @@ public class ClaimCommand {
             RequiredArgumentBuilder<ServerCommandSource, String> claim = CommandManager.argument("claim", StringArgumentType.word());
             //TODO
         }
-
+        {
+            LiteralArgumentBuilder<ServerCommandSource> admin = CommandManager.literal("admin");
+            //admin.requires(source -> Thimble.hasPermissionChildOrOp(source, "itsmine.admin", 4));
+            {
+                LiteralArgumentBuilder<ServerCommandSource> add = CommandManager.literal("add_blocks");
+                add.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.modify_balance", 4));
+                RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = CommandManager.argument("player", EntityArgumentType.player());
+                RequiredArgumentBuilder<ServerCommandSource, Integer> amount = CommandManager.argument("amount", IntegerArgumentType.integer());
+                amount.executes(context -> {
+                    ClaimManager.INSTANCE.addClaimBlocks(EntityArgumentType.getPlayer(context, "player").getGameProfile().getId(), IntegerArgumentType.getInteger(context, "amount"));
+                    context.getSource().sendFeedback(new LiteralText("Gave " + IntegerArgumentType.getInteger(context, "amount") + " claim blocks to " + EntityArgumentType.getPlayer(context, "player").getGameProfile().getName()).formatted(Formatting.GREEN), true);
+                    return 0;
+                });
+                player.then(amount);
+                add.then(player);
+                admin.then(add);
+            }
+            {
+                LiteralArgumentBuilder<ServerCommandSource> remove = CommandManager.literal("remove_blocks");
+                remove.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.modify_balance", 4));
+                RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = CommandManager.argument("player", EntityArgumentType.player());
+                RequiredArgumentBuilder<ServerCommandSource, Integer> amount = CommandManager.argument("amount", IntegerArgumentType.integer());
+                amount.executes(context -> {
+                    ClaimManager.INSTANCE.addClaimBlocks(EntityArgumentType.getPlayer(context, "player").getGameProfile().getId(), -IntegerArgumentType.getInteger(context, "amount"));
+                    context.getSource().sendFeedback(new LiteralText("Took " + IntegerArgumentType.getInteger(context, "amount") + " claim blocks from " + EntityArgumentType.getPlayer(context, "player").getGameProfile().getName()).formatted(Formatting.GREEN), true);
+                    return 0;
+                });
+                player.then(amount);
+                remove.then(player);
+                admin.then(remove);
+            }
+            {
+                LiteralArgumentBuilder<ServerCommandSource> set = CommandManager.literal("set_blocks");
+                set.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.modify_balance", 4));
+                RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = CommandManager.argument("player", EntityArgumentType.player());
+                RequiredArgumentBuilder<ServerCommandSource, Integer> amount = CommandManager.argument("amount", IntegerArgumentType.integer());
+                amount.executes(context -> {
+                    ClaimManager.INSTANCE.setClaimBlocks(EntityArgumentType.getPlayer(context, "player").getGameProfile().getId(), IntegerArgumentType.getInteger(context, "amount"));
+                    context.getSource().sendFeedback(new LiteralText("Set " + EntityArgumentType.getPlayer(context, "player").getGameProfile().getName() + "'s claim block amount to " + IntegerArgumentType.getInteger(context, "amount")).formatted(Formatting.GREEN), true);
+                    return 0;
+                });
+                player.then(amount);
+                set.then(player);
+                admin.then(set);
+            }
+            {
+                LiteralArgumentBuilder<ServerCommandSource> delete = CommandManager.literal("destroy");
+                delete.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.destroy", 4));
+                RequiredArgumentBuilder<ServerCommandSource, String> claim = CommandManager.argument("claim", StringArgumentType.word());
+                LiteralArgumentBuilder<ServerCommandSource> confirm = CommandManager.literal("confirm");
+                confirm.executes(context -> delete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")), true));
+                claim.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")), true));
+                claim.then(confirm);
+                delete.then(claim);
+                delete.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition())), true));
+                admin.then(delete);
+            }
+            command.then(admin);
+        }
         dispatcher.register(command);
     }
     
@@ -163,7 +222,7 @@ public class ClaimCommand {
         Claim claim = new Claim(name, ownerID, min, max);
         if (!ClaimManager.INSTANCE.wouldIntersect(claim)) {
             // works because only the first statemet is evaluated if true
-            if ((ignoreLimits && Thimble.hasPermissionOrOp(owner, "itsmine.infiniteblocks", 4)) || ClaimManager.INSTANCE.useClaimBlocks(ownerID, subInt)) {
+            if ((ignoreLimits && Thimble.hasPermissionOrOp(owner, "itsmine.admin.infinite_blocks", 4)) || ClaimManager.INSTANCE.useClaimBlocks(ownerID, subInt)) {
                 ClaimManager.INSTANCE.addClaim(claim);
                 owner.sendFeedback(new LiteralText("").append(new LiteralText("Your claim was created.").formatted(Formatting.GREEN)).append(new LiteralText("(Area: " + sub.getX() + "x" + sub.getY() + "x" + sub.getZ() + ")").setStyle(new Style()
                         .setColor(Formatting.GREEN).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(subInt + " blocks").formatted(Formatting.YELLOW))))), false);
@@ -182,13 +241,13 @@ public class ClaimCommand {
                 .setColor(Formatting.YELLOW).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Area of " + ItsMine.blocksToAreaString(ClaimManager.INSTANCE.getClaimBlocks(player))).formatted(Formatting.YELLOW)))), false);
         return 0;
     }
-    private static int requestDelete(ServerCommandSource sender, Claim claim) throws CommandSyntaxException {
+    private static int requestDelete(ServerCommandSource sender, Claim claim, boolean admin) throws CommandSyntaxException {
         if (claim == null) {
             sender.sendFeedback(new LiteralText("That claim does not exist.").formatted(Formatting.RED), false);
             return 0;
         }
         if (claim.owner != sender.getPlayer().getGameProfile().getId()) {
-            if (Thimble.hasPermissionOrOp(sender, "itsmine.delete_others", 4)) {
+            if (admin && Thimble.hasPermissionOrOp(sender, "itsmine.admin.delete_others", 4)) {
                 sender.sendFeedback(new LiteralText("WARNING: This is not your claim.").formatted(Formatting.DARK_RED, Formatting.BOLD), false);
             } else {
                 sender.sendFeedback(new LiteralText("That is not your claim.").formatted(Formatting.RED), false);
@@ -199,16 +258,16 @@ public class ClaimCommand {
                 .append(new LiteralText("[I'M SURE]").setStyle(new Style()
                         .setColor(Formatting.DARK_RED)
                         .setBold(true)
-                        .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/claim destroy " + claim.name + " confirm")))), false);
+                        .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, (admin ? "/claim" : "/claim admin") + " destroy " + claim.name + " confirm")))), false);
         return 0;
     }
-    private static int delete(ServerCommandSource sender, Claim claim) throws CommandSyntaxException {
+    private static int delete(ServerCommandSource sender, Claim claim, boolean admin) throws CommandSyntaxException {
         if (claim == null) {
             sender.sendFeedback(new LiteralText("That claim does not exist.").formatted(Formatting.RED), false);
             return 0;
         }
         if (claim.owner != sender.getPlayer().getGameProfile().getId()) {
-            if (Thimble.hasPermissionOrOp(sender, "itsmine.delete_others", 4)) {
+            if (admin && Thimble.hasPermissionOrOp(sender, "itsmine.admin.delete_others", 4)) {
                 sender.sendFeedback(new LiteralText("Deleting a claim belonging to somebody else.").formatted(Formatting.DARK_RED, Formatting.BOLD), false);
             } else {
                 sender.sendFeedback(new LiteralText("That is not your claim.").formatted(Formatting.RED), false);
