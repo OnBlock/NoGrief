@@ -20,6 +20,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.ClickEvent;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
@@ -78,6 +79,23 @@ public class ClaimCommand {
             check.executes(ctx -> checkPlayer(ctx.getSource(), ctx.getSource().getPlayer().getGameProfile().getId()));
             command.then(check);
         }
+        {
+            LiteralArgumentBuilder<ServerCommandSource> delete = CommandManager.literal("destroy");
+            RequiredArgumentBuilder<ServerCommandSource, String> claim = CommandManager.argument("claim", StringArgumentType.word());
+            LiteralArgumentBuilder<ServerCommandSource> confirm = CommandManager.literal("confirm");
+            confirm.executes(context -> delete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"))));
+            claim.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"))));
+            claim.then(confirm);
+            delete.then(claim);
+            delete.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition()))));
+            command.then(delete);
+        }
+        {
+            LiteralArgumentBuilder<ServerCommandSource> info = CommandManager.literal("info");
+            RequiredArgumentBuilder<ServerCommandSource, String> claim = CommandManager.argument("claim", StringArgumentType.word());
+            //TODO
+        }
+
         dispatcher.register(command);
     }
     
@@ -162,6 +180,49 @@ public class ClaimCommand {
         int blocks = ClaimManager.INSTANCE.getClaimBlocks(player);
         ret.sendFeedback(new LiteralText((ret.getPlayer().getGameProfile().getId().equals(player) ? "You have " : "They have ") + ClaimManager.INSTANCE.getClaimBlocks(player) + " blocks left").setStyle(new Style()
                 .setColor(Formatting.YELLOW).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Area of " + ItsMine.blocksToAreaString(ClaimManager.INSTANCE.getClaimBlocks(player))).formatted(Formatting.YELLOW)))), false);
+        return 0;
+    }
+    private static int requestDelete(ServerCommandSource sender, Claim claim) throws CommandSyntaxException {
+        if (claim == null) {
+            sender.sendFeedback(new LiteralText("That claim does not exist.").formatted(Formatting.RED), false);
+            return 0;
+        }
+        if (claim.owner != sender.getPlayer().getGameProfile().getId()) {
+            if (Thimble.hasPermissionOrOp(sender, "itsmine.delete_others", 4)) {
+                sender.sendFeedback(new LiteralText("WARNING: This is not your claim.").formatted(Formatting.DARK_RED, Formatting.BOLD), false);
+            } else {
+                sender.sendFeedback(new LiteralText("That is not your claim.").formatted(Formatting.RED), false);
+                return 0;
+            }
+        }
+        sender.sendFeedback(new LiteralText("").append(new LiteralText("Are you sure you want to delete the claim \"" + claim.name + "\"? ").formatted(Formatting.GOLD))
+                .append(new LiteralText("[I'M SURE]").setStyle(new Style()
+                        .setColor(Formatting.DARK_RED)
+                        .setBold(true)
+                        .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/claim destroy " + claim.name + " confirm")))), false);
+        return 0;
+    }
+    private static int delete(ServerCommandSource sender, Claim claim) throws CommandSyntaxException {
+        if (claim == null) {
+            sender.sendFeedback(new LiteralText("That claim does not exist.").formatted(Formatting.RED), false);
+            return 0;
+        }
+        if (claim.owner != sender.getPlayer().getGameProfile().getId()) {
+            if (Thimble.hasPermissionOrOp(sender, "itsmine.delete_others", 4)) {
+                sender.sendFeedback(new LiteralText("Deleting a claim belonging to somebody else.").formatted(Formatting.DARK_RED, Formatting.BOLD), false);
+            } else {
+                sender.sendFeedback(new LiteralText("That is not your claim.").formatted(Formatting.RED), false);
+                return 0;
+            }
+        }
+        ClaimManager.INSTANCE.releaseBlocksToOwner(claim);
+        ClaimManager.INSTANCE.claimsByName.remove(claim.name);
+        sender.sendFeedback(new LiteralText("Deleted the claim \"" + claim.name + "\"").formatted(Formatting.GREEN), claim.owner != sender.getPlayer().getGameProfile().getId());
+        return 0;
+    }
+    private static int showClaimInfo(ServerCommandSource sender, Claim claim) {
+        sender.sendFeedback(new LiteralText("Claim Name: " + claim.name), false);
+        //sender.sendFeedback(new LiteralText("Owner")); // how to do this...
         return 0;
     }
 }

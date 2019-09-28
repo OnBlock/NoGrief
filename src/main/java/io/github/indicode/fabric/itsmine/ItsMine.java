@@ -19,7 +19,8 @@ public class ItsMine implements ModInitializer {
         Thimble.permissionWriters.add(pair -> {
             try {
                 pair.getLeft().getPermission("itsmine.infinite_blocks", CommandPermission.class);
-                pair.getLeft().getPermission("itsmine.checkothers", CommandPermission.class);
+                pair.getLeft().getPermission("itsmine.check_others", CommandPermission.class);
+                pair.getLeft().getPermission("itsmine.delete_others", CommandPermission.class);
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
                 System.err.println("Claim permissions could not be loaded:");
                 e.printStackTrace();

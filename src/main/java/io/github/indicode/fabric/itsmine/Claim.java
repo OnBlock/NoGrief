@@ -94,7 +94,7 @@ public class Claim {
         this.max = this.max.add(max);
     }
     public BlockPos getSize() {
-        return min.subtract(max);
+        return max.subtract(min);
     }
     public void expand(BlockPos modifier) {
         (modifier.getX() > 0 ? max : min).add(modifier.getX(), 0, 0);
@@ -103,6 +103,9 @@ public class Claim {
     }
     public void expand(Direction direction, int distance) {
         expand(new BlockPos(direction.getOffsetX() * distance, direction.getOffsetY() * distance, direction.getOffsetZ() * distance));
+    }
+    public int getArea() {
+        return getSize().getX() * getSize().getY() * getSize().getZ();
     }
     public CompoundTag toTag() {
         CompoundTag tag =  new CompoundTag();

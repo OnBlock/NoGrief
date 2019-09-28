@@ -2,6 +2,7 @@ package io.github.indicode.fabric.itsmine;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
 import javax.naming.Name;
@@ -24,6 +25,9 @@ public class ClaimManager {
         if (blocks < 0) return false;
         blocksLeft.put(player, blocks);
         return true;
+    }
+    public void releaseBlocksToOwner(Claim claim) {
+        blocksLeft.put(claim.owner, getClaimBlocks(claim.owner) + claim.getArea());
     }
     public HashMap<String, Claim> claimsByName = new HashMap<>();
     public List<Claim> getPlayerClaims(UUID id) {
