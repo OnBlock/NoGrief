@@ -1,6 +1,7 @@
 package io.github.indicode.fabric.itsmine;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
@@ -84,7 +85,53 @@ public class ClaimCommand {
         {
             LiteralArgumentBuilder<ServerCommandSource> info = CommandManager.literal("info");
             RequiredArgumentBuilder<ServerCommandSource, String> claim = CommandManager.argument("claim", StringArgumentType.word());
+
             //TODO
+        }
+        {
+            LiteralArgumentBuilder<ServerCommandSource> exceptions = CommandManager.literal("exceptions");
+            RequiredArgumentBuilder<ServerCommandSource, String> claim = CommandManager.argument("claim", StringArgumentType.word());
+            RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = CommandManager.argument("player", EntityArgumentType.player());
+            for (Claim.ClaimPermissions.Permission value : Claim.ClaimPermissions.Permission.values()) {
+                LiteralArgumentBuilder<ServerCommandSource> permNode = CommandManager.literal(value.id);
+                RequiredArgumentBuilder<ServerCommandSource, Boolean> allow = CommandManager.argument("allow", BoolArgumentType.bool());
+                allow.executes(context -> {
+                    Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
+                    if (claim1 == null) {
+                        context.getSource().sendFeedback(new LiteralText("That claim does not exist.").formatted(Formatting.RED), false);
+                        return 0;
+                    }
+                    if (!context.getSource().getPlayer().getGameProfile().getId().equals(claim1.owner)) {
+                        context.getSource().sendFeedback(new LiteralText("You are not the owner of this claim.").formatted(Formatting.RED), false);
+                        return 0;
+                    }
+                    ServerPlayerEntity player1 = EntityArgumentType.getPlayer(context, "player");
+                    boolean permission = BoolArgumentType.getBool(context, "allow");
+                    modifyException(claim1, player1, value, permission);
+                    context.getSource().sendFeedback(new LiteralText(player1.getGameProfile().getName() + (permission ? " now" : " no longer") + " has the permission " + value.name).formatted(Formatting.YELLOW), false);
+                    return 0;
+                });
+                permNode.executes(context -> {
+                    Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
+                    if (claim1 == null) {
+                        context.getSource().sendFeedback(new LiteralText("That claim does not exist.").formatted(Formatting.RED), false);
+                        return 0;
+                    }
+                    if (!context.getSource().getPlayer().getGameProfile().getId().equals(claim1.owner)) {
+                        context.getSource().sendFeedback(new LiteralText("You are not the owner of this claim.").formatted(Formatting.RED), false);
+                        return 0;
+                    }
+                    ServerPlayerEntity player1 = EntityArgumentType.getPlayer(context, "player");
+                    boolean permission = hasPermission(claim1, player1, value);
+                    context.getSource().sendFeedback(new LiteralText(player1.getGameProfile().getName() + (permission ? " does" : " does not") + " have the permission " + value.name).formatted(Formatting.YELLOW), false);
+                    return 0;
+                });
+                permNode.then(allow);
+                player.then(permNode);
+            }
+            claim.then(player);
+            exceptions.then(claim);
+            command.then(exceptions);
         }
         {
             LiteralArgumentBuilder<ServerCommandSource> admin = CommandManager.literal("admin");
@@ -305,5 +352,28 @@ public class ClaimCommand {
         sender.sendFeedback(new LiteralText("Claim Name: " + claim.name), false);
         //sender.sendFeedback(new LiteralText("Owner")); // how to do this...
         return 0;
+    }
+    private static int modifyException(Claim claim, ServerPlayerEntity exception, Claim.ClaimPermissions.Permission permission, boolean allowed) {
+        UUID exceptionID = exception.getGameProfile().getId();
+        Claim.ClaimPermissions permissions;
+        if(claim.permssionsMap.containsKey(exceptionID)) {
+            permissions = claim.permssionsMap.get(exceptionID);
+        } else {
+            permissions = claim.initializePermissions();
+            claim.permssionsMap.put(exceptionID, permissions);
+        }
+        permissions.setPermission(permission, allowed);
+        return 0;
+    }
+    private static boolean hasPermission(Claim claim, ServerPlayerEntity exception, Claim.ClaimPermissions.Permission permission) {
+        UUID exceptionID = exception.getGameProfile().getId();
+        Claim.ClaimPermissions permissions;
+        if(claim.permssionsMap.containsKey(exceptionID)) {
+            permissions = claim.permssionsMap.get(exceptionID);
+        } else {
+            permissions = claim.initializePermissions();
+            claim.permssionsMap.put(exceptionID, permissions);
+        }
+        return permissions.hasPermission(permission);
     }
 }

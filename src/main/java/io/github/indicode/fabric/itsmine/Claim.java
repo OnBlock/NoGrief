@@ -78,7 +78,12 @@ public class Claim {
         Claim at = getZoneCovering(pos);
         if (at != null) {
             return at.getPlayerPermissions(player);
-        } else return null;
+        } else return settings;
+    }
+    public ClaimPermissions initializePermissions() {
+        ClaimPermissions permissions = new ClaimPermissions();
+        permissions.fromTag(settings.toTag().getCompound("permissions"));
+        return permissions;
     }
     public ClaimPermissions getPlayerPermissions(UUID player) {
         if (permssionsMap.containsKey(player)) return permssionsMap.get(player);
@@ -162,7 +167,7 @@ public class Claim {
         {
             this.settings = new ClaimSettings(tag.getCompound("settings"));
             this.permssionsMap = new HashMap<>();
-            CompoundTag permissions = new CompoundTag();
+            CompoundTag permissions = tag.getCompound("permissions");
             permissions.getKeys().forEach(key -> permssionsMap.put(UUID.fromString(key), new ClaimPermissions(permissions.getCompound(key))));
             this.owner = tag.getUuid("owner");
         }
@@ -176,6 +181,12 @@ public class Claim {
             Permission(String id, String name) {
                 this.id = id;
                 this.name =  name;
+            }
+            public static Permission byId(String id) {
+                for (Permission permission: values()) {
+                    if (permission.id.equals(id)) return permission;
+                }
+                return null;
             }
         }
         protected  List<Permission> perms = new ArrayList<>();
@@ -193,7 +204,9 @@ public class Claim {
         }
         public void fromTag(CompoundTag tag) {
             perms.clear();
-            if (tag.containsKey("permissions")) ((ListTag)tag.getTag("permissions")).forEach(key -> perms.add(Permission.valueOf(key.toString())));
+            ((ListTag)tag.getTag("permissions")).forEach(key -> {
+                perms.add(Permission.byId(key.asString()));
+            });
         }
         public boolean hasPermission(Permission permission) {
             return perms.contains(permission);
