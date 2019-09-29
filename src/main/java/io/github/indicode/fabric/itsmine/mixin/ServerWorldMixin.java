@@ -27,8 +27,8 @@ public abstract class ServerWorldMixin {
     public void canMine(PlayerEntity player, BlockPos blockPos_1, CallbackInfoReturnable ci) {
         Claim claim = ClaimManager.INSTANCE.getClaimAt(blockPos_1, player.getEntityWorld().getDimension().getType());
         if (claim != null) {
-            if (!claim.hasPermission(player.getGameProfile().getId(), Claim.ClaimPermissions.Permission.MODIFY_WORLD)) {
-                player.sendMessage(new LiteralText("").append(new LiteralText("You can't use that here. You are in a claim. ").formatted(Formatting.RED)).append(new LiteralText("(Use /claim show to see an outline)").formatted(Formatting.YELLOW)));
+            if (!claim.hasPermission(player.getGameProfile().getId(), Claim.ClaimPermissions.Permission.SPAWN_PROTECT)) {
+                player.sendMessage(new LiteralText("").append(new LiteralText("You can't use that here. This claim is spawn-protected").formatted(Formatting.RED)).append(new LiteralText("(Use /claim show to see an outline)").formatted(Formatting.YELLOW)));
                 ci.setReturnValue(false);
             }
         }

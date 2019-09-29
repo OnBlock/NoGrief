@@ -1,6 +1,7 @@
 package io.github.indicode.fabric.itsmine;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -30,6 +31,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author Indigo Amann
@@ -149,6 +151,54 @@ public class ClaimCommand {
             claim.then(player);
             exceptions.then(claim);
             command.then(exceptions);
+        }
+        {
+            LiteralArgumentBuilder<ServerCommandSource> settings = CommandManager.literal("settings");
+            RequiredArgumentBuilder<ServerCommandSource, String> claim = CommandManager.argument("claim", StringArgumentType.word());
+            for (Claim.ClaimSettings.Setting setting: Claim.ClaimSettings.Setting.values()) {
+                LiteralArgumentBuilder<ServerCommandSource> arg = CommandManager.literal(setting.id);
+                arg.executes(context -> {
+                    Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
+                    if (claim1 == null) {
+                        context.getSource().sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
+                        return 0;
+                    }
+                    if (!context.getSource().getPlayer().getGameProfile().getId().equals(claim1.owner)) {
+                        context.getSource().sendFeedback(new LiteralText("You are not the owner of this claim").formatted(Formatting.RED), false);
+                        return 0;
+                    }
+                    AtomicReference<String> stringify = new AtomicReference<>();
+                    setting.stringifier.accept(claim1.settings.getSetting(setting), stringify);
+                    context.getSource().sendFeedback(new LiteralText(setting.name + " is equal to " + stringify.get()).formatted(Formatting.YELLOW), false);
+                    return 0;
+                });
+                AtomicReference<ArgumentType> ref = new AtomicReference<>();
+                setting.argumentType.accept(ref);
+                RequiredArgumentBuilder<ServerCommandSource, ?> setter = CommandManager.argument("value", ref.get());
+                setter.executes(context -> {
+                    Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
+                    if (claim1 == null) {
+                        context.getSource().sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
+                        return 0;
+                    }
+                    if (!context.getSource().getPlayer().getGameProfile().getId().equals(claim1.owner)) {
+                        context.getSource().sendFeedback(new LiteralText("You are not the owner of this claim").formatted(Formatting.RED), false);
+                        return 0;
+                    }
+                    AtomicReference data = new AtomicReference();
+                    data.set("value");
+                    setting.parser.accept(context, data);
+                    claim1.settings.settings.put(setting, data.get());
+                    AtomicReference<String> stringify = new AtomicReference<>();
+                    setting.stringifier.accept(data.get(), stringify);
+                    context.getSource().sendFeedback(new LiteralText(setting.name + " is now equal to " + stringify.get()).formatted(Formatting.GREEN), false);
+                    return 0;
+                });
+                arg.then(setter);
+                claim.then(arg);
+            }
+            settings.then(claim);
+            command.then(settings);
         }
         {
             LiteralArgumentBuilder<ServerCommandSource> admin = CommandManager.literal("admin");

@@ -1,15 +1,26 @@
 package io.github.indicode.fabric.itsmine;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.ArgumentType;
+import com.mojang.brigadier.arguments.BoolArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.ArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
+import jdk.nashorn.internal.objects.annotations.Getter;
+import net.minecraft.nbt.*;
+import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.dimension.Dimension;
 import net.minecraft.world.dimension.DimensionType;
 
+import javax.xml.crypto.Data;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * @author Indigo Amann
@@ -184,7 +195,7 @@ public class Claim {
 
     public static class ClaimPermissions {
         public enum Permission {
-            MODIFY_WORLD("modify_world", "Modify Blocks");
+            SPAWN_PROTECT("modify_world", "Spawn Protection");
             String id, name;
             Permission(String id, String name) {
                 this.id = id;
@@ -232,18 +243,90 @@ public class Claim {
         }
     }
     public static class ClaimSettings extends ClaimPermissions{
+        private static class SettingData { // Wdym overcomplicated...
+            private static BiConsumer<Object, AtomicReference<Tag>> BOOL_WRITER = (data, ref) -> {
+                CompoundTag compat = new CompoundTag();
+                compat.putBoolean("it", (Boolean) data);
+                ref.set(compat.getTag("it"));
+            };
+            private static BiConsumer<Tag, AtomicReference> BOOL_READER = (data, ref) -> ref.set(((ByteTag) data).getByte() != 0);
+            private static Consumer<AtomicReference<ArgumentType>> BOOL_ARGUMENT = ref -> ref.set(BoolArgumentType.bool());
+            private static BiConsumer<CommandContext<ServerCommandSource>, AtomicReference> BOOL_PARSER = (context, ref) -> ref.set(BoolArgumentType.getBool(context, (String)ref.get()));
+            private static BiConsumer<Object, AtomicReference<Tag>> STRING_WRITER = (data, ref) -> {
+                CompoundTag compat = new CompoundTag();
+                compat.putString("it", (String) data);
+                ref.set(compat.getTag("it"));
+            };
+            private static BiConsumer<Tag, AtomicReference> STRING_READER = (data, ref) -> ref.set(data.asString());
+            private static Consumer<AtomicReference<ArgumentType>> GREEDY_STRING_ARGUMENT = ref -> ref.set(StringArgumentType.greedyString());
+            private static BiConsumer<CommandContext<ServerCommandSource>, AtomicReference> STRING_PARSER = (context, ref) -> ref.set(StringArgumentType.getString(context, (String)ref.get()));
+            private static BiConsumer<Object, AtomicReference<String>> TOSTRING_STRINGIFIER = (data, ref) -> ref.set(data.toString());
+        }
+        public enum Setting {
+
+            EXPLOSIONS("explosions", "Explosions", SettingData.BOOL_WRITER, SettingData.BOOL_READER, SettingData.BOOL_ARGUMENT, SettingData.BOOL_PARSER, SettingData.TOSTRING_STRINGIFIER, false);
+
+            String id, name;
+            BiConsumer<Object, AtomicReference<Tag>> writer;
+            BiConsumer<Tag, AtomicReference> reader;
+            Consumer<AtomicReference<ArgumentType>> argumentType;
+            BiConsumer<CommandContext<ServerCommandSource>, AtomicReference> parser;
+            BiConsumer<Object, AtomicReference<String>> stringifier;
+            Object defaultValue;
+            Setting(String id, String name, BiConsumer<Object, AtomicReference<Tag>> writer,
+                    BiConsumer<Tag, AtomicReference> reader,
+                    Consumer<AtomicReference<ArgumentType>> argumentType,
+                    BiConsumer<CommandContext<ServerCommandSource>, AtomicReference> parser,
+                    BiConsumer<Object, AtomicReference<String>> stringifer,
+                    Object defaultValue) {
+                this.id = id;
+                this.name =  name;
+                this.argumentType = argumentType;
+                this.parser = parser;
+                this.writer = writer;
+                this.reader = reader;
+                this.stringifier = stringifer;
+                this.defaultValue = defaultValue;
+            }
+            public static ClaimSettings.Setting byId(String id) {
+                for (ClaimSettings.Setting permission: values()) {
+                    if (permission.id.equals(id)) return permission;
+                }
+                return null;
+            }
+        }
+        public  Map<Setting, Object> settings = new HashMap<>();
         public ClaimSettings(CompoundTag tag) {
             fromTag(tag);
         }
         public ClaimSettings() {
         }
+        public Object getSetting(Setting setting) {
+            return settings.getOrDefault(setting, setting.defaultValue);
+        }
         public CompoundTag toTag() {
             CompoundTag tag =  new CompoundTag();
             tag.put("permissions", super.toTag());
+            CompoundTag settings = new CompoundTag();
+            this.settings.forEach((setting, data) -> {
+                AtomicReference<Tag> writer = new AtomicReference<>();
+                setting.writer.accept(data, writer);
+                settings.put(setting.id, writer.get());
+            });
+            tag.put("settings", settings);
             return tag;
         }
         public void fromTag(CompoundTag tag) {
             super.fromTag(tag.getCompound("permissions"));
+            settings.clear();
+            CompoundTag settings = tag.getCompound("settings");
+            settings.getKeys().forEach(key -> {
+                Setting setting = Setting.byId(key);
+                Tag value = settings.getTag(key);
+                AtomicReference data = new AtomicReference();
+                setting.reader.accept(value, data);
+                this.settings.put(setting, data);
+            });
         }
     }
 }
