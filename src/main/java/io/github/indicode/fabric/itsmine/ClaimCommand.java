@@ -197,6 +197,41 @@ public class ClaimCommand {
                 arg.then(setter);
                 claim.then(arg);
             }
+            for (Claim.ClaimPermissions.Permission value : Claim.ClaimPermissions.Permission.values()) {
+                LiteralArgumentBuilder<ServerCommandSource> permNode = CommandManager.literal(value.id);
+                RequiredArgumentBuilder<ServerCommandSource, Boolean> allow = CommandManager.argument("allow", BoolArgumentType.bool());
+                allow.executes(context -> {
+                    Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
+                    if (claim1 == null) {
+                        context.getSource().sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
+                        return 0;
+                    }
+                    if (!context.getSource().getPlayer().getGameProfile().getId().equals(claim1.owner)) {
+                        context.getSource().sendFeedback(new LiteralText("You are not the owner of this claim").formatted(Formatting.RED), false);
+                        return 0;
+                    }
+                    boolean permission = BoolArgumentType.getBool(context, "allow");
+                    claim1.settings.setPermission(value, permission);
+                    context.getSource().sendFeedback(new LiteralText("Players" + (permission ? " now" : " no longer") + " have the permission " + value.name).formatted(Formatting.YELLOW), false);
+                    return 0;
+                });
+                permNode.executes(context -> {
+                    Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
+                    if (claim1 == null) {
+                        context.getSource().sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
+                        return 0;
+                    }
+                    if (!context.getSource().getPlayer().getGameProfile().getId().equals(claim1.owner)) {
+                        context.getSource().sendFeedback(new LiteralText("You are not the owner of this claim").formatted(Formatting.RED), false);
+                        return 0;
+                    }
+                    boolean permission = claim1.settings.hasPermission(value);
+                    context.getSource().sendFeedback(new LiteralText("Players" + (permission ? " does" : " does not") + " have the permission " + value.name).formatted(Formatting.YELLOW), false);
+                    return 0;
+                });
+                permNode.then(allow);
+                claim.then(permNode);
+            }
             settings.then(claim);
             command.then(settings);
         }
