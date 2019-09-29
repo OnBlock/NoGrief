@@ -225,7 +225,7 @@ public class ClaimCommand {
         }
         dispatcher.register(command);
     }
-    
+
     private static int showClaim(ServerCommandSource source, Claim claim) throws CommandSyntaxException {
         ServerPlayerEntity player = source.getPlayer();
         if (claim != null) {
@@ -315,7 +315,7 @@ public class ClaimCommand {
             sender.sendFeedback(new LiteralText("That claim does not exist.").formatted(Formatting.RED), false);
             return 0;
         }
-        if (claim.owner != sender.getPlayer().getGameProfile().getId()) {
+        if (claim.owner.equals(sender.getPlayer().getGameProfile().getId())) {
             if (admin && Thimble.hasPermissionOrOp(sender, "itsmine.admin.delete_others", 4)) {
                 sender.sendFeedback(new LiteralText("WARNING: This is not your claim.").formatted(Formatting.DARK_RED, Formatting.BOLD), false);
             } else {
@@ -335,7 +335,7 @@ public class ClaimCommand {
             sender.sendFeedback(new LiteralText("That claim does not exist.").formatted(Formatting.RED), false);
             return 0;
         }
-        if (claim.owner != sender.getPlayer().getGameProfile().getId()) {
+        if (claim.owner.equals(sender.getPlayer().getGameProfile().getId())) {
             if (admin && Thimble.hasPermissionOrOp(sender, "itsmine.admin.destroy", 4)) {
                 sender.sendFeedback(new LiteralText("Deleting a claim belonging to somebody else.").formatted(Formatting.DARK_RED, Formatting.BOLD), false);
             } else {
