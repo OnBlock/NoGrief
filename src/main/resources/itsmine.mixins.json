@@ -9,7 +9,10 @@
     "BlockUpdatePacketMixin",
 
     "ServerWorldMixin",
-    "ExplosionMixin"
+    "ExplosionMixin",
+    "PlayerEntityMixin",
+    "ServerPlayNetworkHandlerMixin",
+    "ProjectileEntityMixin"
   ],
   "client": [
     "IntegratedServerMixin"
