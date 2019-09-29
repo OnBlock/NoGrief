@@ -24,7 +24,7 @@ public class ServerPlayNetworkHandlerMixin {
         Claim claim = ClaimManager.INSTANCE.getClaimAt(entity.getBlockPos(), entity.world.getDimension().getType());
         if (claim != null) {
             if (!claim.getPermissionsAt(playerEntity_1.getGameProfile().getId(), entity.getBlockPos()).hasPermission(Claim.ClaimPermissions.Permission.ENTITY_INTERACT)) {
-                playerEntity_1.sendMessage(new LiteralText("").append(new LiteralText("You are in a claim that does not allow you to interact with entities.").formatted(Formatting.RED)).append(new LiteralText("(Use /claim show to see an outline)").formatted(Formatting.YELLOW)));
+                playerEntity_1.sendMessage(new LiteralText("").append(new LiteralText("You are in a claim that does not allow you to interact with entities").formatted(Formatting.RED)).append(new LiteralText("(Use /claim show to see an outline)").formatted(Formatting.YELLOW)));
                 return ActionResult.FAIL;
             }
         }
