@@ -115,11 +115,11 @@ public class ClaimCommand {
                 allow.executes(context -> {
                     Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
                     if (claim1 == null) {
-                        context.getSource().sendFeedback(new LiteralText("That claim does not exist.").formatted(Formatting.RED), false);
+                        context.getSource().sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
                         return 0;
                     }
                     if (!context.getSource().getPlayer().getGameProfile().getId().equals(claim1.owner)) {
-                        context.getSource().sendFeedback(new LiteralText("You are not the owner of this claim.").formatted(Formatting.RED), false);
+                        context.getSource().sendFeedback(new LiteralText("You are not the owner of this claim").formatted(Formatting.RED), false);
                         return 0;
                     }
                     ServerPlayerEntity player1 = EntityArgumentType.getPlayer(context, "player");
@@ -131,11 +131,11 @@ public class ClaimCommand {
                 permNode.executes(context -> {
                     Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
                     if (claim1 == null) {
-                        context.getSource().sendFeedback(new LiteralText("That claim does not exist.").formatted(Formatting.RED), false);
+                        context.getSource().sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
                         return 0;
                     }
                     if (!context.getSource().getPlayer().getGameProfile().getId().equals(claim1.owner)) {
-                        context.getSource().sendFeedback(new LiteralText("You are not the owner of this claim.").formatted(Formatting.RED), false);
+                        context.getSource().sendFeedback(new LiteralText("You are not the owner of this claim").formatted(Formatting.RED), false);
                         return 0;
                     }
                     ServerPlayerEntity player1 = EntityArgumentType.getPlayer(context, "player");
@@ -314,7 +314,7 @@ public class ClaimCommand {
             // works because only the first statemet is evaluated if true
             if ((ignoreLimits && Thimble.hasPermissionOrOp(owner, "itsmine.admin.infinite_blocks", 4)) || ClaimManager.INSTANCE.useClaimBlocks(ownerID, subInt)) {
                 ClaimManager.INSTANCE.addClaim(claim);
-                owner.sendFeedback(new LiteralText("").append(new LiteralText("Your claim was created.").formatted(Formatting.GREEN)).append(new LiteralText("(Area: " + sub.getX() + "x" + sub.getY() + "x" + sub.getZ() + ")").setStyle(new Style()
+                owner.sendFeedback(new LiteralText("").append(new LiteralText("Your claim was created").formatted(Formatting.GREEN)).append(new LiteralText("(Area: " + sub.getX() + "x" + sub.getY() + "x" + sub.getZ() + ")").setStyle(new Style()
                         .setColor(Formatting.GREEN).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(subInt + " blocks").formatted(Formatting.YELLOW))))), false);
                 checkPlayer(owner, owner.getPlayer().getGameProfile().getId());
                 if (ignoreLimits)owner.getMinecraftServer().sendMessage(new LiteralText(owner.getPlayer().getGameProfile().getName() + " Has created a new claim(" + claim.name + ") using the admin command."));
@@ -322,7 +322,7 @@ public class ClaimCommand {
                 owner.sendFeedback(new LiteralText("You don't have enough claim blocks. You have " + ClaimManager.INSTANCE.getClaimBlocks(ownerID) + ", you need " + subInt + "(" + (subInt - ClaimManager.INSTANCE.getClaimBlocks(ownerID)) + " more)").formatted(Formatting.RED), false);
             }
         } else {
-            owner.sendFeedback(new LiteralText("Your claim would overlap with another claim.").formatted(Formatting.RED), false);
+            owner.sendFeedback(new LiteralText("Your claim would overlap with another claim").formatted(Formatting.RED), false);
         }
         return 0;
     }
@@ -334,12 +334,12 @@ public class ClaimCommand {
     }
     private static int requestDelete(ServerCommandSource sender, Claim claim, boolean admin) throws CommandSyntaxException {
         if (claim == null) {
-            sender.sendFeedback(new LiteralText("That claim does not exist.").formatted(Formatting.RED), false);
+            sender.sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
             return 0;
         }
         if (!claim.owner.equals(sender.getPlayer().getGameProfile().getId())) {
             if (admin && Thimble.hasPermissionOrOp(sender, "itsmine.admin.delete_others", 4)) {
-                sender.sendFeedback(new LiteralText("WARNING: This is not your claim.").formatted(Formatting.DARK_RED, Formatting.BOLD), false);
+                sender.sendFeedback(new LiteralText("WARNING: This is not your claim...").formatted(Formatting.DARK_RED, Formatting.BOLD), false);
             } else {
                 sender.sendFeedback(new LiteralText("That is not your claim.").formatted(Formatting.RED), false);
                 return 0;
@@ -354,14 +354,14 @@ public class ClaimCommand {
     }
     private static int delete(ServerCommandSource sender, Claim claim, boolean admin) throws CommandSyntaxException {
         if (claim == null) {
-            sender.sendFeedback(new LiteralText("That claim does not exist.").formatted(Formatting.RED), false);
+            sender.sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
             return 0;
         }
         if (!claim.owner.equals(sender.getPlayer().getGameProfile().getId())) {
             if (admin && Thimble.hasPermissionOrOp(sender, "itsmine.admin.destroy", 4)) {
-                sender.sendFeedback(new LiteralText("Deleting a claim belonging to somebody else.").formatted(Formatting.DARK_RED, Formatting.BOLD), false);
+                sender.sendFeedback(new LiteralText("Deleting a claim belonging to somebody else").formatted(Formatting.DARK_RED, Formatting.BOLD), false);
             } else {
-                sender.sendFeedback(new LiteralText("That is not your claim.").formatted(Formatting.RED), false);
+                sender.sendFeedback(new LiteralText("That is not your claim").formatted(Formatting.RED), false);
                 return 0;
             }
         }
