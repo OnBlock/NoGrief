@@ -11,15 +11,20 @@ import net.minecraft.util.Hand;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * @author Indigo Amann
  */
 @Mixin(PlayerEntity.class)
 public abstract class PlayerEntityMixin {
+    @Shadow public abstract void attack(Entity entity_1);
+
     @Redirect(method = "interact", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;interact(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/Hand;)Z"))
     private boolean dontYouDareTouchMe(Entity entity, PlayerEntity playerEntity_1, Hand hand_1) {
+        if (entity.world.isClient()) return entity.interact(playerEntity_1, hand_1);
         Claim claim = ClaimManager.INSTANCE.getClaimAt(entity.getBlockPos(), entity.world.getDimension().getType());
         if (claim != null) {
             if (!claim.getPermissionsAt(playerEntity_1.getGameProfile().getId(), entity.getBlockPos()).hasPermission(Claim.ClaimPermissions.Permission.ENTITY_INTERACT)) {
@@ -28,5 +33,17 @@ public abstract class PlayerEntityMixin {
             }
         }
         return entity.interact(playerEntity_1, hand_1);
+    }
+    @Inject(method = "attack", at = @At("HEAD"), cancellable = true)
+    public void hittingIsRude(Entity entity, CallbackInfo ci) {
+        if (entity.world.isClient()) return;
+        PlayerEntity playerEntity_1 = (PlayerEntity)(Object)this;
+        Claim claim = ClaimManager.INSTANCE.getClaimAt(entity.getBlockPos(), entity.world.getDimension().getType());
+        if (claim != null) {
+            if (!claim.getPermissionsAt(playerEntity_1.getGameProfile().getId(), entity.getBlockPos()).hasPermission(Claim.ClaimPermissions.Permission.ENTITY_DAMAGE)) {
+                playerEntity_1.sendMessage(new LiteralText("").append(new LiteralText("You are in a claim that does not allow you to hurt entities.").formatted(Formatting.RED)).append(new LiteralText("(Use /claim show to see an outline)").formatted(Formatting.YELLOW)));
+                ci.cancel();
+            }
+        }
     }
 }
