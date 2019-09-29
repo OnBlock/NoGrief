@@ -327,7 +327,7 @@ public class Claim {
                 Tag value = settings.getTag(key);
                 AtomicReference data = new AtomicReference();
                 setting.reader.accept(value, data);
-                this.settings.put(setting, data);
+                this.settings.put(setting, data.get());
             });
         }
     }
