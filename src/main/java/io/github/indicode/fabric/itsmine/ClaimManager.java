@@ -95,6 +95,6 @@ public class ClaimManager {
         blocksLeft.clear();
         blocksLeftTag.getKeys().forEach(key -> blocksLeft.put(UUID.fromString(key), blocksLeftTag.getInt(key)));
         ListTag ignoringTag = (ListTag) tag.getTag("ignoring");
-        ignoringTag.forEach(it -> ignoringClaims.add(UUID.fromString(it.toString())));
+        ignoringTag.forEach(it -> ignoringClaims.add(UUID.fromString(it.asString())));
     }
 }
