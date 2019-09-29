@@ -265,7 +265,7 @@ public class Claim {
         }
         public enum Setting {
 
-            EXPLOSIONS("explosions", "Explosions", SettingData.BOOL_WRITER, SettingData.BOOL_READER, SettingData.BOOL_ARGUMENT, SettingData.BOOL_PARSER, SettingData.TOSTRING_STRINGIFIER, false);
+            EXPLOSIONS("explosion_destruction", "Explosions Destroy Blocks", SettingData.BOOL_WRITER, SettingData.BOOL_READER, SettingData.BOOL_ARGUMENT, SettingData.BOOL_PARSER, SettingData.TOSTRING_STRINGIFIER, false);
 
             String id, name;
             BiConsumer<Object, AtomicReference<Tag>> writer;
