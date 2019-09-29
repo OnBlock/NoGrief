@@ -3,8 +3,11 @@ package io.github.indicode.fabric.itsmine;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.world.dimension.Dimension;
+import net.minecraft.world.dimension.DimensionType;
 
 import java.util.*;
 
@@ -14,6 +17,7 @@ import java.util.*;
 public class Claim {
     public String name;
     public BlockPos min, max;
+    public DimensionType dimension;
     public Map<UUID, ClaimPermissions> permssionsMap = new HashMap();
     public List<Claim> children = new ArrayList<>();
     public ClaimSettings settings = new ClaimSettings();
@@ -24,11 +28,12 @@ public class Claim {
     public Claim(CompoundTag tag) {
         fromTag(tag);
     }
-    public Claim(String name, UUID owner, BlockPos min, BlockPos max) {
+    public Claim(String name, UUID owner, BlockPos min, BlockPos max, DimensionType dimension) {
         this.min = min;
         this.max = max;
         this.owner = owner;
         this.name = name;
+        this.dimension = dimension;
     }
     public boolean includesPosition(BlockPos pos) {
         return pos.getX() >= min.getX() && pos.getY() >= min.getY() && pos.getZ() >= min.getZ() &&
@@ -39,6 +44,7 @@ public class Claim {
     }
     public boolean intersects(Claim claim, boolean checkOther) {
         if (claim == null) return false;
+        if (!claim.dimension.equals(dimension)) return false;
         BlockPos a = min,
                 b = max,
                 c = new BlockPos(max.getX(), min.getY(), min.getZ()),
@@ -96,9 +102,9 @@ public class Claim {
         return player.equals(owner) || ClaimManager.INSTANCE.ignoringClaims.contains(player) || getPermissionsAt(player, pos).hasPermission(permission);
     }
     public void addSubzone(Claim claim) {
-        if (includesPosition(claim.min) && includesPosition(claim.max)) {
+        if (claim != null && claim.dimension == dimension && includesPosition(claim.min) && includesPosition(claim.max)) {
             children.add(claim);
-        } else throw new IllegalArgumentException("Subzone must be inside the original claim");
+        } else throw new IllegalArgumentException("Subzone must be inside the original claim, in the same dimension, and not null");
     }
     public void expand(BlockPos min, BlockPos max) {
         this.min = this.min.add(min);
@@ -128,6 +134,7 @@ public class Claim {
             pos.putInt("maxX", max.getX());
             pos.putInt("maxY", max.getY());
             pos.putInt("maxZ", max.getZ());
+            pos.putString("dimension", DimensionType.getId(dimension).toString());
             tag.put("position", pos);
         }
         {
@@ -156,6 +163,7 @@ public class Claim {
             int maxZ = pos.getInt("maxZ");
             this.min = new BlockPos(minX, minY, minZ);
             this.max = new BlockPos(maxX, maxY, maxZ);
+            this.dimension = DimensionType.byId(new Identifier(pos.getString("dimension")));
         }
         {
             children = new ArrayList<>();

@@ -25,7 +25,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class ServerWorldMixin {
     @Inject(method = "canPlayerModifyAt", at = @At("HEAD"), cancellable = true)
     public void canMine(PlayerEntity player, BlockPos blockPos_1, CallbackInfoReturnable ci) {
-        Claim claim = ClaimManager.INSTANCE.getClaimAt(blockPos_1);
+        Claim claim = ClaimManager.INSTANCE.getClaimAt(blockPos_1, player.getEntityWorld().getDimension().getType());
         if (claim != null) {
             if (!claim.hasPermission(player.getGameProfile().getId(), Claim.ClaimPermissions.Permission.MODIFY_WORLD)) {
                 player.sendMessage(new LiteralText("").append(new LiteralText("You can't use that here. You are in a claim. ").formatted(Formatting.RED)).append(new LiteralText("(Use /claim show to see an outline)").formatted(Formatting.YELLOW)));

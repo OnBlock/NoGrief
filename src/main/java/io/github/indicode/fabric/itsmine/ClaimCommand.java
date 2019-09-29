@@ -56,7 +56,7 @@ public class ClaimCommand {
         }
         {
             LiteralArgumentBuilder<ServerCommandSource> show = CommandManager.literal("show");
-            show.executes(context -> showClaim(context.getSource(), ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos())));
+            show.executes(context -> showClaim(context.getSource(), ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().dimension.getType())));
             RequiredArgumentBuilder<ServerCommandSource, String> name = CommandManager.argument("name", StringArgumentType.word());
             name.executes(context -> showClaim(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "name"))));
             show.then(name);
@@ -79,7 +79,7 @@ public class ClaimCommand {
             claim.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")), false));
             claim.then(confirm);
             delete.then(claim);
-            delete.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition())), false));
+            delete.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition()), context.getSource().getWorld().getDimension().getType()), false));
             command.then(delete);
         }
         {
@@ -187,7 +187,7 @@ public class ClaimCommand {
                 claim.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")), true));
                 claim.then(confirm);
                 delete.then(claim);
-                delete.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition())), true));
+                delete.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition()), context.getSource().getWorld().getDimension().getType()), true));
                 admin.then(delete);
             }
             {
@@ -229,6 +229,10 @@ public class ClaimCommand {
     private static int showClaim(ServerCommandSource source, Claim claim) throws CommandSyntaxException {
         ServerPlayerEntity player = source.getPlayer();
         if (claim != null) {
+            if (!claim.dimension.equals(source.getWorld().getDimension().getType())) {
+                source.sendFeedback(new LiteralText("That claim is not in this dimension").formatted(Formatting.RED), false);
+                return 0;
+            }
             source.sendFeedback(new LiteralText("Showing claim: " + claim.name).formatted(Formatting.GREEN), false);
             for (int x = claim.min.getX(); x < claim.max.getX(); x++) {
                 sendBlockPacket(player, new BlockPos(x, claim.min.getY(), claim.min.getZ()), Blocks.SPONGE.getDefaultState());
@@ -287,7 +291,8 @@ public class ClaimCommand {
         BlockPos sub = max.subtract(min);
         int subInt = sub.getX() * sub.getY() * sub.getZ();
         System.out.println("X" + sub.getX() + "Y" + sub.getY() + "Z" + sub.getZ() + "T" + subInt);
-        Claim claim = new Claim(name, ownerID, min, max);
+
+        Claim claim = new Claim(name, ownerID, min, max, owner.getWorld().getDimension().getType());
         if (!ClaimManager.INSTANCE.wouldIntersect(claim)) {
             // works because only the first statemet is evaluated if true
             if ((ignoreLimits && Thimble.hasPermissionOrOp(owner, "itsmine.admin.infinite_blocks", 4)) || ClaimManager.INSTANCE.useClaimBlocks(ownerID, subInt)) {

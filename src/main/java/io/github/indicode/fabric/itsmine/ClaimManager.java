@@ -5,6 +5,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.dimension.DimensionType;
 
 import javax.naming.Name;
 import java.util.ArrayList;
@@ -76,9 +77,9 @@ public class ClaimManager {
         tag.put("ignoring", ignoring);
         return tag;
     }
-    public Claim getClaimAt(BlockPos pos) {
+    public Claim getClaimAt(BlockPos pos, DimensionType dimension) {
         for (Claim claim : claimsByName.values()) {
-            if (claim.includesPosition(pos)) return claim;
+            if (claim.dimension.equals(dimension) && claim.includesPosition(pos)) return claim;
         }
         return null;
     }
