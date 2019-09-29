@@ -228,7 +228,8 @@ public class Claim {
         public void fromTag(CompoundTag tag) {
             perms.clear();
             ((ListTag)tag.getTag("permissions")).forEach(key -> {
-                perms.add(Permission.byId(key.asString()));
+                Permission perm = Permission.byId(key.asString());
+                if (perm != null) perms.add(perm);
             });
         }
         public boolean hasPermission(Permission permission) {
@@ -322,6 +323,7 @@ public class Claim {
             CompoundTag settings = tag.getCompound("settings");
             settings.getKeys().forEach(key -> {
                 Setting setting = Setting.byId(key);
+                if (setting == null) return;
                 Tag value = settings.getTag(key);
                 AtomicReference data = new AtomicReference();
                 setting.reader.accept(value, data);
