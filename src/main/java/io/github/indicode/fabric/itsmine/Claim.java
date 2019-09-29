@@ -198,7 +198,11 @@ public class Claim {
         public CompoundTag toTag() {
             CompoundTag tag =  new CompoundTag();
             ListTag listTag =  new ListTag();
-            perms.forEach(perm -> listTag.add(new StringTag(perm.id)));
+            CompoundTag tvargetter = new CompoundTag();
+            perms.forEach(perm -> {
+                tvargetter.putString("it", perm.id);
+                listTag.add(tvargetter.getTag("it"));
+            });
             tag.put("permissions", listTag);
             return tag;
         }

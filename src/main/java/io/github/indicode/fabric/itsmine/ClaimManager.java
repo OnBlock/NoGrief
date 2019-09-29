@@ -68,7 +68,11 @@ public class ClaimManager {
         blocksLeft.forEach((id, amount) -> blocksLeftTag.putInt(id.toString(), amount));
         tag.put("blocksLeft", blocksLeftTag);
         ListTag ignoring = new ListTag();
-        ignoringClaims.forEach(id -> ignoring.add(new StringTag(id.toString())));
+        CompoundTag tvargetter = new CompoundTag();
+        ignoringClaims.forEach(id -> {
+            tvargetter.putString("id", id.toString());
+            ignoring.add(tvargetter.getTag("id"));
+        });
         tag.put("ignoring", ignoring);
         return tag;
     }
