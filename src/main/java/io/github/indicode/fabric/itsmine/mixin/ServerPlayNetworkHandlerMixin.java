@@ -23,7 +23,7 @@ public class ServerPlayNetworkHandlerMixin {
     public ActionResult iSaidDontTouchMe(Entity entity, PlayerEntity playerEntity_1, Vec3d vec3d_1, Hand hand_1) {
         Claim claim = ClaimManager.INSTANCE.getClaimAt(entity.getBlockPos(), entity.world.getDimension().getType());
         if (claim != null) {
-            if (!claim.getPermissionsAt(playerEntity_1.getGameProfile().getId(), entity.getBlockPos()).hasPermission(Claim.ClaimPermissions.Permission.ENTITY_INTERACT)) {
+            if (!claim.hasPermissionAt(playerEntity_1.getGameProfile().getId(), Claim.ClaimPermissions.Permission.ENTITY_INTERACT, entity.getBlockPos())) {
                 playerEntity_1.sendMessage(new LiteralText("").append(new LiteralText("You are in a claim that does not allow you to interact with entities").formatted(Formatting.RED)).append(new LiteralText("(Use /claim show to see an outline)").formatted(Formatting.YELLOW)));
                 return ActionResult.FAIL;
             }
