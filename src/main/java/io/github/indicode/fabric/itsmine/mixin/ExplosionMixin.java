@@ -4,6 +4,7 @@ import io.github.indicode.fabric.itsmine.Claim;
 import io.github.indicode.fabric.itsmine.ClaimManager;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.explosion.Explosion;
@@ -23,5 +24,14 @@ public class ExplosionMixin {
             if (!(Boolean) claim.getSettingsAt(blockPos_1).getSetting(Claim.ClaimSettings.Setting.EXPLOSIONS)) return Blocks.BEDROCK.getDefaultState();
         }
         return world.getBlockState(blockPos_1);
+    }
+    @Redirect(method = "collectBlocksAndDamageEntities", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;isImmuneToExplosion()Z"))
+    private boolean claimDeniesExplosion(Entity entity) {
+        BlockPos blockPos_1 = entity.getBlockPos();
+        Claim claim = ClaimManager.INSTANCE.getClaimAt(blockPos_1, entity.world.getDimension().getType());
+        if (claim != null) {
+            if (!(Boolean) claim.getSettingsAt(blockPos_1).getSetting(Claim.ClaimSettings.Setting.EXPLOSIONS)) return true;
+        }
+        return entity.isImmuneToExplosion();
     }
 }
