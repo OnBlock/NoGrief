@@ -24,8 +24,6 @@ public class FluidMixin {
         BlockPos oldPos = newPos.offset(direction.getOpposite());
         Claim oldClaim = ClaimManager.INSTANCE.getClaimAt(oldPos, world.getDimension().getType());
         Claim newClaim = ClaimManager.INSTANCE.getClaimAt(newPos, world.getDimension().getType());
-        System.out.println(oldClaim + " " + newClaim);
-        System.out.println(oldPos + " " + newPos);
         if (oldClaim != newClaim) {
             if (oldClaim == null) {
                 if (!(Boolean) newClaim.settings.getSetting(Claim.ClaimSettings.Setting.FLUID_CROSSES_BORDERS)) ci.cancel();
