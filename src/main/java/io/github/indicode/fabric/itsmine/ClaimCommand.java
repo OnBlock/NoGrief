@@ -92,6 +92,23 @@ public class ClaimCommand {
             LiteralArgumentBuilder<ServerCommandSource> exceptions = CommandManager.literal("exceptions");
             RequiredArgumentBuilder<ServerCommandSource, String> claim = CommandManager.argument("claim", StringArgumentType.word());
             RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = CommandManager.argument("player", EntityArgumentType.player());
+            LiteralArgumentBuilder<ServerCommandSource> remove = CommandManager.literal("remove");
+            remove.executes(context -> {
+                Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
+                if (claim1 == null) {
+                    context.getSource().sendFeedback(new LiteralText("That claim does not exist.").formatted(Formatting.RED), false);
+                    return 0;
+                }
+                if (!context.getSource().getPlayer().getGameProfile().getId().equals(claim1.owner)) {
+                    context.getSource().sendFeedback(new LiteralText("You are not the owner of this claim.").formatted(Formatting.RED), false);
+                    return 0;
+                }
+                ServerPlayerEntity player1 = EntityArgumentType.getPlayer(context, "player");
+                claim1.permssionsMap.remove(player1.getGameProfile().getId());
+                context.getSource().sendFeedback(new LiteralText(player1.getGameProfile().getName() + " no longer has an exception in the claim").formatted(Formatting.YELLOW), false);
+                return 0;
+            });
+            player.then(remove);
             for (Claim.ClaimPermissions.Permission value : Claim.ClaimPermissions.Permission.values()) {
                 LiteralArgumentBuilder<ServerCommandSource> permNode = CommandManager.literal(value.id);
                 RequiredArgumentBuilder<ServerCommandSource, Boolean> allow = CommandManager.argument("allow", BoolArgumentType.bool());
