@@ -268,7 +268,9 @@ public class Claim {
         public enum Setting {
 
             EXPLOSIONS("explosion_destruction", "Explosions Destroy Blocks", SettingData.BOOL_WRITER, SettingData.BOOL_READER, SettingData.BOOL_ARGUMENT, SettingData.BOOL_PARSER, SettingData.TOSTRING_STRINGIFIER, false),
-            FLUID_CROSSES_BORDERS("fluid_across_borders", "Fluid Crosses Borders", SettingData.BOOL_WRITER, SettingData.BOOL_READER, SettingData.BOOL_ARGUMENT, SettingData.BOOL_PARSER, SettingData.TOSTRING_STRINGIFIER, false);
+            FLUID_CROSSES_BORDERS("fluid_across_borders", "Fluid Crosses Borders", SettingData.BOOL_WRITER, SettingData.BOOL_READER, SettingData.BOOL_ARGUMENT, SettingData.BOOL_PARSER, SettingData.TOSTRING_STRINGIFIER, false),
+            PISTON_FROM_INSIDE("pistons_inside_border", "Pistons Cross border from Inside", SettingData.BOOL_WRITER, SettingData.BOOL_READER, SettingData.BOOL_ARGUMENT, SettingData.BOOL_PARSER, SettingData.TOSTRING_STRINGIFIER, true),
+            PISTON_FROM_OUTSIDE("pistons_outside_border", "Pistons Cross border from Outside", SettingData.BOOL_WRITER, SettingData.BOOL_READER, SettingData.BOOL_ARGUMENT, SettingData.BOOL_PARSER, SettingData.TOSTRING_STRINGIFIER, false);
 
             String id, name;
             BiConsumer<Object, AtomicReference<Tag>> writer;

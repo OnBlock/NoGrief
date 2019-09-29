@@ -13,7 +13,8 @@
     "PlayerEntityMixin",
     "ServerPlayNetworkHandlerMixin",
     "ProjectileEntityMixin",
-    "FluidMixin"
+    "FluidMixin",
+    "PistonBlockMixin"
   ],
   "client": [
     "IntegratedServerMixin"
