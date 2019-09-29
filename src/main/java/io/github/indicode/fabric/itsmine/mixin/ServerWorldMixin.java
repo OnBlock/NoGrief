@@ -28,8 +28,8 @@ public abstract class ServerWorldMixin {
         Claim claim = ClaimManager.INSTANCE.getClaimAt(blockPos_1, player.getEntityWorld().getDimension().getType());
         if (claim != null) {
             if (!claim.hasPermission(player.getGameProfile().getId(), Claim.ClaimPermissions.Permission.SPAWN_PROTECT)) {
-                player.sendMessage(new LiteralText("").append(new LiteralText("You can't use that here. This claim is spawn-protected").formatted(Formatting.RED)).append(new LiteralText("(Use /claim show to see an outline)").formatted(Formatting.YELLOW)));
-                ci.setReturnValue(false);
+                //player.sendMessage(new LiteralText("").append(new LiteralText("You can't use that here. This claim is spawn-protected").formatted(Formatting.RED)).append(new LiteralText("(Use /claim show to see an outline)").formatted(Formatting.YELLOW)));
+                //ci.setReturnValue(false);
             }
         }
     }
