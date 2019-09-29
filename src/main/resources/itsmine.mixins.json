@@ -12,7 +12,8 @@
     "ExplosionMixin",
     "PlayerEntityMixin",
     "ServerPlayNetworkHandlerMixin",
-    "ProjectileEntityMixin"
+    "ProjectileEntityMixin",
+    "FluidMixin"
   ],
   "client": [
     "IntegratedServerMixin"
