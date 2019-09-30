@@ -2,6 +2,7 @@ package io.github.indicode.fabric.itsmine.mixin;
 
 import io.github.indicode.fabric.itsmine.Claim;
 import io.github.indicode.fabric.itsmine.ClaimManager;
+import io.github.indicode.fabric.itsmine.Functions;
 import net.minecraft.block.AbstractButtonBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.DoorBlock;
@@ -13,21 +14,17 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.GameMode;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-import javax.swing.*;
-import java.lang.reflect.Array;
-import java.util.Arrays;
 import java.util.UUID;
 
 /**
@@ -68,8 +65,24 @@ public class ServerPlayerInteractionManagerMixin {
                     claim.hasPermissionAt(uuid, Claim.ClaimPermissions.Permission.USE_ITEMS_ON_BLOCKS, pos) ||
                             (stack.getItem() instanceof BlockItem && claim.hasPermissionAt(uuid, Claim.ClaimPermissions.Permission.PLACE_BREAK, pos))
             ) return false;
+            if (stack.getItem() instanceof BlockItem) {
+                playerEntity_1.sendMessage(new LiteralText("").append(new LiteralText("You cannot place blocks in this claim").formatted(Formatting.RED)).append(new LiteralText("(Use /claim show to see an outline)").formatted(Formatting.YELLOW)));
+            }
             return true;
         }
         return stack.isEmpty();
+    }
+    @Redirect(method = "processBlockBreakingAction", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;canPlayerModifyAt(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/math/BlockPos;)Z"))
+    public boolean canBreak(ServerWorld world, PlayerEntity playerEntity_1, BlockPos pos) {
+        Claim claim = ClaimManager.INSTANCE.getClaimAt(pos, playerEntity_1.world.getDimension().getType());
+        if (claim != null) {
+            UUID uuid =  playerEntity_1.getGameProfile().getId();
+            if (
+                    claim.hasPermissionAt(uuid, Claim.ClaimPermissions.Permission.PLACE_BREAK, pos)
+            ) return Functions.canPlayerActuallyModifyAt(world, playerEntity_1, pos);
+            playerEntity_1.sendMessage(new LiteralText("").append(new LiteralText("You cannot break blocks in this claim").formatted(Formatting.RED)).append(new LiteralText("(Use /claim show to see an outline)").formatted(Formatting.YELLOW)));
+            return false;
+        }
+        return world.canPlayerModifyAt(playerEntity_1, pos);
     }
 }
