@@ -9,6 +9,8 @@ import net.minecraft.block.LeverBlock;
 import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.client.network.packet.BlockUpdateS2CPacket;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.BlockItem;
+import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.text.LiteralText;
@@ -33,7 +35,6 @@ import java.util.UUID;
  */
 @Mixin(ServerPlayerInteractionManager.class)
 public class ServerPlayerInteractionManagerMixin {
-
     @Redirect(method = "interactBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;activate(Lnet/minecraft/world/World;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/Hand;Lnet/minecraft/util/hit/BlockHitResult;)Z"))
     public boolean activateIfPossible(BlockState state, World world, PlayerEntity playerEntity_1, Hand hand_1, BlockHitResult blockHitResult_1) {
         BlockPos pos =  blockHitResult_1.getBlockPos();
@@ -56,5 +57,19 @@ public class ServerPlayerInteractionManagerMixin {
             }
         }
         return state.activate(world, playerEntity_1, hand_1, blockHitResult_1);
+    }
+    @Redirect(method = "interactBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;isEmpty()Z", ordinal = 2))
+    public boolean allowItemUse(ItemStack stack, PlayerEntity playerEntity_1, World world_1, ItemStack itemStack_1, Hand hand_1, BlockHitResult blockHitResult_1) {
+        BlockPos pos =  blockHitResult_1.getBlockPos();
+        Claim claim = ClaimManager.INSTANCE.getClaimAt(pos, playerEntity_1.world.getDimension().getType());
+        if (claim != null && !stack.isEmpty()) {
+            UUID uuid =  playerEntity_1.getGameProfile().getId();
+            if (
+                    claim.hasPermissionAt(uuid, Claim.ClaimPermissions.Permission.USE_ITEMS_ON_BLOCKS, pos) ||
+                            (stack.getItem() instanceof BlockItem && claim.hasPermissionAt(uuid, Claim.ClaimPermissions.Permission.PLACE_BREAK, pos))
+            ) return false;
+            return true;
+        }
+        return stack.isEmpty();
     }
 }
