@@ -226,7 +226,7 @@ public class ClaimCommand {
                         return 0;
                     }
                     boolean permission = claim1.settings.hasPermission(value);
-                    context.getSource().sendFeedback(new LiteralText("Players" + (permission ? " does" : " does not") + " have the permission " + value.name).formatted(Formatting.YELLOW), false);
+                    context.getSource().sendFeedback(new LiteralText("Players" + (permission ? " do" : " does not") + " have the permission " + value.name).formatted(Formatting.YELLOW), false);
                     return 0;
                 });
                 permNode.then(allow);
