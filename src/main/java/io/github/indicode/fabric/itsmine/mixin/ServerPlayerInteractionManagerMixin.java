@@ -6,15 +6,20 @@ import net.minecraft.block.AbstractButtonBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.DoorBlock;
 import net.minecraft.block.LeverBlock;
+import net.minecraft.block.enums.DoubleBlockHalf;
+import net.minecraft.client.network.packet.BlockUpdateS2CPacket;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.GameMode;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
@@ -28,6 +33,7 @@ import java.util.UUID;
  */
 @Mixin(ServerPlayerInteractionManager.class)
 public class ServerPlayerInteractionManagerMixin {
+
     @Redirect(method = "interactBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;activate(Lnet/minecraft/world/World;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/Hand;Lnet/minecraft/util/hit/BlockHitResult;)Z"))
     public boolean activateIfPossible(BlockState state, World world, PlayerEntity playerEntity_1, Hand hand_1, BlockHitResult blockHitResult_1) {
         BlockPos pos =  blockHitResult_1.getBlockPos();
@@ -41,6 +47,10 @@ public class ServerPlayerInteractionManagerMixin {
                             (state.getBlock() instanceof DoorBlock && claim.hasPermissionAt(uuid, Claim.ClaimPermissions.Permission.OPEN_DOORS, pos))
             ) return state.activate(world, playerEntity_1, hand_1, blockHitResult_1);
             else {
+                if (state.getBlock() instanceof DoorBlock && playerEntity_1 instanceof ServerPlayerEntity) {
+                    DoubleBlockHalf half = state.get(DoorBlock.HALF);
+                    ((ServerPlayerEntity) playerEntity_1).networkHandler.sendPacket(new BlockUpdateS2CPacket(world, half == DoubleBlockHalf.LOWER ? pos.up() : pos.down()));
+                }
                 playerEntity_1.sendMessage(new LiteralText("").append(new LiteralText("You are in a claim that does not allow you to use that").formatted(Formatting.RED)).append(new LiteralText("(Use /claim show to see an outline)").formatted(Formatting.YELLOW)));
                 return false;
             }
