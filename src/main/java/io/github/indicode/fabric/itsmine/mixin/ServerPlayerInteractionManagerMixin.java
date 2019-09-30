@@ -52,8 +52,8 @@ public class ServerPlayerInteractionManagerMixin {
                     DoubleBlockHalf half = state.get(DoorBlock.HALF);
                     ((ServerPlayerEntity) playerEntity_1).networkHandler.sendPacket(new BlockUpdateS2CPacket(world, half == DoubleBlockHalf.LOWER ? pos.up() : pos.down()));
                 }
-                playerEntity_1.sendMessage(new LiteralText("").append(new LiteralText("You are in a claim that does not allow you to use that").formatted(Formatting.RED)).append(new LiteralText("(Use /claim show to see an outline)").formatted(Formatting.YELLOW)));
-                return true;
+                //playerEntity_1.sendMessage(new LiteralText("").append(new LiteralText("You are in a claim that does not allow you to use that").formatted(Formatting.RED)).append(new LiteralText("(Use /claim show to see an outline)").formatted(Formatting.YELLOW)));
+                return false;
             }
         }
         return state.activate(world, playerEntity_1, hand_1, blockHitResult_1);
