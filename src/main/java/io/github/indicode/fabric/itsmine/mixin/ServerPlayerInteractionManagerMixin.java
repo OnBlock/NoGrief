@@ -11,6 +11,7 @@ import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.client.network.packet.BlockUpdateS2CPacket;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
+import net.minecraft.item.BucketItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
@@ -63,10 +64,18 @@ public class ServerPlayerInteractionManagerMixin {
             UUID uuid =  playerEntity_1.getGameProfile().getId();
             if (
                     claim.hasPermissionAt(uuid, Claim.ClaimPermissions.Permission.USE_ITEMS_ON_BLOCKS, pos) ||
-                            (stack.getItem() instanceof BlockItem && claim.hasPermissionAt(uuid, Claim.ClaimPermissions.Permission.PLACE_BREAK, pos))
+                            (stack.getItem() instanceof BlockItem && claim.hasPermissionAt(uuid, Claim.ClaimPermissions.Permission.PLACE_BREAK, pos)) ||
+                            (stack.getItem() instanceof BucketItem && claim.hasPermissionAt(uuid, Claim.ClaimPermissions.Permission.PLACE_BREAK, pos))
             ) return false;
             if (stack.getItem() instanceof BlockItem) {
                 playerEntity_1.sendMessage(new LiteralText("").append(new LiteralText("You cannot place blocks in this claim").formatted(Formatting.RED)).append(new LiteralText("(Use /claim show to see an outline)").formatted(Formatting.YELLOW)));
+            }
+            if (stack.getItem() instanceof BucketItem) {
+                if (!Functions.isBucketEmpty((BucketItem) stack.getItem())) {
+                    playerEntity_1.sendMessage(new LiteralText("").append(new LiteralText("You cannot pick up fluids in this claim").formatted(Formatting.RED)).append(new LiteralText("(Use /claim show to see an outline)").formatted(Formatting.YELLOW)));
+                } else {
+                    playerEntity_1.sendMessage(new LiteralText("").append(new LiteralText("You cannot place fluids in this claim").formatted(Formatting.RED)).append(new LiteralText("(Use /claim show to see an outline)").formatted(Formatting.YELLOW)));
+                }
             }
             return true;
         }

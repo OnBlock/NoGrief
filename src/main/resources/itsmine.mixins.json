@@ -7,6 +7,8 @@
     "WorldSaveHandlerMixin",
     "CommandManagerMixin",
     "BlockUpdatePacketMixin",
+    "BucketItemMixin",
+    "BlockActionPacketMixin",
 
     "ServerWorldMixin",
     "ExplosionMixin",
@@ -14,9 +16,9 @@
     "ServerPlayNetworkHandlerMixin",
     "ProjectileEntityMixin",
     "FluidMixin",
-    "BlockActionPacketMixin",
     "PistonBlockMixin",
-    "ServerPlayerInteractionManagerMixin"
+    "ServerPlayerInteractionManagerMixin",
+    "BucketItemFunctionalityMixin"
   ],
   "client": [
     "IntegratedServerMixin"
