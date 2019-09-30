@@ -195,7 +195,11 @@ public class Claim {
 
     public static class ClaimPermissions {
         public enum Permission {
-            SPAWN_PROTECT("modify_world", "Spawn Protection Bypass"),
+            SPAWN_PROTECT("spawn_protect", "Spawn Protection Bypass"),
+            ACTIVATE_BLOCKS("right_click_blocks", "Right click Blocks"),
+            PRESS_BUTTONS("press_buttons", "Press Buttons"),
+            USE_LEVERS("use_levers", "Use Levers"),
+            OPEN_DOORS("open_doors", "Use Doors"),
             ENTITY_INTERACT("entity_interact", "Entity Interaction"),
             ENTITY_DAMAGE("entity_damage", "Hurt Entities");
             String id, name;

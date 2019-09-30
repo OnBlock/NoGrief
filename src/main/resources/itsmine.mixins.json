@@ -15,7 +15,8 @@
     "ProjectileEntityMixin",
     "FluidMixin",
     "BlockActionPacketMixin",
-    "PistonBlockMixin"
+    "PistonBlockMixin",
+    "ServerPlayerInteractionManagerMixin"
   ],
   "client": [
     "IntegratedServerMixin"
