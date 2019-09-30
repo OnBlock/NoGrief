@@ -197,7 +197,7 @@ public class Claim {
         public enum Permission {
             SPAWN_PROTECT("spawn_protect", "Spawn Protection Bypass"),
             PLACE_BREAK("place_break", "Place/Break Blocks"),
-            ACTIVATE_BLOCKS("right_click_blocks", "Right click Blocks"),
+            ACTIVATE_BLOCKS("block_interact", "Right click Blocks"),
             USE_ITEMS_ON_BLOCKS("use_block_modifier_items", "Use Block Modifying items"),
             PRESS_BUTTONS("press_buttons", "Press Buttons"),
             USE_LEVERS("use_levers", "Use Levers"),
