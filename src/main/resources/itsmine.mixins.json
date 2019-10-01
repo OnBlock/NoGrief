@@ -16,6 +16,7 @@
     "ServerPlayNetworkHandlerMixin",
     "ProjectileEntityMixin",
     "FluidMixin",
+    "LavaMixin",
     "PistonBlockMixin",
     "ServerPlayerInteractionManagerMixin",
     "PlaceOnUseBlockMixin"
