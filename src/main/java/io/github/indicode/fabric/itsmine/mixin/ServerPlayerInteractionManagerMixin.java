@@ -58,7 +58,7 @@ public class ServerPlayerInteractionManagerMixin {
     }
     @Redirect(method = "interactBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;isEmpty()Z", ordinal = 2))
     public boolean allowItemUse(ItemStack stack, PlayerEntity playerEntity_1, World world_1, ItemStack itemStack_1, Hand hand_1, BlockHitResult blockHitResult_1) {
-        BlockPos pos =  blockHitResult_1.getBlockPos();
+        BlockPos pos =  blockHitResult_1.getBlockPos().offset(blockHitResult_1.getSide());
         Claim claim = ClaimManager.INSTANCE.getClaimAt(pos, playerEntity_1.world.getDimension().getType());
         if (claim != null && !stack.isEmpty()) {
             UUID uuid =  playerEntity_1.getGameProfile().getId();
