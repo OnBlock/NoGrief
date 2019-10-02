@@ -45,10 +45,8 @@ public abstract class FireBlockMixin {
     }
     @Redirect(method = "onScheduledTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z", ordinal = 1))
     private boolean dontCauseFire2(ServerWorld world, BlockPos newPos, BlockState blockState_1, int int_1, BlockState blockState_1_, ServerWorld serverWorld_1, BlockPos oldPos, Random random_1_) {
-        {
             Claim oldClaim = ClaimManager.INSTANCE.getClaimAt(oldPos, world.getDimension().getType());
             Claim newClaim = ClaimManager.INSTANCE.getClaimAt(newPos, world.getDimension().getType());
-            System.out.println("Spread - " + oldPos + " -> " + newPos);
             if (oldClaim != newClaim) {
                 if (oldClaim == null) {
                     if (!(Boolean) newClaim.settings.getSetting(Claim.ClaimSettings.Setting.FIRE_CROSSES_BORDERS))
@@ -62,47 +60,6 @@ public abstract class FireBlockMixin {
                         return false;
                 }
             }
-        }
-        {
-            List<Direction> directions = new ArrayList<>();
-            if (blockState_1.get(FireBlock.UP)) directions.add(Direction.UP);
-            if (blockState_1.get(FireBlock.NORTH)) directions.add(Direction.NORTH);
-            if (blockState_1.get(FireBlock.SOUTH)) directions.add(Direction.SOUTH);
-            if (blockState_1.get(FireBlock.WEST)) directions.add(Direction.WEST);
-            if (blockState_1.get(FireBlock.EAST)) directions.add(Direction.EAST);
-            System.out.println("TrySpread - " + directions + " - " + blockState_1);
-            if (directions.isEmpty()) {
-                return world.setBlockState(newPos, blockState_1, int_1);
-            }
-            Claim oldClaim = ClaimManager.INSTANCE.getClaimAt(newPos, world.getDimension().getType());
-            Iterator<Direction> iterator = directions.iterator();
-            for (Direction direction = null; iterator.hasNext(); direction = iterator.next()) {
-                BlockPos newPos2 = newPos.offset(direction);
-                Claim newClaim = ClaimManager.INSTANCE.getClaimAt(newPos2, world.getDimension().getType());
-                if (oldClaim != newClaim) {
-                    if (oldClaim == null) {
-                        if (!(Boolean) newClaim.settings.getSetting(Claim.ClaimSettings.Setting.FIRE_CROSSES_BORDERS)) iterator.remove();
-                    }
-                    else if (newClaim == null) {
-                        if (!(Boolean) oldClaim.settings.getSetting(Claim.ClaimSettings.Setting.FIRE_CROSSES_BORDERS)) iterator.remove();
-                    } else {
-                        if (!(Boolean) oldClaim.settings.getSetting(Claim.ClaimSettings.Setting.FIRE_CROSSES_BORDERS) ||
-                                !(Boolean) newClaim.settings.getSetting(Claim.ClaimSettings.Setting.FIRE_CROSSES_BORDERS)) iterator.remove();
-                    }
-                }
-            }
-            System.out.println(directions);
-            if (directions.isEmpty()) {
-                return world.setBlockState(newPos, Blocks.FIRE.getDefaultState(), int_1);
-            } else {
-                if (!directions.contains(Direction.UP)) blockState_1 = blockState_1.with(FireBlock.UP, false);
-                if (!directions.contains(Direction.NORTH)) blockState_1 = blockState_1.with(FireBlock.NORTH, false);
-                if (!directions.contains(Direction.SOUTH)) blockState_1 = blockState_1.with(FireBlock.SOUTH, false);
-                if (!directions.contains(Direction.EAST)) blockState_1 = blockState_1.with(FireBlock.EAST, false);
-                if (!directions.contains(Direction.WEST)) blockState_1 = blockState_1.with(FireBlock.WEST, false);
-                System.out.println(blockState_1);
-            }
-        }
         return world.setBlockState(newPos, blockState_1, int_1);
     }
     @Redirect(method = "trySpreadingFire", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z"))
@@ -113,7 +70,6 @@ public abstract class FireBlockMixin {
         if (blockState_1.get(FireBlock.SOUTH)) directions.add(Direction.SOUTH);
         if (blockState_1.get(FireBlock.WEST)) directions.add(Direction.WEST);
         if (blockState_1.get(FireBlock.EAST)) directions.add(Direction.EAST);
-        System.out.println("TrySpread - " + directions + " - " + blockState_1);
         if (directions.isEmpty()) {
             return world.setBlockState(oldPos, blockState_1, int_1);
         }
