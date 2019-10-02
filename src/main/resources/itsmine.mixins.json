@@ -19,7 +19,8 @@
     "LavaMixin",
     "PistonBlockMixin",
     "ServerPlayerInteractionManagerMixin",
-    "PlaceOnUseBlockMixin"
+    "PlaceOnUseBlockMixin",
+    "FireBlockMixin"
   ],
   "client": [
     "IntegratedServerMixin"
