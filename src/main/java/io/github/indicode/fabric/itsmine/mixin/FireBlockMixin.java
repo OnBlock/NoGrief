@@ -75,7 +75,7 @@ public abstract class FireBlockMixin {
         }
         Claim oldClaim = ClaimManager.INSTANCE.getClaimAt(oldPos, world.getDimension().getType());
         Iterator<Direction> iterator = directions.iterator();
-        for (Direction direction = null; iterator.hasNext(); direction = iterator.next()) {
+        for (Direction direction = iterator.next(); iterator.hasNext(); direction = iterator.next()) {
             BlockPos newPos = oldPos.offset(direction);
             Claim newClaim = ClaimManager.INSTANCE.getClaimAt(newPos, world.getDimension().getType());
             if (oldClaim != newClaim) {
@@ -90,7 +90,6 @@ public abstract class FireBlockMixin {
                 }
             }
         }
-        System.out.println(directions);
         if (directions.isEmpty()) {
             return world.setBlockState(oldPos, Blocks.FIRE.getDefaultState(), int_1);
         } else {
@@ -99,7 +98,6 @@ public abstract class FireBlockMixin {
             if (!directions.contains(Direction.SOUTH)) blockState_1 = blockState_1.with(FireBlock.SOUTH, false);
             if (!directions.contains(Direction.EAST)) blockState_1 = blockState_1.with(FireBlock.EAST, false);
             if (!directions.contains(Direction.WEST)) blockState_1 = blockState_1.with(FireBlock.WEST, false);
-            System.out.println(blockState_1);
             return world.setBlockState(oldPos, blockState_1, int_1);
         }
     }
