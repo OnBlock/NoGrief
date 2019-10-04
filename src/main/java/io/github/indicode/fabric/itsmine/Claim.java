@@ -85,18 +85,18 @@ public class Claim {
             return this;
         } else return null;
     }
-    public ClaimSettings getSettingsAt(BlockPos pos) {
+    /*public ClaimSettings getSettingsAt(BlockPos pos) {
         Claim at = getZoneCovering(pos);
         if (at != null) {
             return at.settings;
-        } else return null;
+        } else return settings;
     }
     public ClaimPermissions getPermissionsAt(UUID player, BlockPos pos) {
         Claim at = getZoneCovering(pos);
         if (at != null) {
             return at.getPlayerPermissions(player);
         } else return settings;
-    }
+    }*/
     public ClaimPermissions initializePermissions() {
         ClaimPermissions permissions = new ClaimPermissions();
         permissions.fromTag(settings.toTag().getCompound("permissions"));
@@ -109,9 +109,9 @@ public class Claim {
     public boolean hasPermission(UUID player, ClaimPermissions.Permission permission) {
         return player.equals(owner) || ClaimManager.INSTANCE.ignoringClaims.contains(player) || getPlayerPermissions(player).hasPermission(permission);
     }
-    public boolean hasPermissionAt(UUID player, ClaimPermissions.Permission permission, BlockPos pos) {
-        return player.equals(owner) || ClaimManager.INSTANCE.ignoringClaims.contains(player) || getPermissionsAt(player, pos).hasPermission(permission);
-    }
+    //public boolean hasPermissionAt(UUID player, ClaimPermissions.Permission permission, BlockPos pos) {
+    //    return player.equals(owner) || ClaimManager.INSTANCE.ignoringClaims.contains(player) || getPermissionsAt(player, pos).hasPermission(permission);
+    //}
     public void addSubzone(Claim claim) {
         if (claim != null && claim.dimension == dimension && includesPosition(claim.min) && includesPosition(claim.max)) {
             children.add(claim);

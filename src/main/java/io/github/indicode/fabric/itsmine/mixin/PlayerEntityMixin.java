@@ -27,7 +27,7 @@ public abstract class PlayerEntityMixin {
         if (entity.world.isClient()) return entity.interact(playerEntity_1, hand_1);
         Claim claim = ClaimManager.INSTANCE.getClaimAt(entity.getBlockPos(), entity.world.getDimension().getType());
         if (claim != null) {
-            if (!claim.hasPermissionAt(playerEntity_1.getGameProfile().getId(), Claim.ClaimPermissions.Permission.ENTITY_INTERACT, entity.getBlockPos())) {
+            if (!claim.hasPermission(playerEntity_1.getGameProfile().getId(), Claim.ClaimPermissions.Permission.ENTITY_INTERACT)) {
                 playerEntity_1.sendMessage(new LiteralText("").append(new LiteralText("You are in a claim that does not allow you to interact with entities").formatted(Formatting.RED)).append(new LiteralText("(Use /claim show to see an outline)").formatted(Formatting.YELLOW)));
                 return false;
             }
@@ -40,7 +40,7 @@ public abstract class PlayerEntityMixin {
         PlayerEntity playerEntity_1 = (PlayerEntity)(Object)this;
         Claim claim = ClaimManager.INSTANCE.getClaimAt(entity.getBlockPos(), entity.world.getDimension().getType());
         if (claim != null) {
-            if (!claim.hasPermissionAt(playerEntity_1.getGameProfile().getId(), Claim.ClaimPermissions.Permission.ENTITY_DAMAGE, entity.getBlockPos())) {
+            if (!claim.hasPermission(playerEntity_1.getGameProfile().getId(), Claim.ClaimPermissions.Permission.ENTITY_DAMAGE)) {
                 playerEntity_1.sendMessage(new LiteralText("").append(new LiteralText("You are in a claim that does not allow you to hurt entities").formatted(Formatting.RED)).append(new LiteralText("(Use /claim show to see an outline)").formatted(Formatting.YELLOW)));
                 ci.cancel();
             }

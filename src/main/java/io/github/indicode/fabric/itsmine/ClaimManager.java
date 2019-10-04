@@ -79,7 +79,7 @@ public class ClaimManager {
     }
     public Claim getClaimAt(BlockPos pos, DimensionType dimension) {
         for (Claim claim : claimsByName.values()) {
-            if (claim.dimension.equals(dimension) && claim.includesPosition(pos)) return claim;
+            if (claim.dimension.equals(dimension) && claim.includesPosition(pos)) return claim.getZoneCovering(pos);
         }
         return null;
     }
