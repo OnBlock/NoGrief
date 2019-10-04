@@ -58,9 +58,9 @@ public class ClaimCommand {
         }
         {
             LiteralArgumentBuilder<ServerCommandSource> show = CommandManager.literal("show");
-            show.executes(context -> showClaim(context.getSource(), ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().dimension.getType())));
+            show.executes(context -> showClaim(context.getSource(), ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().dimension.getType()), false));
             RequiredArgumentBuilder<ServerCommandSource, String> name = CommandManager.argument("name", StringArgumentType.word());
-            name.executes(context -> showClaim(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "name"))));
+            name.executes(context -> showClaim(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "name")), false));
             show.then(name);
             command.then(show);
         }
@@ -328,32 +328,37 @@ public class ClaimCommand {
         dispatcher.register(command);
     }
 
-    private static int showClaim(ServerCommandSource source, Claim claim) throws CommandSyntaxException {
+    private static int showClaim(ServerCommandSource source, Claim claim, boolean reset) throws CommandSyntaxException {
         ServerPlayerEntity player = source.getPlayer();
+        if (((ClaimShower)player).getShownClaim() != null && ((ClaimShower)player).getShownClaim() != claim) showClaim(source, ((ClaimShower)player).getShownClaim(), true);
+        if (reset && ((ClaimShower)player).getShownClaim() != null) claim = ((ClaimShower)player).getShownClaim();
         if (claim != null) {
             if (!claim.dimension.equals(source.getWorld().getDimension().getType())) {
+                if (claim == ((ClaimShower)player).getShownClaim()) ((ClaimShower)player).setShownClaim(null); // just so we dont have extra packets on this
                 source.sendFeedback(new LiteralText("That claim is not in this dimension").formatted(Formatting.RED), false);
                 return 0;
             }
-            source.sendFeedback(new LiteralText("Showing claim: " + claim.name).formatted(Formatting.GREEN), false);
+            source.sendFeedback(new LiteralText((reset ? "Showing" : "Hiding") + " claim: " + claim.name).formatted(Formatting.GREEN), false);
+            BlockState block = reset ? null : Blocks.CHORUS_PLANT.getDefaultState();
             for (int x = claim.min.getX(); x < claim.max.getX(); x++) {
-                sendBlockPacket(player, new BlockPos(x, claim.min.getY(), claim.min.getZ()), Blocks.SPONGE.getDefaultState());
-                sendBlockPacket(player, new BlockPos(x, claim.max.getY(), claim.min.getZ()), Blocks.SPONGE.getDefaultState());
-                sendBlockPacket(player, new BlockPos(x, claim.min.getY(), claim.max.getZ()), Blocks.SPONGE.getDefaultState());
-                sendBlockPacket(player, new BlockPos(x, claim.max.getY(), claim.max.getZ()), Blocks.SPONGE.getDefaultState());
+                sendBlockPacket(player, new BlockPos(x, claim.min.getY(), claim.min.getZ()), block);
+                sendBlockPacket(player, new BlockPos(x, claim.max.getY(), claim.min.getZ()), block);
+                sendBlockPacket(player, new BlockPos(x, claim.min.getY(), claim.max.getZ()), block);
+                sendBlockPacket(player, new BlockPos(x, claim.max.getY(), claim.max.getZ()), block);
             }
             for (int y = claim.min.getY(); y < claim.max.getY(); y++) {
-                sendBlockPacket(player, new BlockPos(claim.min.getX(), y, claim.min.getZ()), Blocks.SEA_LANTERN.getDefaultState());
-                sendBlockPacket(player, new BlockPos(claim.max.getX(), y, claim.min.getZ()), Blocks.SEA_LANTERN.getDefaultState());
-                sendBlockPacket(player, new BlockPos(claim.min.getX(), y, claim.max.getZ()), Blocks.SEA_LANTERN.getDefaultState());
-                sendBlockPacket(player, new BlockPos(claim.max.getX(), y, claim.max.getZ()), Blocks.SEA_LANTERN.getDefaultState());
+                sendBlockPacket(player, new BlockPos(claim.min.getX(), y, claim.min.getZ()), block);
+                sendBlockPacket(player, new BlockPos(claim.max.getX(), y, claim.min.getZ()), block);
+                sendBlockPacket(player, new BlockPos(claim.min.getX(), y, claim.max.getZ()), block);
+                sendBlockPacket(player, new BlockPos(claim.max.getX(), y, claim.max.getZ()), block);
             }
             for (int z = claim.min.getZ(); z < claim.max.getZ(); z++) {
-                sendBlockPacket(player, new BlockPos(claim.min.getX(), claim.min.getY(), z), Blocks.REDSTONE_BLOCK.getDefaultState());
-                sendBlockPacket(player, new BlockPos(claim.max.getX(), claim.min.getY(), z), Blocks.REDSTONE_BLOCK.getDefaultState());
-                sendBlockPacket(player, new BlockPos(claim.min.getX(), claim.max.getY(), z), Blocks.REDSTONE_BLOCK.getDefaultState());
-                sendBlockPacket(player, new BlockPos(claim.max.getX(), claim.max.getY(), z), Blocks.REDSTONE_BLOCK.getDefaultState());
+                sendBlockPacket(player, new BlockPos(claim.min.getX(), claim.min.getY(), z), block);
+                sendBlockPacket(player, new BlockPos(claim.max.getX(), claim.min.getY(), z), block);
+                sendBlockPacket(player, new BlockPos(claim.min.getX(), claim.max.getY(), z), block);
+                sendBlockPacket(player, new BlockPos(claim.max.getX(), claim.max.getY(), z), block);
             }
+            if (!reset) ((ClaimShower)player).setShownClaim(claim);
         } else {
             source.sendFeedback(new LiteralText("That is not a valid claim").formatted(Formatting.RED), false);
         }
