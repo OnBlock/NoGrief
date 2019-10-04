@@ -65,6 +65,11 @@ public class ClaimCommand {
             command.then(show);
         }
         {
+            LiteralArgumentBuilder<ServerCommandSource> hide = CommandManager.literal("hide");
+            hide.executes(context -> showClaim(context.getSource(), null, true));
+            command.then(hide);
+        }
+        {
             LiteralArgumentBuilder<ServerCommandSource> check = CommandManager.literal("check_blocks");
             RequiredArgumentBuilder<ServerCommandSource, EntitySelector> other = CommandManager.argument("player", EntityArgumentType.player());
             other.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.checkothers", 2));
@@ -330,7 +335,7 @@ public class ClaimCommand {
 
     private static int showClaim(ServerCommandSource source, Claim claim, boolean reset) throws CommandSyntaxException {
         ServerPlayerEntity player = source.getPlayer();
-        if (((ClaimShower)player).getShownClaim() != null && ((ClaimShower)player).getShownClaim() != claim) showClaim(source, ((ClaimShower)player).getShownClaim(), true);
+        if (!reset && ((ClaimShower)player).getShownClaim() != null && ((ClaimShower)player).getShownClaim() != claim) showClaim(source, ((ClaimShower)player).getShownClaim(), true);
         if (reset && ((ClaimShower)player).getShownClaim() != null) claim = ((ClaimShower)player).getShownClaim();
         if (claim != null) {
             if (!claim.dimension.equals(source.getWorld().getDimension().getType())) {
@@ -338,8 +343,8 @@ public class ClaimCommand {
                 source.sendFeedback(new LiteralText("That claim is not in this dimension").formatted(Formatting.RED), false);
                 return 0;
             }
-            source.sendFeedback(new LiteralText((reset ? "Showing" : "Hiding") + " claim: " + claim.name).formatted(Formatting.GREEN), false);
-            BlockState block = reset ? null : Blocks.CHORUS_PLANT.getDefaultState();
+            source.sendFeedback(new LiteralText((!reset ? "Showing" : "Hiding") + " claim: " + claim.name).formatted(Formatting.GREEN), false);
+            BlockState block = reset ? null : Blocks.LAPIS_BLOCK.getDefaultState();
             for (int x = claim.min.getX(); x < claim.max.getX(); x++) {
                 sendBlockPacket(player, new BlockPos(x, claim.min.getY(), claim.min.getZ()), block);
                 sendBlockPacket(player, new BlockPos(x, claim.max.getY(), claim.min.getZ()), block);
@@ -359,6 +364,7 @@ public class ClaimCommand {
                 sendBlockPacket(player, new BlockPos(claim.max.getX(), claim.max.getY(), z), block);
             }
             if (!reset) ((ClaimShower)player).setShownClaim(claim);
+            else ((ClaimShower)player).setShownClaim(null);
         } else {
             source.sendFeedback(new LiteralText("That is not a valid claim").formatted(Formatting.RED), false);
         }
