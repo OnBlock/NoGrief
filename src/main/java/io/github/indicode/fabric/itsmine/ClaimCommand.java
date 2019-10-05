@@ -100,21 +100,26 @@ public class ClaimCommand {
         {
             {
                 LiteralArgumentBuilder<ServerCommandSource> expand = CommandManager.literal("expand");
-                RequiredArgumentBuilder<ServerCommandSource, String> claim = CommandManager.argument("claim", StringArgumentType.word());
                 RequiredArgumentBuilder<ServerCommandSource, Integer> amount = CommandManager.argument("distance", IntegerArgumentType.integer(1, Integer.MAX_VALUE));
                 RequiredArgumentBuilder<ServerCommandSource, String> direction = CommandManager.argument("direction", StringArgumentType.word());
                 direction.suggests(DIRECTION_SUGGESTION_BUILDER);
 
                 direction.executes(context -> expand(
-                        ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")),
+                        ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
                         IntegerArgumentType.getInteger(context, "distance"),
                         directionByName(StringArgumentType.getString(context, "direction")),
                         context.getSource()
                 ));
 
+                amount.executes(context -> expand(
+                        ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
+                        IntegerArgumentType.getInteger(context, "distance"),
+                        Direction.getEntityFacingOrder(context.getSource().getPlayer())[0],
+                        context.getSource()
+                ));
+
                 amount.then(direction);
-                claim.then(amount);
-                expand.then(claim);
+                expand.then(amount);
                 command.then(expand);
             }
             LiteralArgumentBuilder<ServerCommandSource> delete = CommandManager.literal("destroy");
