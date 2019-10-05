@@ -56,7 +56,7 @@ public class ClaimManager {
     }
     public boolean wouldIntersect(Claim claim) {
         for (Claim value : claimsByName.values()) {
-            if(claim.intersects(value)) return true;
+            if(!claim.name.equals(value.name) && claim.intersects(value)) return true;
         }
         return false;
     }
