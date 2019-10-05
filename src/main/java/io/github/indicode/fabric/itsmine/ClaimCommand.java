@@ -443,20 +443,25 @@ public class ClaimCommand {
         int subInt = sub.getX() * sub.getY() * sub.getZ();
 
         Claim claim = new Claim(name, ownerID, min, max, owner.getWorld().getDimension().getType());
-        if (!ClaimManager.INSTANCE.wouldIntersect(claim)) {
-            // works because only the first statemet is evaluated if true
-            if ((ignoreLimits && Thimble.hasPermissionOrOp(owner, "itsmine.admin.infinite_blocks", 4)) || ClaimManager.INSTANCE.useClaimBlocks(ownerID, subInt)) {
-                ClaimManager.INSTANCE.addClaim(claim);
-                owner.sendFeedback(new LiteralText("").append(new LiteralText("Your claim was created").formatted(Formatting.GREEN)).append(new LiteralText("(Area: " + sub.getX() + "x" + sub.getY() + "x" + sub.getZ() + ")").setStyle(new Style()
-                        .setColor(Formatting.GREEN).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(subInt + " blocks").formatted(Formatting.YELLOW))))), false);
-                checkPlayer(owner, owner.getPlayer().getGameProfile().getId());
-                showClaim(owner, claim, false);
-                if (ignoreLimits)owner.getMinecraftServer().sendMessage(new LiteralText(owner.getPlayer().getGameProfile().getName() + " Has created a new claim(" + claim.name + ") using the admin command."));
+        if (!ClaimManager.INSTANCE.claimsByName.containsKey(name)) {
+            if (!ClaimManager.INSTANCE.wouldIntersect(claim)) {
+                // works because only the first statemet is evaluated if true
+                if ((ignoreLimits && Thimble.hasPermissionOrOp(owner, "itsmine.admin.infinite_blocks", 4)) || ClaimManager.INSTANCE.useClaimBlocks(ownerID, subInt)) {
+                    ClaimManager.INSTANCE.addClaim(claim);
+                    owner.sendFeedback(new LiteralText("").append(new LiteralText("Your claim was created").formatted(Formatting.GREEN)).append(new LiteralText("(Area: " + sub.getX() + "x" + sub.getY() + "x" + sub.getZ() + ")").setStyle(new Style()
+                            .setColor(Formatting.GREEN).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(subInt + " blocks").formatted(Formatting.YELLOW))))), false);
+                    checkPlayer(owner, owner.getPlayer().getGameProfile().getId());
+                    showClaim(owner, claim, false);
+                    if (ignoreLimits)
+                        owner.getMinecraftServer().sendMessage(new LiteralText(owner.getPlayer().getGameProfile().getName() + " Has created a new claim(" + claim.name + ") using the admin command."));
+                } else {
+                    owner.sendFeedback(new LiteralText("You don't have enough claim blocks. You have " + ClaimManager.INSTANCE.getClaimBlocks(ownerID) + ", you need " + subInt + "(" + (subInt - ClaimManager.INSTANCE.getClaimBlocks(ownerID)) + " more)").formatted(Formatting.RED), false);
+                }
             } else {
-                owner.sendFeedback(new LiteralText("You don't have enough claim blocks. You have " + ClaimManager.INSTANCE.getClaimBlocks(ownerID) + ", you need " + subInt + "(" + (subInt - ClaimManager.INSTANCE.getClaimBlocks(ownerID)) + " more)").formatted(Formatting.RED), false);
+                owner.sendFeedback(new LiteralText("Your claim would overlap with another claim").formatted(Formatting.RED), false);
             }
         } else {
-            owner.sendFeedback(new LiteralText("Your claim would overlap with another claim").formatted(Formatting.RED), false);
+            owner.sendFeedback(new LiteralText("The name \"" + name + "\" is already taken.").formatted(Formatting.RED), false);
         }
         return 0;
     }

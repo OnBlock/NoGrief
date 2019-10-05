@@ -50,6 +50,7 @@ public class ClaimManager {
         return list;
     }
     public boolean addClaim(Claim claim) {
+        if (claimsByName.containsKey(claim.name)) return false;
         if (wouldIntersect(claim)) return false;
         claimsByName.put(claim.name, claim);
         return true;
