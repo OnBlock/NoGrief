@@ -9,6 +9,7 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.suggestion.SuggestionProvider;
 import io.github.indicode.fabric.itsmine.mixin.BlockUpdatePacketMixin;
 import io.github.indicode.fabric.permissions.Thimble;
 import net.minecraft.block.Block;
@@ -29,6 +30,7 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
@@ -37,6 +39,12 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author Indigo Amann
  */
 public class ClaimCommand {
+    public static final SuggestionProvider DIRECTION_SUGGESTION_BUILDER = (source, builder) -> {
+        for (Direction direction: Direction.values()) {
+            builder.suggest(direction.getName());
+        };
+        return builder.buildFuture();
+    };
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         LiteralArgumentBuilder<ServerCommandSource> command = CommandManager.literal("claim");
         {
@@ -79,6 +87,36 @@ public class ClaimCommand {
             command.then(check);
         }
         {
+            LiteralArgumentBuilder<ServerCommandSource> delete = CommandManager.literal("destroy");
+            RequiredArgumentBuilder<ServerCommandSource, String> claim = CommandManager.argument("claim", StringArgumentType.word());
+            LiteralArgumentBuilder<ServerCommandSource> confirm = CommandManager.literal("confirm");
+            confirm.executes(context -> delete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")), false));
+            claim.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")), false));
+            claim.then(confirm);
+            delete.then(claim);
+            delete.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition()), context.getSource().getWorld().getDimension().getType()), false));
+            command.then(delete);
+        }
+        {
+            {
+                LiteralArgumentBuilder<ServerCommandSource> expand = CommandManager.literal("expand");
+                RequiredArgumentBuilder<ServerCommandSource, String> claim = CommandManager.argument("claim", StringArgumentType.word());
+                RequiredArgumentBuilder<ServerCommandSource, Integer> amount = CommandManager.argument("distance", IntegerArgumentType.integer(1, Integer.MAX_VALUE));
+                RequiredArgumentBuilder<ServerCommandSource, String> direction = CommandManager.argument("direction", StringArgumentType.word());
+                direction.suggests(DIRECTION_SUGGESTION_BUILDER);
+
+                direction.executes(context -> expand(
+                        ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")),
+                        IntegerArgumentType.getInteger(context, "distance"),
+                        directionByName(StringArgumentType.getString(context, "direction")),
+                        context.getSource()
+                ));
+
+                amount.then(direction);
+                claim.then(amount);
+                expand.then(claim);
+                command.then(expand);
+            }
             LiteralArgumentBuilder<ServerCommandSource> delete = CommandManager.literal("destroy");
             RequiredArgumentBuilder<ServerCommandSource, String> claim = CommandManager.argument("claim", StringArgumentType.word());
             LiteralArgumentBuilder<ServerCommandSource> confirm = CommandManager.literal("confirm");
@@ -403,7 +441,6 @@ public class ClaimCommand {
         BlockPos max = new BlockPos(mx, my, mz);
         BlockPos sub = max.subtract(min);
         int subInt = sub.getX() * sub.getY() * sub.getZ();
-        System.out.println("X" + sub.getX() + "Y" + sub.getY() + "Z" + sub.getZ() + "T" + subInt);
 
         Claim claim = new Claim(name, ownerID, min, max, owner.getWorld().getDimension().getType());
         if (!ClaimManager.INSTANCE.wouldIntersect(claim)) {
@@ -413,6 +450,7 @@ public class ClaimCommand {
                 owner.sendFeedback(new LiteralText("").append(new LiteralText("Your claim was created").formatted(Formatting.GREEN)).append(new LiteralText("(Area: " + sub.getX() + "x" + sub.getY() + "x" + sub.getZ() + ")").setStyle(new Style()
                         .setColor(Formatting.GREEN).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(subInt + " blocks").formatted(Formatting.YELLOW))))), false);
                 checkPlayer(owner, owner.getPlayer().getGameProfile().getId());
+                showClaim(owner, claim, false);
                 if (ignoreLimits)owner.getMinecraftServer().sendMessage(new LiteralText(owner.getPlayer().getGameProfile().getName() + " Has created a new claim(" + claim.name + ") using the admin command."));
             } else {
                 owner.sendFeedback(new LiteralText("You don't have enough claim blocks. You have " + ClaimManager.INSTANCE.getClaimBlocks(ownerID) + ", you need " + subInt + "(" + (subInt - ClaimManager.INSTANCE.getClaimBlocks(ownerID)) + " more)").formatted(Formatting.RED), false);
@@ -493,5 +531,48 @@ public class ClaimCommand {
             claim.permssionsMap.put(exceptionID, permissions);
         }
         return permissions.hasPermission(permission);
+    }
+    private static Direction directionByName(String name) {
+        for (Direction direction : Direction.values()) {
+            if (name.equals(direction.getName())) return direction;
+        }
+        return null;
+    }
+    private static int expand(Claim claim, int amount, Direction direction, ServerCommandSource source) throws CommandSyntaxException {
+        UUID ownerID = source.getPlayer().getGameProfile().getId();
+        if (claim == null) {
+            source.sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
+            return 0;
+        }
+        if (direction == null) {
+            source.sendFeedback(new LiteralText("That is not a valid direction").formatted(Formatting.RED), false);
+            return 0;
+        }
+        if (!claim.owner.equals(ownerID)) {
+            source.sendFeedback(new LiteralText("You do not own that claim").formatted(Formatting.RED), false);
+            return 0;
+        }
+        int oldArea = claim.getArea();
+        claim.expand(direction, amount);
+        if (ClaimManager.INSTANCE.wouldIntersect(claim)) {
+            claim.expand(direction, -amount);
+            source.sendFeedback(new LiteralText("Expansion would result in hitting another claim").formatted(Formatting.RED), false);
+            return 0;
+        }
+        int newArea = claim.getArea() - oldArea;
+        if (ClaimManager.INSTANCE.getClaimBlocks(ownerID) < newArea) {
+            source.sendFeedback(new LiteralText("You don't have enough claim blocks. You have " + ClaimManager.INSTANCE.getClaimBlocks(ownerID) + ", you need " + newArea + "(" + (newArea - ClaimManager.INSTANCE.getClaimBlocks(ownerID)) + " more)").formatted(Formatting.RED), false);
+            checkPlayer(source, ownerID);
+            return 0;
+        } else {
+            ClaimManager.INSTANCE.useClaimBlocks(ownerID, newArea);
+            source.sendFeedback(new LiteralText("Your claim was expanded by " + amount + " blocks " + direction.getName()).formatted(Formatting.GREEN), false);
+            checkPlayer(source, ownerID);
+            claim.shrink(direction, amount);
+            showClaim(source, claim, true);
+            claim.expand(direction, amount);
+            showClaim(source, claim, false);
+        }
+        return 0;
     }
 }

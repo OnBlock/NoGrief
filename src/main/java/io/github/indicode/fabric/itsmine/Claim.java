@@ -125,17 +125,26 @@ public class Claim {
         return max.subtract(min);
     }
     public void expand(BlockPos modifier) {
-        System.out.println("B4 " + min + " " + max);
         if (modifier.getX() > 0) max = max.add(modifier.getX(), 0, 0);
         else min = min.add(modifier.getX(), 0, 0);
         if (modifier.getY() > 0) max = max.add(0, modifier.getY(), 0);
         else min = min.add(0, modifier.getY(), 0);
         if (modifier.getZ() > 0) max = max.add(0, 0, modifier.getZ());
         else min = min.add(0, 0, modifier.getZ());
-        System.out.println("AFTER " + min + " " + max);
+    }
+    public void shrink(BlockPos modifier) {
+        if (modifier.getX() > 0) max = max.add(-modifier.getX(), 0, 0);
+        else min = min.add(-modifier.getX(), 0, 0);
+        if (modifier.getY() > 0) max = max.add(0, -modifier.getY(), 0);
+        else min = min.add(0, -modifier.getY(), 0);
+        if (modifier.getZ() > 0) max = max.add(0, 0, -modifier.getZ());
+        else min = min.add(0, 0, -modifier.getZ());
     }
     public void expand(Direction direction, int distance) {
         expand(new BlockPos(direction.getOffsetX() * distance, direction.getOffsetY() * distance, direction.getOffsetZ() * distance));
+    }
+    public void shrink(Direction direction, int distance) {
+        shrink(new BlockPos(direction.getOffsetX() * distance, direction.getOffsetY() * distance, direction.getOffsetZ() * distance));
     }
     public int getArea() {
         return getSize().getX() * getSize().getY() * getSize().getZ();
