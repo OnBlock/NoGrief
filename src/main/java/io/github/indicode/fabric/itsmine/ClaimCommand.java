@@ -387,31 +387,34 @@ public class ClaimCommand {
                 return 0;
             }
             source.sendFeedback(new LiteralText((!reset ? "Showing" : "Hiding") + " claim: " + claim.name).formatted(Formatting.GREEN), false);
-            BlockState block = reset ? null : Blocks.LAPIS_BLOCK.getDefaultState();
-            for (int x = claim.min.getX(); x < claim.max.getX(); x++) {
-                sendBlockPacket(player, new BlockPos(x, claim.min.getY(), claim.min.getZ()), block);
-                sendBlockPacket(player, new BlockPos(x, claim.max.getY(), claim.min.getZ()), block);
-                sendBlockPacket(player, new BlockPos(x, claim.min.getY(), claim.max.getZ()), block);
-                sendBlockPacket(player, new BlockPos(x, claim.max.getY(), claim.max.getZ()), block);
-            }
-            for (int y = claim.min.getY(); y < claim.max.getY(); y++) {
-                sendBlockPacket(player, new BlockPos(claim.min.getX(), y, claim.min.getZ()), block);
-                sendBlockPacket(player, new BlockPos(claim.max.getX(), y, claim.min.getZ()), block);
-                sendBlockPacket(player, new BlockPos(claim.min.getX(), y, claim.max.getZ()), block);
-                sendBlockPacket(player, new BlockPos(claim.max.getX(), y, claim.max.getZ()), block);
-            }
-            for (int z = claim.min.getZ(); z < claim.max.getZ(); z++) {
-                sendBlockPacket(player, new BlockPos(claim.min.getX(), claim.min.getY(), z), block);
-                sendBlockPacket(player, new BlockPos(claim.max.getX(), claim.min.getY(), z), block);
-                sendBlockPacket(player, new BlockPos(claim.min.getX(), claim.max.getY(), z), block);
-                sendBlockPacket(player, new BlockPos(claim.max.getX(), claim.max.getY(), z), block);
-            }
+            silentHideShow(player, claim, reset);
             if (!reset) ((ClaimShower)player).setShownClaim(claim);
             else ((ClaimShower)player).setShownClaim(null);
         } else {
             source.sendFeedback(new LiteralText("That is not a valid claim").formatted(Formatting.RED), false);
         }
         return 0;
+    }
+    private static void silentHideShow(ServerPlayerEntity player, Claim claim, boolean hide) {
+        BlockState block = hide ? null : Blocks.LAPIS_BLOCK.getDefaultState();
+        for (int x = claim.min.getX(); x < claim.max.getX(); x++) {
+            sendBlockPacket(player, new BlockPos(x, claim.min.getY(), claim.min.getZ()), block);
+            sendBlockPacket(player, new BlockPos(x, claim.max.getY(), claim.min.getZ()), block);
+            sendBlockPacket(player, new BlockPos(x, claim.min.getY(), claim.max.getZ()), block);
+            sendBlockPacket(player, new BlockPos(x, claim.max.getY(), claim.max.getZ()), block);
+        }
+        for (int y = claim.min.getY(); y < claim.max.getY(); y++) {
+            sendBlockPacket(player, new BlockPos(claim.min.getX(), y, claim.min.getZ()), block);
+            sendBlockPacket(player, new BlockPos(claim.max.getX(), y, claim.min.getZ()), block);
+            sendBlockPacket(player, new BlockPos(claim.min.getX(), y, claim.max.getZ()), block);
+            sendBlockPacket(player, new BlockPos(claim.max.getX(), y, claim.max.getZ()), block);
+        }
+        for (int z = claim.min.getZ(); z < claim.max.getZ(); z++) {
+            sendBlockPacket(player, new BlockPos(claim.min.getX(), claim.min.getY(), z), block);
+            sendBlockPacket(player, new BlockPos(claim.max.getX(), claim.min.getY(), z), block);
+            sendBlockPacket(player, new BlockPos(claim.min.getX(), claim.max.getY(), z), block);
+            sendBlockPacket(player, new BlockPos(claim.max.getX(), claim.max.getY(), z), block);
+        }
     }
     private static void sendBlockPacket(ServerPlayerEntity player, BlockPos pos, BlockState state) {
         BlockUpdateS2CPacket packet =  new BlockUpdateS2CPacket(player.world, pos);
@@ -511,6 +514,9 @@ public class ClaimCommand {
         }
         ClaimManager.INSTANCE.releaseBlocksToOwner(claim);
         ClaimManager.INSTANCE.claimsByName.remove(claim.name);
+        sender.getWorld().getPlayers().forEach(playerEntity -> {
+            if (((ClaimShower)playerEntity).getShownClaim().name.equals(claim.name)) silentHideShow(playerEntity, claim, true);
+        });
         sender.sendFeedback(new LiteralText("Deleted the claim \"" + claim.name + "\"").formatted(Formatting.GREEN), claim.owner != sender.getPlayer().getGameProfile().getId());
         return 0;
     }
