@@ -132,19 +132,35 @@ public class Claim {
         if (modifier.getZ() > 0) max = max.add(0, 0, modifier.getZ());
         else min = min.add(0, 0, modifier.getZ());
     }
-    public void shrink(BlockPos modifier) {
-        if (modifier.getX() > 0) max = max.add(-modifier.getX(), 0, 0);
-        else min = min.add(-modifier.getX(), 0, 0);
-        if (modifier.getY() > 0) max = max.add(0, -modifier.getY(), 0);
-        else min = min.add(0, -modifier.getY(), 0);
-        if (modifier.getZ() > 0) max = max.add(0, 0, -modifier.getZ());
-        else min = min.add(0, 0, -modifier.getZ());
+    public boolean shrink(BlockPos modifier) {
+        if (modifier.getX() < 0) {
+            if (min.getX() - modifier.getX() > max.getX()) return false;
+            min = min.add(-modifier.getX(), 0, 0);
+        } else {
+            if (max.getX() - modifier.getX() < min.getX()) return false;
+            max = max.add(-modifier.getX(), 0, 0);
+        }
+        if (modifier.getY() < 0) {
+            if (min.getY() - modifier.getY() > max.getY()) return false;
+            min = min.add(0, -modifier.getY(), 0);
+        } else {
+            if (max.getY() - modifier.getY() < min.getY()) return false;
+            max = max.add(0, -modifier.getY(), 0);
+        }
+        if (modifier.getZ() < 0) {
+            if (min.getZ() - modifier.getZ() > max.getZ()) return false;
+            min = min.add(0, 0, -modifier.getZ());
+        } else {
+            if (max.getZ() - modifier.getZ() < min.getZ()) return false;
+            max = max.add(0, 0, -modifier.getZ());
+        }
+        return true;
     }
     public void expand(Direction direction, int distance) {
         expand(new BlockPos(direction.getOffsetX() * distance, direction.getOffsetY() * distance, direction.getOffsetZ() * distance));
     }
-    public void shrink(Direction direction, int distance) {
-        shrink(new BlockPos(direction.getOffsetX() * distance, direction.getOffsetY() * distance, direction.getOffsetZ() * distance));
+    public boolean shrink(Direction direction, int distance) {
+        return shrink(new BlockPos(direction.getOffsetX() * distance, direction.getOffsetY() * distance, direction.getOffsetZ() * distance));
     }
     public int getArea() {
         return getSize().getX() * getSize().getY() * getSize().getZ();
