@@ -544,7 +544,7 @@ public class ClaimCommand {
         ClaimManager.INSTANCE.releaseBlocksToOwner(claim);
         ClaimManager.INSTANCE.claimsByName.remove(claim.name);
         sender.getWorld().getPlayers().forEach(playerEntity -> {
-            if (((ClaimShower)playerEntity).getShownClaim().name.equals(claim.name)) silentHideShow(playerEntity, claim, true, true);
+            if (((ClaimShower)playerEntity).getShownClaim() != null && ((ClaimShower)playerEntity).getShownClaim().name.equals(claim.name)) silentHideShow(playerEntity, claim, true, true);
         });
         sender.sendFeedback(new LiteralText("Deleted the claim \"" + claim.name + "\"").formatted(Formatting.GREEN), claim.owner != sender.getPlayer().getGameProfile().getId());
         return 0;
@@ -625,12 +625,12 @@ public class ClaimCommand {
             if (amount < 0) claim.expand(direction, amount);
             else claim.shrink(direction, amount);
             source.getWorld().getPlayers().forEach(playerEntity -> {
-                if (((ClaimShower)playerEntity).getShownClaim().name.equals(claim.name)) silentHideShow(playerEntity, claim, true, false);
+                if (((ClaimShower)playerEntity).getShownClaim() != null && ((ClaimShower)playerEntity).getShownClaim().name.equals(claim.name)) silentHideShow(playerEntity, claim, true, false);
             });
             if (amount > 0) claim.expand(direction, amount);
             else claim.shrink(direction, -amount);
             source.getWorld().getPlayers().forEach(playerEntity -> {
-                if (((ClaimShower)playerEntity).getShownClaim().name.equals(claim.name)) silentHideShow(playerEntity, claim, false, false);
+                if (((ClaimShower)playerEntity).getShownClaim() != null && ((ClaimShower)playerEntity).getShownClaim().name.equals(claim.name)) silentHideShow(playerEntity, claim, false, false);
             });
         }
         return 0;
