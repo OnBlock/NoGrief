@@ -20,7 +20,9 @@
     "PistonBlockMixin",
     "ServerPlayerInteractionManagerMixin",
     "PlaceOnUseBlockMixin",
-    "FireBlockMixin"
+    "FireBlockMixin",
+
+    "StickClaimItemMixin"
   ],
   "client": [
     "IntegratedServerMixin"
