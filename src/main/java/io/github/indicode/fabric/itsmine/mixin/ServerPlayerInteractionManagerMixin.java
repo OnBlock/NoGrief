@@ -33,7 +33,7 @@ import java.util.UUID;
  */
 @Mixin(ServerPlayerInteractionManager.class)
 public class ServerPlayerInteractionManagerMixin {
-    @Redirect(method = "interactBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;activate(Lnet/minecraft/world/World;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/Hand;Lnet/minecraft/util/hit/BlockHitResult;)Z"))
+    @Redirect(method = "interactBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;onUse(Lnet/minecraft/world/World;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/Hand;Lnet/minecraft/util/hit/BlockHitResult;)Z"))
     public boolean activateIfPossible(BlockState state, World world, PlayerEntity playerEntity_1, Hand hand_1, BlockHitResult blockHitResult_1) {
         BlockPos pos =  blockHitResult_1.getBlockPos();
         Claim claim = ClaimManager.INSTANCE.getClaimAt(pos, world.getDimension().getType());
@@ -44,17 +44,17 @@ public class ServerPlayerInteractionManagerMixin {
                             (state.getBlock() instanceof AbstractButtonBlock && claim.hasPermission(uuid, Claim.ClaimPermissions.Permission.PRESS_BUTTONS)) ||
                             (state.getBlock() instanceof LeverBlock && claim.hasPermission(uuid, Claim.ClaimPermissions.Permission.USE_LEVERS)) ||
                             (state.getBlock() instanceof DoorBlock && claim.hasPermission(uuid, Claim.ClaimPermissions.Permission.OPEN_DOORS))
-            ) return state.activate(world, playerEntity_1, hand_1, blockHitResult_1);
+            ) return state.onUse(world, playerEntity_1, hand_1, blockHitResult_1);
             else {
                 if (state.getBlock() instanceof DoorBlock && playerEntity_1 instanceof ServerPlayerEntity) {
                     DoubleBlockHalf half = state.get(DoorBlock.HALF);
-                    ((ServerPlayerEntity) playerEntity_1).networkHandler.sendPacket(new BlockUpdateS2CPacket(world, half == DoubleBlockHalf.LOWER ? pos.up() : pos.down()));
+                    ((ServerPlayerEntity) playerEntity_1).networkHandler.sendPacket(new BlockUpdateS2CPacket(world, half == DoubleBlockHalf.LOWER ? pos.up() : pos.down(1)));
                 }
                 //playerEntity_1.sendMessage(new LiteralText("").append(new LiteralText("You are in a claim that does not allow you to use that").formatted(Formatting.RED)).append(new LiteralText("(Use /claim show to see an outline)").formatted(Formatting.YELLOW)));
                 return false;
             }
         }
-        return state.activate(world, playerEntity_1, hand_1, blockHitResult_1);
+        return state.onUse(world, playerEntity_1, hand_1, blockHitResult_1);
     }
     @Redirect(method = "interactBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;isEmpty()Z", ordinal = 2))
     public boolean allowItemUse(ItemStack stack, PlayerEntity playerEntity_1, World world_1, ItemStack itemStack_1, Hand hand_1, BlockHitResult blockHitResult_1) {

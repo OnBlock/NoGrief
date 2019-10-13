@@ -74,7 +74,7 @@ public class ClaimManager {
         CompoundTag tvargetter = new CompoundTag();
         ignoringClaims.forEach(id -> {
             tvargetter.putString("id", id.toString());
-            ignoring.add(tvargetter.getTag("id"));
+            ignoring.add(tvargetter.get("id"));
         });
         tag.put("ignoring", ignoring);
         return tag;
@@ -86,7 +86,7 @@ public class ClaimManager {
         return null;
     }
     public void fromNBT(CompoundTag tag) {
-        ListTag list = (ListTag) tag.getTag("claims");
+        ListTag list = (ListTag) tag.get("claims");
         claimsByName.clear();
         list.forEach(it -> {
             Claim claim = new Claim();
@@ -96,7 +96,7 @@ public class ClaimManager {
         CompoundTag blocksLeftTag = tag.getCompound("blocksLeft");
         blocksLeft.clear();
         blocksLeftTag.getKeys().forEach(key -> blocksLeft.put(UUID.fromString(key), blocksLeftTag.getInt(key)));
-        ListTag ignoringTag = (ListTag) tag.getTag("ignoring");
+        ListTag ignoringTag = (ListTag) tag.get("ignoring");
         ignoringTag.forEach(it -> ignoringClaims.add(UUID.fromString(it.asString())));
     }
 }

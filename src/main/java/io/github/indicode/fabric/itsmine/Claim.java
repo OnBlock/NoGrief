@@ -208,7 +208,7 @@ public class Claim {
         }
         {
             children = new ArrayList<>();
-            ListTag subzoneList = (ListTag) tag.getTag("subzones");
+            ListTag subzoneList = (ListTag) tag.get("subzones");
             if (subzoneList != null) {
                 subzoneList.forEach(it -> children.add(new Claim((CompoundTag) it)));
             }
@@ -258,14 +258,14 @@ public class Claim {
             CompoundTag tvargetter = new CompoundTag();
             perms.forEach(perm -> {
                 tvargetter.putString("it", perm.id);
-                listTag.add(tvargetter.getTag("it"));
+                listTag.add(tvargetter.get("it"));
             });
             tag.put("permissions", listTag);
             return tag;
         }
         public void fromTag(CompoundTag tag) {
             perms.clear();
-            ((ListTag)tag.getTag("permissions")).forEach(key -> {
+            ((ListTag)tag.get("permissions")).forEach(key -> {
                 Permission perm = Permission.byId(key.asString());
                 if (perm != null) perms.add(perm);
             });
@@ -286,7 +286,7 @@ public class Claim {
             private static BiConsumer<Object, AtomicReference<Tag>> BOOL_WRITER = (data, ref) -> {
                 CompoundTag compat = new CompoundTag();
                 compat.putBoolean("it", (Boolean) data);
-                ref.set(compat.getTag("it"));
+                ref.set(compat.get("it"));
             };
             private static BiConsumer<Tag, AtomicReference> BOOL_READER = (data, ref) -> ref.set(((ByteTag) data).getByte() != 0);
             private static Consumer<AtomicReference<ArgumentType>> BOOL_ARGUMENT = ref -> ref.set(BoolArgumentType.bool());
@@ -294,7 +294,7 @@ public class Claim {
             private static BiConsumer<Object, AtomicReference<Tag>> STRING_WRITER = (data, ref) -> {
                 CompoundTag compat = new CompoundTag();
                 compat.putString("it", (String) data);
-                ref.set(compat.getTag("it"));
+                ref.set(compat.get("it"));
             };
             private static BiConsumer<Tag, AtomicReference> STRING_READER = (data, ref) -> ref.set(data.asString());
             private static Consumer<AtomicReference<ArgumentType>> GREEDY_STRING_ARGUMENT = ref -> ref.set(StringArgumentType.greedyString());
@@ -366,7 +366,7 @@ public class Claim {
             settings.getKeys().forEach(key -> {
                 Setting setting = Setting.byId(key);
                 if (setting == null) return;
-                Tag value = settings.getTag(key);
+                Tag value = settings.get(key);
                 AtomicReference data = new AtomicReference();
                 setting.reader.accept(value, data);
                 this.settings.put(setting, data.get());

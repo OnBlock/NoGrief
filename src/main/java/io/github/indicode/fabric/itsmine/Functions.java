@@ -25,7 +25,7 @@ public class Functions {
             System.out.println(accessor.getBlock());
             if ((accessor.getBlock() == Blocks.PISTON || accessor.getBlock() == Blocks.PISTON_HEAD || accessor.getBlock() == Blocks.STICKY_PISTON)) {
                 Direction direction = Direction.byId(accessor.getData());
-                BlockPos pos = accessor.getPos().offset(direction, 2);
+                BlockPos pos = BlockPos.fromLong(accessor.getPos().offset(2, direction));
                 world.method_14178().markForUpdate(pos);
                 System.out.println("UPDATING: " + pos);
             }
