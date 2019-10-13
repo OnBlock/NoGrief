@@ -84,6 +84,20 @@ public class ClaimCommand {
             command.then(create);
         }
         {
+            LiteralArgumentBuilder<ServerCommandSource> stick = CommandManager.literal("stick");
+            stick.executes(context -> {
+                Pair<BlockPos, BlockPos> posPair = ClaimManager.INSTANCE.stickPositions.get(context.getSource().getPlayer());
+                context.getSource().sendFeedback(new LiteralText(posPair == null ? "You can now use a stick to create claims. Run this command again to disable" : "Claim stick disabled. Run this command again to enable").formatted(Formatting.DARK_PURPLE), false);
+                if (posPair == null) {
+                    ClaimManager.INSTANCE.stickPositions.put(context.getSource().getPlayer(), new Pair<>(null, null));
+                } else {
+                    ClaimManager.INSTANCE.stickPositions.remove(context.getSource().getPlayer());
+                }
+                return 0;
+            });
+            command.then(stick);
+        }
+        {
             LiteralArgumentBuilder<ServerCommandSource> show = CommandManager.literal("show");
             show.executes(context -> showClaim(context.getSource(), ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().dimension.getType()), false));
             RequiredArgumentBuilder<ServerCommandSource, String> name = CommandManager.argument("name", StringArgumentType.word());

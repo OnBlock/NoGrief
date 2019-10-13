@@ -25,7 +25,7 @@ public class StickClaimItemMixin {
         if (!context.getPlayer().isSneaking()) {
             if ((Object)this == Items.STICK) {
                 Pair<BlockPos, BlockPos> posPair = ClaimManager.INSTANCE.stickPositions.get(context.getPlayer());
-                if (posPair == null) posPair = new Pair<>(context.getBlockPos(), null);
+                if (posPair == null) return;
                 else posPair = new Pair<>(context.getBlockPos(), posPair.getRight());
                 ClaimManager.INSTANCE.stickPositions.put(context.getPlayer(), posPair);
                 context.getPlayer().sendMessage(new LiteralText("Position #1 set: " + context.getBlockPos().getX() + " " + context.getBlockPos().getY() + " " + context.getBlockPos().getZ()).formatted(Formatting.GREEN));
@@ -43,7 +43,7 @@ public class StickClaimItemMixin {
         if (!player.isSneaking()) {
             if ((Object)this == Items.STICK) {
                 Pair<BlockPos, BlockPos> posPair = ClaimManager.INSTANCE.stickPositions.get(player);
-                if (posPair == null) posPair = new Pair<>(null, pos);
+                if (posPair == null) return;
                 else posPair = new Pair<>(posPair.getLeft(), pos);
                 ClaimManager.INSTANCE.stickPositions.put(player, posPair);
                 player.sendMessage(new LiteralText("Position #2 set: " + pos.getX() + " " + pos.getY() + " " + pos.getZ()).formatted(Formatting.GREEN));
