@@ -29,6 +29,7 @@ import net.minecraft.text.HoverEvent;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
@@ -49,7 +50,25 @@ public class ClaimCommand {
         LiteralArgumentBuilder<ServerCommandSource> command = CommandManager.literal("claim");
         {
             LiteralArgumentBuilder<ServerCommandSource> create = CommandManager.literal("create");
-            ArgumentBuilder name = CommandManager.argument("name", StringArgumentType.word());
+            RequiredArgumentBuilder<ServerCommandSource, String> name = CommandManager.argument("name", StringArgumentType.word());
+
+            name.executes(context -> {
+            ServerPlayerEntity player = context.getSource().getPlayer();
+            Pair<BlockPos, BlockPos> selectedPositions = ClaimManager.INSTANCE.stickPositions.get(player);
+                if (selectedPositions == null) {
+                    context.getSource().sendFeedback(new LiteralText("You need to specify block positions or select them with a stick.").formatted(Formatting.RED), false);
+                } else if (selectedPositions.getLeft() == null) {
+                    context.getSource().sendFeedback(new LiteralText("You need to specify block positions or select position #1(Right Click) with a stick.").formatted(Formatting.RED), false);
+                } else if (selectedPositions.getRight() == null) {
+                    context.getSource().sendFeedback(new LiteralText("You need to specify block positions or select position #2(Left Click) with a stick.").formatted(Formatting.RED), false);
+                } else {
+                    String cname = StringArgumentType.getString(context, "name");
+                    createClaim(cname, context.getSource(), selectedPositions.getLeft(), selectedPositions.getRight(), false);
+                    ClaimManager.INSTANCE.stickPositions.remove(player);
+                }
+                return 0;
+            });
+
             ArgumentBuilder min = CommandManager.argument("min", BlockPosArgumentType.blockPos());
             RequiredArgumentBuilder<ServerCommandSource, PosArgument> max = CommandManager.argument("max", BlockPosArgumentType.blockPos());
             max.executes(context -> createClaim(
