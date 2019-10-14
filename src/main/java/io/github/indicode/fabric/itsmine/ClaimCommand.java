@@ -141,14 +141,16 @@ public class ClaimCommand {
                         ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
                         IntegerArgumentType.getInteger(context, "distance"),
                         directionByName(StringArgumentType.getString(context, "direction")),
-                        context.getSource()
+                        context.getSource(),
+                        false
                 ));
 
                 amount.executes(context -> expand(
                         ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
                         IntegerArgumentType.getInteger(context, "distance"),
                         Direction.getEntityFacingOrder(context.getSource().getPlayer())[0],
-                        context.getSource()
+                        context.getSource(),
+                        false
                 ));
 
                 amount.then(direction);
@@ -165,14 +167,16 @@ public class ClaimCommand {
                         ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
                         -IntegerArgumentType.getInteger(context, "distance"),
                         directionByName(StringArgumentType.getString(context, "direction")),
-                        context.getSource()
+                        context.getSource(),
+                        false
                 ));
 
                 amount.executes(context -> expand(
                         ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
                         -IntegerArgumentType.getInteger(context, "distance"),
                         Direction.getEntityFacingOrder(context.getSource().getPlayer())[0],
-                        context.getSource()
+                        context.getSource(),
+                        false
                 ));
 
                 amount.then(direction);
@@ -400,7 +404,7 @@ public class ClaimCommand {
                 admin.then(delete);
             }
             {
-                LiteralArgumentBuilder<ServerCommandSource> create = CommandManager.literal("create_free");
+                LiteralArgumentBuilder<ServerCommandSource> create = CommandManager.literal("create");
                 create.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.infinite_claim", 4));
                 ArgumentBuilder name = CommandManager.argument("name", StringArgumentType.word());
                 ArgumentBuilder min = CommandManager.argument("min", BlockPosArgumentType.blockPos());
@@ -429,6 +433,62 @@ public class ClaimCommand {
                     return 0;
                 });
                 admin.then(ignore);
+            }
+            {
+                {
+                    LiteralArgumentBuilder<ServerCommandSource> expand = CommandManager.literal("expand");
+                    expand.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.infinite_claim", 4));
+                    RequiredArgumentBuilder<ServerCommandSource, Integer> amount = CommandManager.argument("distance", IntegerArgumentType.integer(1, Integer.MAX_VALUE));
+                    RequiredArgumentBuilder<ServerCommandSource, String> direction = CommandManager.argument("direction", StringArgumentType.word());
+                    direction.suggests(DIRECTION_SUGGESTION_BUILDER);
+
+                    direction.executes(context -> expand(
+                            ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
+                            IntegerArgumentType.getInteger(context, "distance"),
+                            directionByName(StringArgumentType.getString(context, "direction")),
+                            context.getSource(),
+                            true
+                    ));
+
+                    amount.executes(context -> expand(
+                            ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
+                            IntegerArgumentType.getInteger(context, "distance"),
+                            Direction.getEntityFacingOrder(context.getSource().getPlayer())[0],
+                            context.getSource(),
+                            true
+                    ));
+
+                    amount.then(direction);
+                    expand.then(amount);
+                    admin.then(expand);
+                }
+                {
+                    LiteralArgumentBuilder<ServerCommandSource> shrink = CommandManager.literal("shrink");
+                    shrink.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.infinite_claim", 4));
+                    RequiredArgumentBuilder<ServerCommandSource, Integer> amount = CommandManager.argument("distance", IntegerArgumentType.integer(1, Integer.MAX_VALUE));
+                    RequiredArgumentBuilder<ServerCommandSource, String> direction = CommandManager.argument("direction", StringArgumentType.word());
+                    direction.suggests(DIRECTION_SUGGESTION_BUILDER);
+
+                    direction.executes(context -> expand(
+                            ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
+                            -IntegerArgumentType.getInteger(context, "distance"),
+                            directionByName(StringArgumentType.getString(context, "direction")),
+                            context.getSource(),
+                            true
+                    ));
+
+                    amount.executes(context -> expand(
+                            ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
+                            -IntegerArgumentType.getInteger(context, "distance"),
+                            Direction.getEntityFacingOrder(context.getSource().getPlayer())[0],
+                            context.getSource(),
+                            true
+                    ));
+
+                    amount.then(direction);
+                    shrink.then(amount);
+                    admin.then(shrink);
+                }
             }
             command.then(admin);
         }
@@ -616,7 +676,7 @@ public class ClaimCommand {
         }
         return null;
     }
-    private static int expand(Claim claim, int amount, Direction direction, ServerCommandSource source) throws CommandSyntaxException {
+    private static int expand(Claim claim, int amount, Direction direction, ServerCommandSource source, boolean admin) throws CommandSyntaxException {
         UUID ownerID = source.getPlayer().getGameProfile().getId();
         if (claim == null) {
             source.sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
@@ -628,7 +688,7 @@ public class ClaimCommand {
         }
         if (!claim.owner.equals(ownerID)) {
             source.sendFeedback(new LiteralText("You do not own that claim").formatted(Formatting.RED), false);
-            return 0;
+            if (!admin) return 0;
         }
         int oldArea = claim.getArea();
         if (amount > 0) claim.expand(direction, amount);
@@ -645,14 +705,14 @@ public class ClaimCommand {
             return 0;
         }
         int newArea = claim.getArea() - oldArea;
-        if (ClaimManager.INSTANCE.getClaimBlocks(ownerID) < newArea) {
+        if (!admin && ClaimManager.INSTANCE.getClaimBlocks(ownerID) < newArea) {
             if (amount < 0) claim.expand(direction, amount);
             else claim.shrink(direction, amount);
             source.sendFeedback(new LiteralText("You don't have enough claim blocks. You have " + ClaimManager.INSTANCE.getClaimBlocks(ownerID) + ", you need " + newArea + "(" + (newArea - ClaimManager.INSTANCE.getClaimBlocks(ownerID)) + " more)").formatted(Formatting.RED), false);
             checkPlayer(source, ownerID);
             return 0;
         } else {
-            ClaimManager.INSTANCE.useClaimBlocks(ownerID, newArea);
+            if (!admin) ClaimManager.INSTANCE.useClaimBlocks(ownerID, newArea);
             source.sendFeedback(new LiteralText("Your claim was " + (amount > 0 ? "expanded" : "shrunk") + " by " + (amount < 0 ? -amount : amount) + " blocks " + direction.getName()).formatted(Formatting.GREEN), false);
             checkPlayer(source, ownerID);
             if (amount < 0) claim.expand(direction, amount);
