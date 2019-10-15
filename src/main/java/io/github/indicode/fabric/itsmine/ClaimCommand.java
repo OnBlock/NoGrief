@@ -264,7 +264,7 @@ public class ClaimCommand {
             command.then(exceptions);
         }
         {
-            LiteralArgumentBuilder<ServerCommandSource> settings = CommandManager.literal("settings");
+            LiteralArgumentBuilder<ServerCommandSource> settings = CommandManager.literal("flags");
             RequiredArgumentBuilder<ServerCommandSource, String> claim = CommandManager.argument("claim", StringArgumentType.word());
             for (Claim.ClaimSettings.Setting setting: Claim.ClaimSettings.Setting.values()) {
                 LiteralArgumentBuilder<ServerCommandSource> arg = CommandManager.literal(setting.id);
