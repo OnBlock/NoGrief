@@ -393,7 +393,7 @@ public class ClaimCommand {
             }
             {
                 LiteralArgumentBuilder<ServerCommandSource> delete = CommandManager.literal("destroy");
-                delete.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.destroy", 4));
+                delete.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.modify", 4));
                 RequiredArgumentBuilder<ServerCommandSource, String> claim = CommandManager.argument("claim", StringArgumentType.word());
                 LiteralArgumentBuilder<ServerCommandSource> confirm = CommandManager.literal("confirm");
                 confirm.executes(context -> delete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")), true));
@@ -437,7 +437,7 @@ public class ClaimCommand {
             {
                 {
                     LiteralArgumentBuilder<ServerCommandSource> expand = CommandManager.literal("expand");
-                    expand.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.infinite_claim", 4));
+                    expand.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.infinite_claim", 4) && Thimble.hasPermissionOrOp(source, "itsmine.admin.modify", 4));
                     RequiredArgumentBuilder<ServerCommandSource, Integer> amount = CommandManager.argument("distance", IntegerArgumentType.integer(1, Integer.MAX_VALUE));
                     RequiredArgumentBuilder<ServerCommandSource, String> direction = CommandManager.argument("direction", StringArgumentType.word());
                     direction.suggests(DIRECTION_SUGGESTION_BUILDER);
@@ -464,7 +464,7 @@ public class ClaimCommand {
                 }
                 {
                     LiteralArgumentBuilder<ServerCommandSource> shrink = CommandManager.literal("shrink");
-                    shrink.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.infinite_claim", 4));
+                    shrink.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.infinite_claim", 4) && Thimble.hasPermissionOrOp(source, "itsmine.admin.modify", 4));
                     RequiredArgumentBuilder<ServerCommandSource, Integer> amount = CommandManager.argument("distance", IntegerArgumentType.integer(1, Integer.MAX_VALUE));
                     RequiredArgumentBuilder<ServerCommandSource, String> direction = CommandManager.argument("direction", StringArgumentType.word());
                     direction.suggests(DIRECTION_SUGGESTION_BUILDER);

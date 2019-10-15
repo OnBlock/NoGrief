@@ -23,7 +23,7 @@ public class ItsMine implements ModInitializer {
                 pair.getLeft().getPermission("itsmine.admin.infinite_claim", CommandPermission.class);
                 pair.getLeft().getPermission("itsmine.admin.check_others", CommandPermission.class);
                 pair.getLeft().getPermission("itsmine.admin.modify_balance", CommandPermission.class);
-                pair.getLeft().getPermission("itsmine.admin.destroy", CommandPermission.class);
+                pair.getLeft().getPermission("itsmine.admin.modify", CommandPermission.class);
                 pair.getLeft().getPermission("itsmine.admin.ignore_claims", CommandPermission.class);
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
                 System.err.println("Claim permissions could not be loaded:");
