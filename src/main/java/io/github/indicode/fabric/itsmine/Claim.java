@@ -172,6 +172,7 @@ public class Claim {
         {
             tag.put("settings", settings.toTag());
             tag.put("permissions", permissionManager.toNBT());
+            tag.putUuid("top_owner", claimBlockOwner);
         }
         tag.putString("name", name);
         return tag;
@@ -200,6 +201,7 @@ public class Claim {
             this.settings = new ClaimSettings(tag.getCompound("settings"));
             permissionManager = new PermissionManager();
             permissionManager.fromNBT(tag.getCompound("permissions"));
+            claimBlockOwner = tag.getUuid("top_owner");
         }
         name = tag.getString("name");
     }
