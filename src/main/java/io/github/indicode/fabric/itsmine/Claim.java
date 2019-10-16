@@ -254,15 +254,49 @@ public class Claim {
         public void resetPermissions(UUID player) {
             playerPermissions.remove(player);
         }
+        public CompoundTag toNBT() {
+            CompoundTag tag = new CompoundTag();
+            tag.put("defaults", defaults.toRegisteredNBT());
+            {
+                CompoundTag players = new CompoundTag();
+                playerPermissions.forEach((player, map) -> players.put(player.toString(), map.toRegisteredNBT()));
+                tag.put("players", players);
+            }
+            {
+                CompoundTag groups = new CompoundTag();
+                groupPermissions.forEach((group, map) -> groups.put(group, map.toRegisteredNBT()));
+                tag.put("groups", groups);
+            }
+            return tag;
+        }
+        public void fromNBT(CompoundTag tag) {
+            defaults = ClaimPermissionMap.fromRegisteredNBT(tag.getCompound("defaults"));
+            {
+                CompoundTag players = tag.getCompound("players");
+                playerPermissions.clear();
+                players.getKeys().forEach(player -> playerPermissions.put(UUID.fromString(player), ClaimPermissionMap.fromRegisteredNBT(players.getCompound(player))));
+            }
+            {
+                CompoundTag groups = tag.getCompound("groups");
+                groupPermissions.clear();
+                groups.getKeys().forEach(group -> groupPermissions.put(group, ClaimPermissionMap.fromRegisteredNBT(groups.getCompound(group))));
+            }
+        }
     }
     public static abstract class ClaimPermissionMap {
         protected static HashMap<String, Class<? extends ClaimPermissionMap>> mapTypes = new HashMap<>();
+        protected static HashMap<Class<? extends ClaimPermissionMap>, String> reverseMapTypes = new HashMap<>();
         public abstract boolean isPermissionSet(Permission permission);
         public abstract boolean hasPermission(Permission permission);
         public abstract void setPermission(Permission permission, boolean has);
         public abstract void clearPermission(Permission permission);
         public abstract void fromNBT(CompoundTag tag);
         public abstract CompoundTag toNBT();
+        public CompoundTag toRegisteredNBT() {
+            CompoundTag tag = toNBT();
+            tag.putString("type", reverseMapTypes.get(this.getClass()));
+            return tag;
+        }
         public static ClaimPermissionMap fromRegisteredNBT(CompoundTag tag) {
             String type = tag.getString("type");
             tag.remove("type");
@@ -281,6 +315,7 @@ public class Claim {
     public static class DefaultPermissionMap extends ClaimPermissionMap {
         static {
             mapTypes.put("default", DefaultPermissionMap.class);
+            reverseMapTypes.put(DefaultPermissionMap.class, "default");
         }
         private HashMap<Permission, Boolean> permissions = new HashMap<>();
         @Override
