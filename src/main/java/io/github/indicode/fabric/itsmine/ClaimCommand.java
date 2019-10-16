@@ -671,8 +671,8 @@ public class ClaimCommand {
             source.sendFeedback(new LiteralText("That is not a valid direction").formatted(Formatting.RED), false);
             return 0;
         }
-        if (!claim.owner.equals(ownerID)) {
-            source.sendFeedback(new LiteralText("You do not own that claim").formatted(Formatting.RED), false);
+        if (!claim.permissionManager.hasPermission(ownerID, Claim.Permission.MODIFY_SIZE)) {
+            source.sendFeedback(new LiteralText("You do not have border change permissions in that claim").formatted(Formatting.RED), false);
             if (!admin) return 0;
         }
         int oldArea = claim.getArea();
