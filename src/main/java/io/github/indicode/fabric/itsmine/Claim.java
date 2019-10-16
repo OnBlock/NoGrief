@@ -377,7 +377,7 @@ public class Claim {
 
         @Override
         public void setPermission(Permission permission, boolean has) {
-            permissions.put(permission, has);
+            permissions.put(permission, !has);
         }
 
         @Override
