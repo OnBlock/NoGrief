@@ -255,13 +255,33 @@ public class Claim {
             playerPermissions.remove(player);
         }
     }
-    public interface ClaimPermissionMap {
-        boolean isPermissionSet(Permission permission);
-        boolean hasPermission(Permission permission);
-        void setPermission(Permission permission, boolean has);
-        void clearPermission(Permission permission);
+    public static abstract class ClaimPermissionMap {
+        protected static HashMap<String, Class<? extends ClaimPermissionMap>> mapTypes = new HashMap<>();
+        public abstract boolean isPermissionSet(Permission permission);
+        public abstract boolean hasPermission(Permission permission);
+        public abstract void setPermission(Permission permission, boolean has);
+        public abstract void clearPermission(Permission permission);
+        public abstract void fromNBT(CompoundTag tag);
+        public abstract CompoundTag toNBT();
+        public static ClaimPermissionMap fromRegisteredNBT(CompoundTag tag) {
+            String type = tag.getString("type");
+            tag.remove("type");
+            Class<? extends ClaimPermissionMap> clazz = mapTypes.get(type);
+            if (clazz == null) return new DefaultPermissionMap();
+            try {
+                ClaimPermissionMap map = clazz.newInstance();
+                map.fromNBT(tag);
+                return map;
+            } catch (InstantiationException | IllegalAccessException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
     }
-    public static class DefaultPermissionMap implements ClaimPermissionMap {
+    public static class DefaultPermissionMap extends ClaimPermissionMap {
+        static {
+            mapTypes.put("default", DefaultPermissionMap.class);
+        }
         private HashMap<Permission, Boolean> permissions = new HashMap<>();
         @Override
         public boolean isPermissionSet(Permission permission) {
@@ -281,6 +301,26 @@ public class Claim {
         @Override
         public void clearPermission(Permission permission) {
             permissions.remove(permission);
+        }
+
+        @Override
+        public void fromNBT(CompoundTag tag) {
+            permissions.clear();
+            for (String permissionString : tag.getKeys()) {
+                Permission permission = Permission.byId(permissionString);
+                if (permission == null) continue;
+                boolean allowed = tag.getBoolean(permissionString);
+                permissions.put(permission, allowed);
+            }
+        }
+
+        @Override
+        public CompoundTag toNBT() {
+            CompoundTag tag = new CompoundTag();
+            permissions.forEach((permission, allowed) -> {
+                if (allowed != null) tag.putBoolean(permission.id, allowed);
+            });
+            return tag;
         }
     }
     public static class ClaimSettings{
