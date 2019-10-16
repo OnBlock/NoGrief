@@ -1,22 +1,17 @@
 package io.github.indicode.fabric.itsmine;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import jdk.nashorn.internal.objects.annotations.Getter;
+import io.github.indicode.fabric.permissions.Thimble;
 import net.minecraft.nbt.*;
-import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.world.dimension.Dimension;
 import net.minecraft.world.dimension.DimensionType;
 
-import javax.xml.crypto.Data;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
@@ -29,20 +24,17 @@ public class Claim {
     public String name;
     public BlockPos min, max;
     public DimensionType dimension;
-    public Map<UUID, ClaimPermissions> permssionsMap = new HashMap();
     public List<Claim> children = new ArrayList<>();
     public ClaimSettings settings = new ClaimSettings();
-    public UUID owner;
     public Claim() {
 
     }
     public Claim(CompoundTag tag) {
         fromTag(tag);
     }
-    public Claim(String name, UUID owner, BlockPos min, BlockPos max, DimensionType dimension) {
+    public Claim(String name, BlockPos min, BlockPos max, DimensionType dimension) {
         this.min = min;
         this.max = max;
-        this.owner = owner;
         this.name = name;
         this.dimension = dimension;
     }
@@ -223,65 +215,83 @@ public class Claim {
         name = tag.getString("name");
     }
 
-    public static class ClaimPermissions {
-        public enum Permission {
-            SPAWN_PROTECT("spawn_protect", "Spawn Protection Bypass"),
-            PLACE_BREAK("place_break", "Place/Break Blocks"),
-            ACTIVATE_BLOCKS("block_interact", "Right click Blocks"),
-            USE_ITEMS_ON_BLOCKS("use_block_modifier_items", "Use Block Modifying items"),
-            PRESS_BUTTONS("press_buttons", "Press Buttons"),
-            USE_LEVERS("use_levers", "Use Levers"),
-            OPEN_DOORS("open_doors", "Use Doors"),
-            ENTITY_INTERACT("entity_interact", "Entity Interaction"),
-            ENTITY_DAMAGE("entity_damage", "Hurt Entities");
-            String id, name;
-            Permission(String id, String name) {
-                this.id = id;
-                this.name =  name;
+    public enum Permission {
+        SPAWN_PROTECT("spawn_protect", "Spawn Protection Bypass"),
+        PLACE_BREAK("place_break", "Place/Break Blocks"),
+        ACTIVATE_BLOCKS("block_interact", "Right click Blocks"),
+        USE_ITEMS_ON_BLOCKS("use_block_modifier_items", "Use Block Modifying items"),
+        PRESS_BUTTONS("press_buttons", "Press Buttons"),
+        USE_LEVERS("use_levers", "Use Levers"),
+        OPEN_DOORS("open_doors", "Use Doors"),
+        ENTITY_INTERACT("entity_interact", "Entity Interaction"),
+        ENTITY_DAMAGE("entity_damage", "Hurt Entities");
+        String id, name;
+        Permission(String id, String name) {
+            this.id = id;
+            this.name =  name;
+        }
+        public static Permission byId(String id) {
+            for (Permission permission: values()) {
+                if (permission.id.equals(id)) return permission;
             }
-            public static Permission byId(String id) {
-                for (Permission permission: values()) {
-                    if (permission.id.equals(id)) return permission;
-                }
-                return null;
-            }
-        }
-        protected  List<Permission> perms = new ArrayList<>();
-        public ClaimPermissions(CompoundTag tag) {
-            fromTag(tag);
-        }
-        public ClaimPermissions() {
-        }
-        public CompoundTag toTag() {
-            CompoundTag tag =  new CompoundTag();
-            ListTag listTag =  new ListTag();
-            CompoundTag tvargetter = new CompoundTag();
-            perms.forEach(perm -> {
-                tvargetter.putString("it", perm.id);
-                listTag.add(tvargetter.get("it"));
-            });
-            tag.put("permissions", listTag);
-            return tag;
-        }
-        public void fromTag(CompoundTag tag) {
-            perms.clear();
-            ((ListTag)tag.get("permissions")).forEach(key -> {
-                Permission perm = Permission.byId(key.asString());
-                if (perm != null) perms.add(perm);
-            });
-        }
-        public boolean hasPermission(Permission permission) {
-            return perms.contains(permission);
-        }
-        public void setPermission(Permission permission, boolean value) {
-            if (value && !hasPermission(permission)) {
-                perms.add(permission);
-                return;
-            }
-            if (!value) perms.remove(permission);
+            return null;
         }
     }
-    public static class ClaimSettings extends ClaimPermissions{
+    public static class PlayerPermissions {
+        protected Map<UUID, Map<Permission, Boolean>> playerPermissions = new HashMap<>();
+        protected Map<String, List<Permission>> groupPermissions = new HashMap<>();
+        public boolean isPermissionSet(UUID player, Permission permission) {
+            return playerPermissions.get(player) != null && playerPermissions.get(player).containsKey(permission);
+        }
+        public boolean hasPermission(UUID player, Permission permission) {
+            if (isPermissionSet(player, permission)) return playerPermissions.get(player).get(permission);
+            for (Map.Entry<String, List<Permission>> entry : groupPermissions.entrySet()) {
+                if (Thimble.PERMISSIONS.hasPermission(entry.getKey(), player) && entry.getValue().contains(permission)) return true;
+            }
+            return false;
+        }
+        public void setPermission(UUID player, Permission permission, boolean enabled) {
+            if (!playerPermissions.containsKey(player)) playerPermissions.put(player, new HashMap<>());
+            playerPermissions.get(player).put(permission, enabled);
+        }
+        public void resetPermission(UUID player, Permission permission) {
+            if (!playerPermissions.containsKey(player)) playerPermissions.put(player, new HashMap<>());
+            playerPermissions.get(player).remove(permission);
+        }
+        public void resetPermissions(UUID player) {
+            if (!playerPermissions.containsKey(player)) playerPermissions.put(player, new HashMap<>());
+            playerPermissions.remove(player);
+        }
+    }
+    public interface ClaimPermissionMap {
+        boolean isPermissionSet(Permission permission);
+        boolean hasPermission(Permission permission);
+        void setPermission(Permission permission, boolean has);
+        void clearPermission(Permission permission);
+    }
+    public static class DefaultPermissionMap implements ClaimPermissionMap {
+        private HashMap<Permission, Boolean> permissions = new HashMap<>();
+        @Override
+        public boolean isPermissionSet(Permission permission) {
+            return permissions.containsKey(permission);
+        }
+
+        @Override
+        public boolean hasPermission(Permission permission) {
+            return isPermissionSet(permission) && permissions.get(permission);
+        }
+
+        @Override
+        public void setPermission(Permission permission, boolean has) {
+            permissions.put(permission, has);
+        }
+
+        @Override
+        public void clearPermission(Permission permission) {
+            permissions.remove(permission);
+        }
+    }
+    public static class ClaimSettings{
         private static class SettingData { // Wdym overcomplicated...
             private static BiConsumer<Object, AtomicReference<Tag>> BOOL_WRITER = (data, ref) -> {
                 CompoundTag compat = new CompoundTag();
