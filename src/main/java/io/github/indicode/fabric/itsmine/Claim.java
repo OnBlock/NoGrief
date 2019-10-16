@@ -291,6 +291,12 @@ public class Claim {
     public static abstract class ClaimPermissionMap {
         protected static HashMap<String, Class<? extends ClaimPermissionMap>> mapTypes = new HashMap<>();
         protected static HashMap<Class<? extends ClaimPermissionMap>, String> reverseMapTypes = new HashMap<>();
+        static {
+            mapTypes.put("default", DefaultPermissionMap.class);
+            reverseMapTypes.put(DefaultPermissionMap.class, "default");
+            mapTypes.put("inverted", InvertedPermissionMap.class);
+            reverseMapTypes.put(InvertedPermissionMap.class, "inverted");
+        }
         public abstract boolean isPermissionSet(Permission permission);
         public abstract boolean hasPermission(Permission permission);
         public abstract void setPermission(Permission permission, boolean has);
@@ -318,10 +324,6 @@ public class Claim {
         }
     }
     public static class DefaultPermissionMap extends ClaimPermissionMap {
-        static {
-            mapTypes.put("default", DefaultPermissionMap.class);
-            reverseMapTypes.put(DefaultPermissionMap.class, "default");
-        }
         private HashMap<Permission, Boolean> permissions = new HashMap<>();
         @Override
         public boolean isPermissionSet(Permission permission) {
@@ -364,10 +366,7 @@ public class Claim {
         }
     }
     public static class InvertedPermissionMap extends ClaimPermissionMap {
-        static {
-            mapTypes.put("inverted", InvertedPermissionMap.class);
-            reverseMapTypes.put(InvertedPermissionMap.class, "inverted");
-        }
+
         private HashMap<Permission, Boolean> permissions = new HashMap<>();
         @Override
         public boolean isPermissionSet(Permission permission) {
@@ -376,12 +375,12 @@ public class Claim {
 
         @Override
         public boolean hasPermission(Permission permission) {
-            return isPermissionSet(permission) && !permissions.get(permission);
+            return !permissions.containsKey(permission) || permissions.get(permission);
         }
 
         @Override
         public void setPermission(Permission permission, boolean has) {
-            permissions.put(permission, !has);
+            permissions.put(permission, has);
         }
 
         @Override
