@@ -26,6 +26,7 @@ public class Claim {
     public DimensionType dimension;
     public List<Claim> children = new ArrayList<>();
     public ClaimSettings settings = new ClaimSettings();
+    public PlayerPermissions permissionManager
     public Claim() {
 
     }
@@ -237,7 +238,8 @@ public class Claim {
             return null;
         }
     }
-    public static class PlayerPermissions {
+    public static class PermissionManager {
+        public ClaimPermissionMap defaults = new DefaultPermissionMap();
         protected Map<UUID, ClaimPermissionMap> playerPermissions = new HashMap<>();
         protected Map<String, ClaimPermissionMap> groupPermissions = new HashMap<>();
         public boolean isPermissionSet(UUID player, Permission permission) {
@@ -248,7 +250,7 @@ public class Claim {
             for (Map.Entry<String, ClaimPermissionMap> entry : groupPermissions.entrySet()) {
                 if (Thimble.PERMISSIONS.hasPermission(entry.getKey(), player) && entry.getValue().hasPermission(permission)) return true;
             }
-            return false;
+            return defaults.hasPermission(permission);
         }
         public void setPermission(UUID player, Permission permission, boolean enabled) {
             if (!playerPermissions.containsKey(player)) playerPermissions.put(player, new DefaultPermissionMap());
