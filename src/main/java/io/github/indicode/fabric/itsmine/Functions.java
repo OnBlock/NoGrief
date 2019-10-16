@@ -38,7 +38,7 @@ public class Functions {
         if (player.world.isClient()) return false;
         Claim claim = ClaimManager.INSTANCE.getClaimAt(blockPos_1, player.getEntityWorld().getDimension().getType());
         if (claim != null) {
-            if (!claim.hasPermission(player.getGameProfile().getId(), Claim.ClaimPermissions.Permission.SPAWN_PROTECT)) {
+            if (!claim.hasPermission(player.getGameProfile().getId(), Claim.Permission.SPAWN_PROTECT)) {
                 return false;
             }
         }
