@@ -40,10 +40,10 @@ public class ServerPlayerInteractionManagerMixin {
         if (claim != null) {
             UUID uuid =  playerEntity_1.getGameProfile().getId();
             if (
-                    claim.hasPermission(uuid, Claim.ClaimPermissions.Permission.ACTIVATE_BLOCKS) ||
-                            (state.getBlock() instanceof AbstractButtonBlock && claim.hasPermission(uuid, Claim.ClaimPermissions.Permission.PRESS_BUTTONS)) ||
-                            (state.getBlock() instanceof LeverBlock && claim.hasPermission(uuid, Claim.ClaimPermissions.Permission.USE_LEVERS)) ||
-                            (state.getBlock() instanceof DoorBlock && claim.hasPermission(uuid, Claim.ClaimPermissions.Permission.OPEN_DOORS))
+                    claim.hasPermission(uuid, Claim.Permission.ACTIVATE_BLOCKS) ||
+                            (state.getBlock() instanceof AbstractButtonBlock && claim.hasPermission(uuid, Claim.Permission.PRESS_BUTTONS)) ||
+                            (state.getBlock() instanceof LeverBlock && claim.hasPermission(uuid, Claim.Permission.USE_LEVERS)) ||
+                            (state.getBlock() instanceof DoorBlock && claim.hasPermission(uuid, Claim.Permission.OPEN_DOORS))
             ) return state.onUse(world, playerEntity_1, hand_1, blockHitResult_1);
             else {
                 if (state.getBlock() instanceof DoorBlock && playerEntity_1 instanceof ServerPlayerEntity) {
@@ -63,9 +63,9 @@ public class ServerPlayerInteractionManagerMixin {
         if (claim != null && !stack.isEmpty()) {
             UUID uuid =  playerEntity_1.getGameProfile().getId();
             if (
-                    claim.hasPermission(uuid, Claim.ClaimPermissions.Permission.USE_ITEMS_ON_BLOCKS) ||
-                            (stack.getItem() instanceof BlockItem && claim.hasPermission(uuid, Claim.ClaimPermissions.Permission.PLACE_BREAK)) ||
-                            (stack.getItem() instanceof BucketItem && claim.hasPermission(uuid, Claim.ClaimPermissions.Permission.PLACE_BREAK))
+                    claim.hasPermission(uuid, Claim.Permission.USE_ITEMS_ON_BLOCKS) ||
+                            (stack.getItem() instanceof BlockItem && claim.hasPermission(uuid, Claim.Permission.PLACE_BREAK)) ||
+                            (stack.getItem() instanceof BucketItem && claim.hasPermission(uuid, Claim.Permission.PLACE_BREAK))
             ) return false;
             if (stack.getItem() instanceof BlockItem) {
                 playerEntity_1.sendMessage(new LiteralText("").append(new LiteralText("You cannot place blocks in this claim").formatted(Formatting.RED)).append(new LiteralText("(Use /claim show to see an outline)").formatted(Formatting.YELLOW)));
@@ -87,7 +87,7 @@ public class ServerPlayerInteractionManagerMixin {
         if (claim != null) {
             UUID uuid =  playerEntity_1.getGameProfile().getId();
             if (
-                    claim.hasPermission(uuid, Claim.ClaimPermissions.Permission.PLACE_BREAK)
+                    claim.hasPermission(uuid, Claim.Permission.PLACE_BREAK)
             ) return Functions.canPlayerActuallyModifyAt(world, playerEntity_1, pos);
             playerEntity_1.sendMessage(new LiteralText("").append(new LiteralText("You cannot break blocks in this claim").formatted(Formatting.RED)).append(new LiteralText("(Use /claim show to see an outline)").formatted(Formatting.YELLOW)));
             return false;
