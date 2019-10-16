@@ -26,7 +26,7 @@ public class Claim {
     public DimensionType dimension;
     public List<Claim> children = new ArrayList<>();
     public ClaimSettings settings = new ClaimSettings();
-    public PermissionManager permissionManager;
+    public PermissionManager permissionManager = new PermissionManager();
     public UUID claimBlockOwner;
     public Claim() {
 
