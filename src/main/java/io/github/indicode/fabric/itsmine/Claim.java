@@ -358,24 +358,19 @@ public class Claim {
         }
         public CompoundTag toTag() {
             CompoundTag tag =  new CompoundTag();
-            tag.put("permissions", super.toTag());
-            CompoundTag settings = new CompoundTag();
             this.settings.forEach((setting, data) -> {
                 AtomicReference<Tag> writer = new AtomicReference<>();
                 setting.writer.accept(data, writer);
-                settings.put(setting.id, writer.get());
+                tag.put(setting.id, writer.get());
             });
-            tag.put("settings", settings);
             return tag;
         }
         public void fromTag(CompoundTag tag) {
-            super.fromTag(tag.getCompound("permissions"));
             settings.clear();
-            CompoundTag settings = tag.getCompound("settings");
-            settings.getKeys().forEach(key -> {
+            tag.getKeys().forEach(key -> {
                 Setting setting = Setting.byId(key);
                 if (setting == null) return;
-                Tag value = settings.get(key);
+                Tag value = tag.get(key);
                 AtomicReference data = new AtomicReference();
                 setting.reader.accept(value, data);
                 this.settings.put(setting, data.get());
