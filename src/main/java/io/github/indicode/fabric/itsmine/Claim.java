@@ -203,6 +203,13 @@ public class Claim {
     }
 
     public enum Permission {
+        //Admin
+        DELETE_CLAIM("delete_claim", "Delete Claim"),
+        MODIFY_SIZE("modify_size", "Modify Claim Size"),
+        CHANGE_FLAGS("modify_flags", "Change Claim Flags"),
+        CHANGE_DEFAULT_PERMISSIONS("modify_base_permissions", "Modify base Permissions"),
+        MAKE_EXCEPTIONS("modify_player_permissions", "Modify Player Permissions"),
+        //Normal
         SPAWN_PROTECT("spawn_protect", "Spawn Protection Bypass"),
         PLACE_BREAK("place_break", "Place/Break Blocks"),
         ACTIVATE_BLOCKS("block_interact", "Right click Blocks"),
