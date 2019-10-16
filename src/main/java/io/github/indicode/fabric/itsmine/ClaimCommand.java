@@ -572,7 +572,8 @@ public class ClaimCommand {
         BlockPos sub = max.subtract(min);
         int subInt = sub.getX() * sub.getY() * sub.getZ();
 
-        Claim claim = new Claim(name, ownerID, min, max, owner.getWorld().getDimension().getType());
+        Claim claim = new Claim(name, min, max, owner.getWorld().getDimension().getType());
+        claim.permissionManager.playerPermissions.put(ownerID, new Claim.InvertedPermissionMap());
         if (!ClaimManager.INSTANCE.claimsByName.containsKey(name)) {
             if (!ClaimManager.INSTANCE.wouldIntersect(claim)) {
                 // works because only the first statemet is evaluated if true
@@ -606,11 +607,11 @@ public class ClaimCommand {
             sender.sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
             return 0;
         }
-        if (!claim.owner.equals(sender.getPlayer().getGameProfile().getId())) {
-            if (admin && Thimble.hasPermissionOrOp(sender, "itsmine.admin.delete_others", 4)) {
+        if (!claim.permissionManager.hasPermission(sender.getPlayer().getGameProfile().getId(), Claim.Permission.DELETE_CLAIM)) {
+            if (admin && Thimble.hasPermissionOrOp(sender, "itsmine.admin.modify", 4)) {
                 sender.sendFeedback(new LiteralText("WARNING: This is not your claim...").formatted(Formatting.DARK_RED, Formatting.BOLD), false);
             } else {
-                sender.sendFeedback(new LiteralText("That is not your claim.").formatted(Formatting.RED), false);
+                sender.sendFeedback(new LiteralText("You cannot delete that claim").formatted(Formatting.RED), false);
                 return 0;
             }
         }
@@ -626,11 +627,11 @@ public class ClaimCommand {
             sender.sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
             return 0;
         }
-        if (!claim.owner.equals(sender.getPlayer().getGameProfile().getId())) {
-            if (admin && Thimble.hasPermissionOrOp(sender, "itsmine.admin.destroy", 4)) {
+        if (!claim.permissionManager.hasPermission(sender.getPlayer().getGameProfile().getId(), Claim.Permission.DELETE_CLAIM)) {
+            if (admin && Thimble.hasPermissionOrOp(sender, "itsmine.admin.modify", 4)) {
                 sender.sendFeedback(new LiteralText("Deleting a claim belonging to somebody else").formatted(Formatting.DARK_RED, Formatting.BOLD), false);
             } else {
-                sender.sendFeedback(new LiteralText("That is not your claim").formatted(Formatting.RED), false);
+                sender.sendFeedback(new LiteralText("You cannot delete that claim").formatted(Formatting.RED), false);
                 return 0;
             }
         }
