@@ -238,28 +238,27 @@ public class Claim {
         }
     }
     public static class PlayerPermissions {
-        protected Map<UUID, Map<Permission, Boolean>> playerPermissions = new HashMap<>();
-        protected Map<String, List<Permission>> groupPermissions = new HashMap<>();
+        protected Map<UUID, ClaimPermissionMap> playerPermissions = new HashMap<>();
+        protected Map<String, ClaimPermissionMap> groupPermissions = new HashMap<>();
         public boolean isPermissionSet(UUID player, Permission permission) {
-            return playerPermissions.get(player) != null && playerPermissions.get(player).containsKey(permission);
+            return playerPermissions.get(player) != null && playerPermissions.get(player).isPermissionSet(permission);
         }
         public boolean hasPermission(UUID player, Permission permission) {
-            if (isPermissionSet(player, permission)) return playerPermissions.get(player).get(permission);
-            for (Map.Entry<String, List<Permission>> entry : groupPermissions.entrySet()) {
-                if (Thimble.PERMISSIONS.hasPermission(entry.getKey(), player) && entry.getValue().contains(permission)) return true;
+            if (isPermissionSet(player, permission)) return playerPermissions.get(player).hasPermission(permission);
+            for (Map.Entry<String, ClaimPermissionMap> entry : groupPermissions.entrySet()) {
+                if (Thimble.PERMISSIONS.hasPermission(entry.getKey(), player) && entry.getValue().hasPermission(permission)) return true;
             }
             return false;
         }
         public void setPermission(UUID player, Permission permission, boolean enabled) {
-            if (!playerPermissions.containsKey(player)) playerPermissions.put(player, new HashMap<>());
-            playerPermissions.get(player).put(permission, enabled);
+            if (!playerPermissions.containsKey(player)) playerPermissions.put(player, new DefaultPermissionMap());
+            playerPermissions.get(player).setPermission(permission, enabled);
         }
-        public void resetPermission(UUID player, Permission permission) {
-            if (!playerPermissions.containsKey(player)) playerPermissions.put(player, new HashMap<>());
-            playerPermissions.get(player).remove(permission);
+        public void clearPermission(UUID player, Permission permission) {
+            if (!playerPermissions.containsKey(player)) playerPermissions.put(player, new DefaultPermissionMap());
+            playerPermissions.get(player).clearPermission(permission);
         }
         public void resetPermissions(UUID player) {
-            if (!playerPermissions.containsKey(player)) playerPermissions.put(player, new HashMap<>());
             playerPermissions.remove(player);
         }
     }
