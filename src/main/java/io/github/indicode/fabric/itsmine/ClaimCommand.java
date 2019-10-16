@@ -572,7 +572,7 @@ public class ClaimCommand {
         BlockPos sub = max.subtract(min);
         int subInt = sub.getX() * sub.getY() * sub.getZ();
 
-        Claim claim = new Claim(name, min, max, owner.getWorld().getDimension().getType());
+        Claim claim = new Claim(name, ownerID, min, max, owner.getWorld().getDimension().getType());
         claim.permissionManager.playerPermissions.put(ownerID, new Claim.InvertedPermissionMap());
         if (!ClaimManager.INSTANCE.claimsByName.containsKey(name)) {
             if (!ClaimManager.INSTANCE.wouldIntersect(claim)) {

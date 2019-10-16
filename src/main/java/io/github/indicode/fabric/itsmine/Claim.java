@@ -27,13 +27,15 @@ public class Claim {
     public List<Claim> children = new ArrayList<>();
     public ClaimSettings settings = new ClaimSettings();
     public PermissionManager permissionManager;
+    public UUID claimBlockOwner;
     public Claim() {
 
     }
     public Claim(CompoundTag tag) {
         fromTag(tag);
     }
-    public Claim(String name, BlockPos min, BlockPos max, DimensionType dimension) {
+    public Claim(String name, UUID claimBlockOwner, BlockPos min, BlockPos max, DimensionType dimension) {
+        this.claimBlockOwner = claimBlockOwner;
         this.min = min;
         this.max = max;
         this.name = name;
