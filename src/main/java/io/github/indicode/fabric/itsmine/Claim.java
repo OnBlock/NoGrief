@@ -365,8 +365,8 @@ public class Claim {
     }
     public static class InvertedPermissionMap extends ClaimPermissionMap {
         static {
-            mapTypes.put("inverted", DefaultPermissionMap.class);
-            reverseMapTypes.put(DefaultPermissionMap.class, "inverted");
+            mapTypes.put("inverted", InvertedPermissionMap.class);
+            reverseMapTypes.put(InvertedPermissionMap.class, "inverted");
         }
         private HashMap<Permission, Boolean> permissions = new HashMap<>();
         @Override
