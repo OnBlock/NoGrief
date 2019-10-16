@@ -649,20 +649,11 @@ public class ClaimCommand {
         return 0;
     }
     private static int modifyException(Claim claim, ServerPlayerEntity exception, Claim.Permission permission, boolean allowed) {
-        UUID exceptionID = exception.getGameProfile().getId();
-        claim.permissionManager.setPermission(exceptionID, permission, allowed);
+        claim.permissionManager.setPermission(exception.getGameProfile().getId(), permission, allowed);
         return 0;
     }
     private static boolean hasPermission(Claim claim, ServerPlayerEntity exception, Claim.Permission permission) {
-        UUID exceptionID = exception.getGameProfile().getId();
-        Claim.ClaimPermissions permissions;
-        if(claim.permssionsMap.containsKey(exceptionID)) {
-            permissions = claim.permssionsMap.get(exceptionID);
-        } else {
-            permissions = claim.initializePermissions();
-            claim.permssionsMap.put(exceptionID, permissions);
-        }
-        return permissions.hasPermission(permission);
+        return claim.permissionManager.hasPermission(exception.getGameProfile().getId(), permission);
     }
     private static Direction directionByName(String name) {
         for (Direction direction : Direction.values()) {
