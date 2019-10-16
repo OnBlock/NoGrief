@@ -169,10 +169,7 @@ public class Claim {
         }
         {
             tag.put("settings", settings.toTag());
-            CompoundTag permissions = new CompoundTag();
-            permssionsMap.forEach((id, perms) -> permissions.put(id.toString(), perms.toTag()));
-            tag.put("permissions", permissions);
-            tag.putUuid("owner", owner);
+            tag.put("permissions", permissionManager.toNBT());
         }
         tag.putString("name", name);
         return tag;
@@ -199,10 +196,8 @@ public class Claim {
         }
         {
             this.settings = new ClaimSettings(tag.getCompound("settings"));
-            this.permssionsMap = new HashMap<>();
-            CompoundTag permissions = tag.getCompound("permissions");
-            permissions.getKeys().forEach(key -> permssionsMap.put(UUID.fromString(key), new ClaimPermissions(permissions.getCompound(key))));
-            this.owner = tag.getUuid("owner");
+            permissionManager = new PermissionManager();
+            permissionManager.fromNBT(tag.getCompound("permissions"));
         }
         name = tag.getString("name");
     }
