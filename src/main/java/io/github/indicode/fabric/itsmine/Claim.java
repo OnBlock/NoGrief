@@ -360,6 +360,52 @@ public class Claim {
             return tag;
         }
     }
+    public static class InvertedPermissionMap extends ClaimPermissionMap {
+        static {
+            mapTypes.put("inverted", DefaultPermissionMap.class);
+            reverseMapTypes.put(DefaultPermissionMap.class, "inverted");
+        }
+        private HashMap<Permission, Boolean> permissions = new HashMap<>();
+        @Override
+        public boolean isPermissionSet(Permission permission) {
+            return true;
+        }
+
+        @Override
+        public boolean hasPermission(Permission permission) {
+            return isPermissionSet(permission) && !permissions.get(permission);
+        }
+
+        @Override
+        public void setPermission(Permission permission, boolean has) {
+            permissions.put(permission, has);
+        }
+
+        @Override
+        public void clearPermission(Permission permission) {
+            permissions.remove(permission);
+        }
+
+        @Override
+        public void fromNBT(CompoundTag tag) {
+            permissions.clear();
+            for (String permissionString : tag.getKeys()) {
+                Permission permission = Permission.byId(permissionString);
+                if (permission == null) continue;
+                boolean allowed = tag.getBoolean(permissionString);
+                permissions.put(permission, allowed);
+            }
+        }
+
+        @Override
+        public CompoundTag toNBT() {
+            CompoundTag tag = new CompoundTag();
+            permissions.forEach((permission, allowed) -> {
+                if (allowed != null) tag.putBoolean(permission.id, allowed);
+            });
+            return tag;
+        }
+    }
     public static class ClaimSettings{
         private static class SettingData { // Wdym overcomplicated...
             private static BiConsumer<Object, AtomicReference<Tag>> BOOL_WRITER = (data, ref) -> {
