@@ -26,7 +26,7 @@ public class Claim {
     public DimensionType dimension;
     public List<Claim> children = new ArrayList<>();
     public ClaimSettings settings = new ClaimSettings();
-    public PlayerPermissions permissionManager
+    public PermissionManager permissionManager;
     public Claim() {
 
     }
@@ -90,17 +90,8 @@ public class Claim {
             return at.getPlayerPermissions(player);
         } else return settings;
     }*/
-    public ClaimPermissions initializePermissions() {
-        ClaimPermissions permissions = new ClaimPermissions();
-        permissions.fromTag(settings.toTag().getCompound("permissions"));
-        return permissions;
-    }
-    public ClaimPermissions getPlayerPermissions(UUID player) {
-        if (permssionsMap.containsKey(player)) return permssionsMap.get(player);
-        else return settings;
-    }
-    public boolean hasPermission(UUID player, ClaimPermissions.Permission permission) {
-        return player.equals(owner) || ClaimManager.INSTANCE.ignoringClaims.contains(player) || getPlayerPermissions(player).hasPermission(permission);
+    public boolean hasPermission(UUID player, Permission permission) {
+        return ClaimManager.INSTANCE.ignoringClaims.contains(player) || permissionManager.hasPermission(player, permission);
     }
     //public boolean hasPermissionAt(UUID player, ClaimPermissions.Permission permission, BlockPos pos) {
     //    return player.equals(owner) || ClaimManager.INSTANCE.ignoringClaims.contains(player) || getPermissionsAt(player, pos).hasPermission(permission);
