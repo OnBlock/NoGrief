@@ -274,8 +274,8 @@ public class ClaimCommand {
                         context.getSource().sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
                         return 0;
                     }
-                    if (!context.getSource().getPlayer().getGameProfile().getId().equals(claim1.owner)) {
-                        context.getSource().sendFeedback(new LiteralText("You are not the owner of this claim").formatted(Formatting.RED), false);
+                    if (!claim1.permissionManager.hasPermission(context.getSource().getPlayer().getGameProfile().getId(), Claim.Permission.CHANGE_FLAGS)) {
+                        context.getSource().sendFeedback(new LiteralText("You cannot change flags in this claim").formatted(Formatting.RED), false);
                         return 0;
                     }
                     AtomicReference<String> stringify = new AtomicReference<>();
@@ -292,8 +292,8 @@ public class ClaimCommand {
                         context.getSource().sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
                         return 0;
                     }
-                    if (!context.getSource().getPlayer().getGameProfile().getId().equals(claim1.owner)) {
-                        context.getSource().sendFeedback(new LiteralText("You are not the owner of this claim").formatted(Formatting.RED), false);
+                    if (!claim1.permissionManager.hasPermission(context.getSource().getPlayer().getGameProfile().getId(), Claim.Permission.CHANGE_FLAGS)) {
+                        context.getSource().sendFeedback(new LiteralText("You cannot change flags in this claim").formatted(Formatting.RED), false);
                         return 0;
                     }
                     AtomicReference data = new AtomicReference();
@@ -317,12 +317,12 @@ public class ClaimCommand {
                         context.getSource().sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
                         return 0;
                     }
-                    if (!context.getSource().getPlayer().getGameProfile().getId().equals(claim1.owner)) {
-                        context.getSource().sendFeedback(new LiteralText("You are not the owner of this claim").formatted(Formatting.RED), false);
+                    if (!claim1.permissionManager.hasPermission(context.getSource().getPlayer().getGameProfile().getId(), Claim.Permission.CHANGE_FLAGS)) {
+                        context.getSource().sendFeedback(new LiteralText("You cannot change flags in this claim").formatted(Formatting.RED), false);
                         return 0;
                     }
                     boolean permission = BoolArgumentType.getBool(context, "allow");
-                    claim1.settings.setPermission(value, permission);
+                    claim1.permissionManager.defaults.setPermission(value, permission);
                     context.getSource().sendFeedback(new LiteralText("Players" + (permission ? " now" : " no longer") + " have the permission " + value.name).formatted(Formatting.YELLOW), false);
                     return 0;
                 });
@@ -332,11 +332,11 @@ public class ClaimCommand {
                         context.getSource().sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
                         return 0;
                     }
-                    if (!context.getSource().getPlayer().getGameProfile().getId().equals(claim1.owner)) {
-                        context.getSource().sendFeedback(new LiteralText("You are not the owner of this claim").formatted(Formatting.RED), false);
+                    if (!claim1.permissionManager.hasPermission(context.getSource().getPlayer().getGameProfile().getId(), Claim.Permission.CHANGE_FLAGS)) {
+                        context.getSource().sendFeedback(new LiteralText("You cannot change flags in this claim").formatted(Formatting.RED), false);
                         return 0;
                     }
-                    boolean permission = claim1.settings.hasPermission(value);
+                    boolean permission = claim1.permissionManager.defaults.hasPermission(value);
                     context.getSource().sendFeedback(new LiteralText("Players" + (permission ? " do" : " does not") + " have the permission " + value.name).formatted(Formatting.YELLOW), false);
                     return 0;
                 });
