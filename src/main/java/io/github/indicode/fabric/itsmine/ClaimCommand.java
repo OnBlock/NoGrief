@@ -543,7 +543,7 @@ public class ClaimCommand {
         if (state != null) ((BlockUpdatePacketMixin)packet).setState(state);
         player.networkHandler.sendPacket(packet);
     }
-    private static int createClaim(String name, ServerCommandSource owner, BlockPos posA, BlockPos posB, boolean ignoreLimits) throws CommandSyntaxException {
+    private static int createClaim(String name, ServerCommandSource owner, BlockPos posA, BlockPos posB, boolean admin) throws CommandSyntaxException {
         UUID ownerID = owner.getPlayer().getGameProfile().getId();
         int x, y, z, mx, my, mz;
         if (posA.getX() > posB.getX()) {
@@ -572,18 +572,18 @@ public class ClaimCommand {
         BlockPos sub = max.subtract(min);
         int subInt = sub.getX() * sub.getY() * sub.getZ();
 
-        Claim claim = new Claim(name, ownerID, min, max, owner.getWorld().getDimension().getType());
+        Claim claim = new Claim(name, admin ? null : ownerID, min, max, owner.getWorld().getDimension().getType());
         claim.permissionManager.playerPermissions.put(ownerID, new Claim.InvertedPermissionMap());
         if (!ClaimManager.INSTANCE.claimsByName.containsKey(name)) {
             if (!ClaimManager.INSTANCE.wouldIntersect(claim)) {
                 // works because only the first statemet is evaluated if true
-                if ((ignoreLimits && Thimble.hasPermissionOrOp(owner, "itsmine.admin.infinite_blocks", 4)) || ClaimManager.INSTANCE.useClaimBlocks(ownerID, subInt)) {
+                if ((admin && Thimble.hasPermissionOrOp(owner, "itsmine.admin.infinite_blocks", 4)) || ClaimManager.INSTANCE.useClaimBlocks(ownerID, subInt)) {
                     ClaimManager.INSTANCE.addClaim(claim);
                     owner.sendFeedback(new LiteralText("").append(new LiteralText("Your claim was created").formatted(Formatting.GREEN)).append(new LiteralText("(Area: " + sub.getX() + "x" + sub.getY() + "x" + sub.getZ() + ")").setStyle(new Style()
                             .setColor(Formatting.GREEN).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(subInt + " blocks").formatted(Formatting.YELLOW))))), false);
                     checkPlayer(owner, owner.getPlayer().getGameProfile().getId());
                     showClaim(owner, claim, false);
-                    if (ignoreLimits)
+                    if (admin)
                         owner.getMinecraftServer().sendMessage(new LiteralText(owner.getPlayer().getGameProfile().getName() + " Has created a new claim(" + claim.name + ") using the admin command."));
                 } else {
                     owner.sendFeedback(new LiteralText("You don't have enough claim blocks. You have " + ClaimManager.INSTANCE.getClaimBlocks(ownerID) + ", you need " + subInt + "(" + (subInt - ClaimManager.INSTANCE.getClaimBlocks(ownerID)) + " more)").formatted(Formatting.RED), false);
@@ -690,14 +690,14 @@ public class ClaimCommand {
             return 0;
         }
         int newArea = claim.getArea() - oldArea;
-        if (!admin && ClaimManager.INSTANCE.getClaimBlocks(ownerID) < newArea) {
+        if (!admin && claim.claimBlockOwner != null && ClaimManager.INSTANCE.getClaimBlocks(ownerID) < newArea) {
             if (amount < 0) claim.expand(direction, amount);
             else claim.shrink(direction, amount);
             source.sendFeedback(new LiteralText("You don't have enough claim blocks. You have " + ClaimManager.INSTANCE.getClaimBlocks(ownerID) + ", you need " + newArea + "(" + (newArea - ClaimManager.INSTANCE.getClaimBlocks(ownerID)) + " more)").formatted(Formatting.RED), false);
             checkPlayer(source, ownerID);
             return 0;
         } else {
-            if (!admin) ClaimManager.INSTANCE.useClaimBlocks(ownerID, newArea);
+            if (!admin && claim.claimBlockOwner != null) ClaimManager.INSTANCE.useClaimBlocks(ownerID, newArea);
             source.sendFeedback(new LiteralText("Your claim was " + (amount > 0 ? "expanded" : "shrunk") + " by " + (amount < 0 ? -amount : amount) + " blocks " + direction.getName()).formatted(Formatting.GREEN), false);
             checkPlayer(source, ownerID);
             if (amount < 0) claim.expand(direction, amount);

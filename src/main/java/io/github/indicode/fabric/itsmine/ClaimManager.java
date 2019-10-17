@@ -40,13 +40,13 @@ public class ClaimManager {
         blocksLeft.put(player, amount < 0 ? 0 : amount);
     }
     public void releaseBlocksToOwner(Claim claim) {
-        addClaimBlocks(claim.claimBlockOwner, claim.getArea());
+        if (claim.claimBlockOwner != null) addClaimBlocks(claim.claimBlockOwner, claim.getArea());
     }
     public HashMap<String, Claim> claimsByName = new HashMap<>();
     public List<Claim> getPlayerClaims(UUID id) {
         List<Claim> list = new ArrayList<>();
         claimsByName.values().forEach(claim -> {
-            if (claim.claimBlockOwner.equals(id)) list.add(claim);
+            if (claim.claimBlockOwner != null && claim.claimBlockOwner.equals(id)) list.add(claim);
         });
         return list;
     }
