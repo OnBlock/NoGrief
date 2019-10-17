@@ -259,6 +259,24 @@ public class Claim {
         public void resetPermissions(UUID player) {
             playerPermissions.remove(player);
         }
+        public boolean isPermissionSet(String group, Permission permission) {
+            return groupPermissions.get(group) != null && groupPermissions.get(group).isPermissionSet(permission);
+        }
+        public boolean hasPermission(String group, Permission permission) {
+            if (isPermissionSet(group, permission)) return groupPermissions.get(group).hasPermission(permission);
+            return defaults.hasPermission(permission);
+        }
+        public void setPermission(String group, Permission permission, boolean enabled) {
+            if (!groupPermissions.containsKey(group)) groupPermissions.put(group, new DefaultPermissionMap());
+            groupPermissions.get(group).setPermission(permission, enabled);
+        }
+        public void clearPermission(String group, Permission permission) {
+            if (!groupPermissions.containsKey(group)) groupPermissions.put(group, new DefaultPermissionMap());
+            groupPermissions.get(group).clearPermission(permission);
+        }
+        public void resetPermissions(String group) {
+            groupPermissions.remove(group);
+        }
         public CompoundTag toNBT() {
             CompoundTag tag = new CompoundTag();
             tag.put("defaults", defaults.toRegisteredNBT());
