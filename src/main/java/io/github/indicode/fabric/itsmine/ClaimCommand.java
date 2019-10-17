@@ -13,6 +13,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import io.github.indicode.fabric.itsmine.mixin.BlockUpdatePacketMixin;
 import io.github.indicode.fabric.permissions.Thimble;
+import io.github.indicode.fabric.permissions.command.PermissionCommand;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -488,6 +489,7 @@ public class ClaimCommand {
                 Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
                 if (verifyPermission(claim1, Claim.Permission.CHANGE_PERMISSIONS, context, admin)) {
                     String group1 = StringArgumentType.getString(context, "group");
+                    verifyGroup(group1);
                     claim1.permissionManager.resetPermissions(group1);
                     context.getSource().sendFeedback(new LiteralText("Members of " + group1 + " no longer have that exception in the claim").formatted(Formatting.YELLOW), false);
                 }
@@ -501,6 +503,7 @@ public class ClaimCommand {
                     Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
                     if (verifyPermission(claim1, Claim.Permission.CHANGE_PERMISSIONS, context, admin)) {
                         String group1 = StringArgumentType.getString(context, "group");
+                        verifyGroup(group1);
                         boolean permission = BoolArgumentType.getBool(context, "allow");
                         modifyException(claim1, group1, value, permission);
                         context.getSource().sendFeedback(new LiteralText("Members of " + group1 + (permission ? " now" : " no longer") + " has the permission " + value.name).formatted(Formatting.YELLOW), false);
@@ -511,6 +514,7 @@ public class ClaimCommand {
                     Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
                     if (verifyPermission(claim1, Claim.Permission.CHANGE_PERMISSIONS, context, admin)) {
                         String group1 = StringArgumentType.getString(context, "group");
+                        verifyGroup(group1);
                         boolean permission = hasPermission(claim1, group1, value);
                         context.getSource().sendFeedback(new LiteralText("Members of " + group1 + (permission ? " now" : " do not") + " have the permission " + value.name).formatted(Formatting.YELLOW), false);
                     }
@@ -545,6 +549,9 @@ public class ClaimCommand {
         } else {
             return true;
         }
+    }
+    private static void verifyGroup(String permission) {
+        PermissionCommand.getPermission(permission);
     }
 
 
