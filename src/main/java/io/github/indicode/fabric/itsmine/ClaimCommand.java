@@ -8,6 +8,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import io.github.indicode.fabric.itsmine.mixin.BlockUpdatePacketMixin;
@@ -201,68 +202,7 @@ public class ClaimCommand {
 
             //TODO
         }
-        {
-            LiteralArgumentBuilder<ServerCommandSource> exceptions = CommandManager.literal("exceptions");
-            RequiredArgumentBuilder<ServerCommandSource, String> claim = CommandManager.argument("claim", StringArgumentType.word());
-            RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = CommandManager.argument("player", EntityArgumentType.player());
-            LiteralArgumentBuilder<ServerCommandSource> remove = CommandManager.literal("remove");
-            remove.executes(context -> {
-                Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
-                if (claim1 == null) {
-                    context.getSource().sendFeedback(new LiteralText("That claim does not exist.").formatted(Formatting.RED), false);
-                    return 0;
-                }
-                if (!claim1.permissionManager.hasPermission(context.getSource().getPlayer().getGameProfile().getId(), Claim.Permission.CHANGE_PERMISSIONS)) {
-                    context.getSource().sendFeedback(new LiteralText("You cannot modify exceptions for this claim").formatted(Formatting.RED), false);
-                    return 0;
-                }
-                ServerPlayerEntity player1 = EntityArgumentType.getPlayer(context, "player");
-                claim1.permissionManager.resetPermissions(player1.getGameProfile().getId());
-                context.getSource().sendFeedback(new LiteralText(player1.getGameProfile().getName() + " no longer has an exception in the claim").formatted(Formatting.YELLOW), false);
-                return 0;
-            });
-            player.then(remove);
-            for (Claim.Permission value : Claim.Permission.values()) {
-                LiteralArgumentBuilder<ServerCommandSource> permNode = CommandManager.literal(value.id);
-                RequiredArgumentBuilder<ServerCommandSource, Boolean> allow = CommandManager.argument("allow", BoolArgumentType.bool());
-                allow.executes(context -> {
-                    Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
-                    if (claim1 == null) {
-                        context.getSource().sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
-                        return 0;
-                    }
-                    if (!claim1.permissionManager.hasPermission(context.getSource().getPlayer().getGameProfile().getId(), Claim.Permission.CHANGE_PERMISSIONS)) {
-                        context.getSource().sendFeedback(new LiteralText("You cannot modify exceptions for this claim").formatted(Formatting.RED), false);
-                        return 0;
-                    }
-                    ServerPlayerEntity player1 = EntityArgumentType.getPlayer(context, "player");
-                    boolean permission = BoolArgumentType.getBool(context, "allow");
-                    modifyException(claim1, player1, value, permission);
-                    context.getSource().sendFeedback(new LiteralText(player1.getGameProfile().getName() + (permission ? " now" : " no longer") + " has the permission " + value.name).formatted(Formatting.YELLOW), false);
-                    return 0;
-                });
-                permNode.executes(context -> {
-                    Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
-                    if (claim1 == null) {
-                        context.getSource().sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
-                        return 0;
-                    }
-                    if (!claim1.permissionManager.hasPermission(context.getSource().getPlayer().getGameProfile().getId(), Claim.Permission.CHANGE_PERMISSIONS)) {
-                        context.getSource().sendFeedback(new LiteralText("You cannot modify exceptions for this claim").formatted(Formatting.RED), false);
-                        return 0;
-                    }
-                    ServerPlayerEntity player1 = EntityArgumentType.getPlayer(context, "player");
-                    boolean permission = hasPermission(claim1, player1, value);
-                    context.getSource().sendFeedback(new LiteralText(player1.getGameProfile().getName() + (permission ? " does" : " does not") + " have the permission " + value.name).formatted(Formatting.YELLOW), false);
-                    return 0;
-                });
-                permNode.then(allow);
-                player.then(permNode);
-            }
-            claim.then(player);
-            exceptions.then(claim);
-            command.then(exceptions);
-        }
+        createExceptionCommand(command, false);
         {
             LiteralArgumentBuilder<ServerCommandSource> settings = CommandManager.literal("flags");
             RequiredArgumentBuilder<ServerCommandSource, String> claim = CommandManager.argument("claim", StringArgumentType.word());
@@ -490,10 +430,77 @@ public class ClaimCommand {
                     admin.then(shrink);
                 }
             }
+            createExceptionCommand(admin, true);
             command.then(admin);
         }
         dispatcher.register(command);
     }
+
+    private static void createExceptionCommand(LiteralArgumentBuilder<ServerCommandSource> command, boolean admin) {
+        LiteralArgumentBuilder<ServerCommandSource> exceptions = CommandManager.literal("exceptions");
+        RequiredArgumentBuilder<ServerCommandSource, String> claim = CommandManager.argument("claim", StringArgumentType.word());
+        RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = CommandManager.argument("player", EntityArgumentType.player());
+        LiteralArgumentBuilder<ServerCommandSource> remove = CommandManager.literal("remove");
+        remove.executes(context -> {
+            Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
+            if (verifyPermission(claim1, Claim.Permission.CHANGE_PERMISSIONS, context, admin)) {
+                ServerPlayerEntity player1 = EntityArgumentType.getPlayer(context, "player");
+                claim1.permissionManager.resetPermissions(player1.getGameProfile().getId());
+                context.getSource().sendFeedback(new LiteralText(player1.getGameProfile().getName() + " no longer has an exception in the claim").formatted(Formatting.YELLOW), false);
+            }
+            return 0;
+        });
+        player.then(remove);
+        for (Claim.Permission value : Claim.Permission.values()) {
+            LiteralArgumentBuilder<ServerCommandSource> permNode = CommandManager.literal(value.id);
+            RequiredArgumentBuilder<ServerCommandSource, Boolean> allow = CommandManager.argument("allow", BoolArgumentType.bool());
+            allow.executes(context -> {
+                Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
+                if (verifyPermission(claim1, Claim.Permission.CHANGE_PERMISSIONS, context, admin)) {
+                    ServerPlayerEntity player1 = EntityArgumentType.getPlayer(context, "player");
+                    boolean permission = BoolArgumentType.getBool(context, "allow");
+                    modifyException(claim1, player1, value, permission);
+                    context.getSource().sendFeedback(new LiteralText(player1.getGameProfile().getName() + (permission ? " now" : " no longer") + " has the permission " + value.name).formatted(Formatting.YELLOW), false);
+                }
+                return 0;
+            });
+            permNode.executes(context -> {
+                Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
+                if (verifyPermission(claim1, Claim.Permission.CHANGE_PERMISSIONS, context, admin)) {
+                    ServerPlayerEntity player1 = EntityArgumentType.getPlayer(context, "player");
+                    boolean permission = hasPermission(claim1, player1, value);
+                    context.getSource().sendFeedback(new LiteralText(player1.getGameProfile().getName() + (permission ? " does" : " does not") + " have the permission " + value.name).formatted(Formatting.YELLOW), false);
+                }
+                return 0;
+            });
+            permNode.then(allow);
+            player.then(permNode);
+        }
+        claim.then(player);
+        exceptions.then(claim);
+        command.then(exceptions);
+    }
+    private static boolean verifyPermission(Claim claim, Claim.Permission permission, CommandContext<ServerCommandSource> context, boolean admin) throws CommandSyntaxException {
+        if (verifyExists(claim, context)) {
+            if (claim.permissionManager.hasPermission(context.getSource().getPlayer().getGameProfile().getId(), permission)) {
+                return true;
+            } else {
+                context.getSource().sendFeedback(new LiteralText(admin ? "You are modifying a claim using admin privileges" : "You cannot modify exceptions for this claim").formatted(admin ? Formatting.DARK_RED : Formatting.RED), false);
+                return admin;
+            }
+        } else {
+            return false;
+        }
+    }
+    private static boolean verifyExists(Claim claim, CommandContext<ServerCommandSource> context) {
+        if (claim == null) {
+            context.getSource().sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
+            return false;
+        } else {
+            return true;
+        }
+    }
+
 
     private static int showClaim(ServerCommandSource source, Claim claim, boolean reset) throws CommandSyntaxException {
         ServerPlayerEntity player = source.getPlayer();
