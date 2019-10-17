@@ -437,7 +437,7 @@ public class ClaimCommand {
     }
 
     private static void createExceptionCommand(LiteralArgumentBuilder<ServerCommandSource> command, boolean admin) {
-        LiteralArgumentBuilder<ServerCommandSource> exceptions = CommandManager.literal("exceptions");
+        LiteralArgumentBuilder<ServerCommandSource> exceptions = CommandManager.literal("permissions");
         RequiredArgumentBuilder<ServerCommandSource, String> claim = CommandManager.argument("claim", StringArgumentType.word());
         RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = CommandManager.argument("player", EntityArgumentType.player());
         LiteralArgumentBuilder<ServerCommandSource> remove = CommandManager.literal("remove");
