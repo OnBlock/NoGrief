@@ -439,44 +439,90 @@ public class ClaimCommand {
     private static void createExceptionCommand(LiteralArgumentBuilder<ServerCommandSource> command, boolean admin) {
         LiteralArgumentBuilder<ServerCommandSource> exceptions = CommandManager.literal("permissions");
         RequiredArgumentBuilder<ServerCommandSource, String> claim = CommandManager.argument("claim", StringArgumentType.word());
-        RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = CommandManager.argument("player", EntityArgumentType.player());
-        LiteralArgumentBuilder<ServerCommandSource> remove = CommandManager.literal("remove");
-        remove.executes(context -> {
-            Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
-            if (verifyPermission(claim1, Claim.Permission.CHANGE_PERMISSIONS, context, admin)) {
-                ServerPlayerEntity player1 = EntityArgumentType.getPlayer(context, "player");
-                claim1.permissionManager.resetPermissions(player1.getGameProfile().getId());
-                context.getSource().sendFeedback(new LiteralText(player1.getGameProfile().getName() + " no longer has an exception in the claim").formatted(Formatting.YELLOW), false);
+        LiteralArgumentBuilder<ServerCommandSource> playerLiteral = CommandManager.literal("player");
+        {
+            RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = CommandManager.argument("player", EntityArgumentType.player());
+            LiteralArgumentBuilder<ServerCommandSource> remove = CommandManager.literal("remove");
+            remove.executes(context -> {
+                Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
+                if (verifyPermission(claim1, Claim.Permission.CHANGE_PERMISSIONS, context, admin)) {
+                    ServerPlayerEntity player1 = EntityArgumentType.getPlayer(context, "player");
+                    claim1.permissionManager.resetPermissions(player1.getGameProfile().getId());
+                    context.getSource().sendFeedback(new LiteralText(player1.getGameProfile().getName() + " no longer has an exception in the claim").formatted(Formatting.YELLOW), false);
+                }
+                return 0;
+            });
+            player.then(remove);
+            for (Claim.Permission value : Claim.Permission.values()) {
+                LiteralArgumentBuilder<ServerCommandSource> permNode = CommandManager.literal(value.id);
+                RequiredArgumentBuilder<ServerCommandSource, Boolean> allow = CommandManager.argument("allow", BoolArgumentType.bool());
+                allow.executes(context -> {
+                    Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
+                    if (verifyPermission(claim1, Claim.Permission.CHANGE_PERMISSIONS, context, admin)) {
+                        ServerPlayerEntity player1 = EntityArgumentType.getPlayer(context, "player");
+                        boolean permission = BoolArgumentType.getBool(context, "allow");
+                        modifyException(claim1, player1, value, permission);
+                        context.getSource().sendFeedback(new LiteralText(player1.getGameProfile().getName() + (permission ? " now" : " no longer") + " has the permission " + value.name).formatted(Formatting.YELLOW), false);
+                    }
+                    return 0;
+                });
+                permNode.executes(context -> {
+                    Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
+                    if (verifyPermission(claim1, Claim.Permission.CHANGE_PERMISSIONS, context, admin)) {
+                        ServerPlayerEntity player1 = EntityArgumentType.getPlayer(context, "player");
+                        boolean permission = hasPermission(claim1, player1, value);
+                        context.getSource().sendFeedback(new LiteralText(player1.getGameProfile().getName() + (permission ? " now has" : " does not have") + " the permission " + value.name).formatted(Formatting.YELLOW), false);
+                    }
+                    return 0;
+                });
+                permNode.then(allow);
+                player.then(permNode);
             }
-            return 0;
-        });
-        player.then(remove);
-        for (Claim.Permission value : Claim.Permission.values()) {
-            LiteralArgumentBuilder<ServerCommandSource> permNode = CommandManager.literal(value.id);
-            RequiredArgumentBuilder<ServerCommandSource, Boolean> allow = CommandManager.argument("allow", BoolArgumentType.bool());
-            allow.executes(context -> {
-                Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
-                if (verifyPermission(claim1, Claim.Permission.CHANGE_PERMISSIONS, context, admin)) {
-                    ServerPlayerEntity player1 = EntityArgumentType.getPlayer(context, "player");
-                    boolean permission = BoolArgumentType.getBool(context, "allow");
-                    modifyException(claim1, player1, value, permission);
-                    context.getSource().sendFeedback(new LiteralText(player1.getGameProfile().getName() + (permission ? " now" : " no longer") + " has the permission " + value.name).formatted(Formatting.YELLOW), false);
-                }
-                return 0;
-            });
-            permNode.executes(context -> {
-                Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
-                if (verifyPermission(claim1, Claim.Permission.CHANGE_PERMISSIONS, context, admin)) {
-                    ServerPlayerEntity player1 = EntityArgumentType.getPlayer(context, "player");
-                    boolean permission = hasPermission(claim1, player1, value);
-                    context.getSource().sendFeedback(new LiteralText(player1.getGameProfile().getName() + (permission ? " does" : " does not") + " have the permission " + value.name).formatted(Formatting.YELLOW), false);
-                }
-                return 0;
-            });
-            permNode.then(allow);
-            player.then(permNode);
+            playerLiteral.then(player);
         }
-        claim.then(player);
+        LiteralArgumentBuilder<ServerCommandSource> groupLiteral = CommandManager.literal("group");
+        {
+            RequiredArgumentBuilder<ServerCommandSource, String> group = CommandManager.argument("group", StringArgumentType.word());
+            LiteralArgumentBuilder<ServerCommandSource> remove = CommandManager.literal("remove");
+            remove.executes(context -> {
+                Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
+                if (verifyPermission(claim1, Claim.Permission.CHANGE_PERMISSIONS, context, admin)) {
+                    String group1 = StringArgumentType.getString(context, "group");
+                    claim1.permissionManager.resetPermissions(group1);
+                    context.getSource().sendFeedback(new LiteralText("Members of " + group1 + " no longer have that exception in the claim").formatted(Formatting.YELLOW), false);
+                }
+                return 0;
+            });
+            group.then(remove);
+            for (Claim.Permission value : Claim.Permission.values()) {
+                LiteralArgumentBuilder<ServerCommandSource> permNode = CommandManager.literal(value.id);
+                RequiredArgumentBuilder<ServerCommandSource, Boolean> allow = CommandManager.argument("allow", BoolArgumentType.bool());
+                allow.executes(context -> {
+                    Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
+                    if (verifyPermission(claim1, Claim.Permission.CHANGE_PERMISSIONS, context, admin)) {
+                        String group1 = StringArgumentType.getString(context, "group");
+                        boolean permission = BoolArgumentType.getBool(context, "allow");
+                        modifyException(claim1, group1, value, permission);
+                        context.getSource().sendFeedback(new LiteralText("Members of " + group1 + (permission ? " now" : " no longer") + " has the permission " + value.name).formatted(Formatting.YELLOW), false);
+                    }
+                    return 0;
+                });
+                permNode.executes(context -> {
+                    Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
+                    if (verifyPermission(claim1, Claim.Permission.CHANGE_PERMISSIONS, context, admin)) {
+                        String group1 = StringArgumentType.getString(context, "group");
+                        boolean permission = hasPermission(claim1, group1, value);
+                        context.getSource().sendFeedback(new LiteralText("Members of " + group1 + (permission ? " now" : " do not") + " have the permission " + value.name).formatted(Formatting.YELLOW), false);
+                    }
+                    return 0;
+                });
+                permNode.then(allow);
+                group.then(permNode);
+            }
+            groupLiteral.then(group);
+        }
+        claim.then(playerLiteral);
+        claim.then(groupLiteral);
         exceptions.then(claim);
         command.then(exceptions);
     }
@@ -659,8 +705,15 @@ public class ClaimCommand {
         claim.permissionManager.setPermission(exception.getGameProfile().getId(), permission, allowed);
         return 0;
     }
+    private static int modifyException(Claim claim, String exception, Claim.Permission permission, boolean allowed) {
+        claim.permissionManager.setPermission(exception, permission, allowed);
+        return 0;
+    }
     private static boolean hasPermission(Claim claim, ServerPlayerEntity exception, Claim.Permission permission) {
         return claim.permissionManager.hasPermission(exception.getGameProfile().getId(), permission);
+    }
+    private static boolean hasPermission(Claim claim, String exception, Claim.Permission permission) {
+        return claim.permissionManager.hasPermission(exception, permission);
     }
     private static Direction directionByName(String name) {
         for (Direction direction : Direction.values()) {
