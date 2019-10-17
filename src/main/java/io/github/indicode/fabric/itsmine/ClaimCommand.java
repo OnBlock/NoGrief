@@ -482,8 +482,10 @@ public class ClaimCommand {
             playerLiteral.then(player);
         }
         LiteralArgumentBuilder<ServerCommandSource> groupLiteral = CommandManager.literal("group");
+        groupLiteral.requires(sender -> Thimble.hasPermissionOrOp(sender, "itsmine.specify_groups", 2));
         {
             RequiredArgumentBuilder<ServerCommandSource, String> group = CommandManager.argument("group", StringArgumentType.word());
+            group.suggests(PermissionCommand.SUGGESTIONS_BUILDER);
             LiteralArgumentBuilder<ServerCommandSource> remove = CommandManager.literal("remove");
             remove.executes(context -> {
                 Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));

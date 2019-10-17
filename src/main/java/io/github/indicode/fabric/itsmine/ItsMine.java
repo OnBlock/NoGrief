@@ -19,6 +19,7 @@ public class ItsMine implements ModInitializer {
         Thimble.permissionWriters.add(pair -> {
             try {
                 pair.getLeft().getPermission("itsmine", CommandPermission.class);
+                pair.getLeft().getPermission("itsmine.specify_groups", CommandPermission.class);
                 pair.getLeft().getPermission("itsmine.admin", CommandPermission.class);
                 pair.getLeft().getPermission("itsmine.admin.infinite_claim", CommandPermission.class);
                 pair.getLeft().getPermission("itsmine.admin.check_others", CommandPermission.class);
