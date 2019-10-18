@@ -472,7 +472,7 @@ public class ClaimCommand {
                     if (verifyPermission(claim1, Claim.Permission.CHANGE_PERMISSIONS, context, admin)) {
                         ServerPlayerEntity player1 = EntityArgumentType.getPlayer(context, "player");
                         boolean permission = hasPermission(claim1, player1, value);
-                        context.getSource().sendFeedback(new LiteralText(player1.getGameProfile().getName() + (permission ? " now has" : " does not have") + " the permission " + value.name).formatted(Formatting.YELLOW), false);
+                        context.getSource().sendFeedback(new LiteralText(player1.getGameProfile().getName() + (permission ? " has" : " does not have") + " the permission " + value.name).formatted(Formatting.YELLOW), false);
                     }
                     return 0;
                 });
