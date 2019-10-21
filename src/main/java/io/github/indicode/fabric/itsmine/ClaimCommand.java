@@ -454,6 +454,18 @@ public class ClaimCommand {
                 return 0;
             });
             player.then(remove);
+            LiteralArgumentBuilder<ServerCommandSource> all = CommandManager.literal("*");
+            RequiredArgumentBuilder<ServerCommandSource, Boolean> allstate = CommandManager.argument("allow", BoolArgumentType.bool());
+            allstate.executes(context -> {
+                Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
+                if (verifyPermission(claim1, Claim.Permission.CHANGE_PERMISSIONS, context, admin)) {
+                    ServerPlayerEntity player1 = EntityArgumentType.getPlayer(context, "player");
+                    boolean permission = BoolArgumentType.getBool(context, "allow");
+                    claim1.permissionManager.playerPermissions.put(player1, permission ? new Claim.InvertedPermissionMap() : new Claim.DefaultPermissionMap());
+                    context.getSource().sendFeedback(new LiteralText(player1.getGameProfile().getName() + (permission ? " now" : " no longer") + " has the permission " + value.name).formatted(Formatting.YELLOW), false);
+                }
+                return 0;
+            });
             for (Claim.Permission value : Claim.Permission.values()) {
                 LiteralArgumentBuilder<ServerCommandSource> permNode = CommandManager.literal(value.id);
                 RequiredArgumentBuilder<ServerCommandSource, Boolean> allow = CommandManager.argument("allow", BoolArgumentType.bool());
