@@ -22,12 +22,10 @@ public class Functions {
     public static void doPistonUpdate(ServerWorld world, Packet packet) {
         if (packet instanceof BlockActionS2CPacket) {
             BlockActionPacketMixin accessor = (BlockActionPacketMixin) packet;
-            System.out.println(accessor.getBlock());
             if ((accessor.getBlock() == Blocks.PISTON || accessor.getBlock() == Blocks.PISTON_HEAD || accessor.getBlock() == Blocks.STICKY_PISTON)) {
                 Direction direction = Direction.byId(accessor.getData());
                 BlockPos pos = BlockPos.fromLong(accessor.getPos().offset(2, direction));
                 world.method_14178().markForUpdate(pos);
-                System.out.println("UPDATING: " + pos);
             }
         }
     }
