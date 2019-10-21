@@ -292,7 +292,7 @@ public class ClaimCommand {
             //admin.requires(source -> Thimble.hasPermissionChildOrOp(source, "itsmine.admin", 4));
             {
                 LiteralArgumentBuilder<ServerCommandSource> add = CommandManager.literal("add_blocks");
-                add.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.modify_balance", 4));
+                add.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.modify_balance", 2));
                 RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = CommandManager.argument("player", EntityArgumentType.player());
                 RequiredArgumentBuilder<ServerCommandSource, Integer> amount = CommandManager.argument("amount", IntegerArgumentType.integer());
                 amount.executes(context -> {
@@ -306,7 +306,7 @@ public class ClaimCommand {
             }
             {
                 LiteralArgumentBuilder<ServerCommandSource> remove = CommandManager.literal("remove_blocks");
-                remove.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.modify_balance", 4));
+                remove.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.modify_balance", 2));
                 RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = CommandManager.argument("player", EntityArgumentType.player());
                 RequiredArgumentBuilder<ServerCommandSource, Integer> amount = CommandManager.argument("amount", IntegerArgumentType.integer());
                 amount.executes(context -> {
@@ -320,7 +320,7 @@ public class ClaimCommand {
             }
             {
                 LiteralArgumentBuilder<ServerCommandSource> set = CommandManager.literal("set_blocks");
-                set.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.modify_balance", 4));
+                set.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.modify_balance", 2));
                 RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = CommandManager.argument("player", EntityArgumentType.player());
                 RequiredArgumentBuilder<ServerCommandSource, Integer> amount = CommandManager.argument("amount", IntegerArgumentType.integer());
                 amount.executes(context -> {
@@ -461,11 +461,13 @@ public class ClaimCommand {
                 if (verifyPermission(claim1, Claim.Permission.CHANGE_PERMISSIONS, context, admin)) {
                     ServerPlayerEntity player1 = EntityArgumentType.getPlayer(context, "player");
                     boolean permission = BoolArgumentType.getBool(context, "allow");
-                    claim1.permissionManager.playerPermissions.put(player1, permission ? new Claim.InvertedPermissionMap() : new Claim.DefaultPermissionMap());
-                    context.getSource().sendFeedback(new LiteralText(player1.getGameProfile().getName() + (permission ? " now" : " no longer") + " has the permission " + value.name).formatted(Formatting.YELLOW), false);
+                    claim1.permissionManager.playerPermissions.put(player1.getGameProfile().getId(), permission ? new Claim.InvertedPermissionMap() : new Claim.DefaultPermissionMap());
+                    context.getSource().sendFeedback(new LiteralText(player1.getGameProfile().getName() + (permission ? " now" : " no longer") + " has all the permissions").formatted(Formatting.YELLOW), false);
                 }
                 return 0;
             });
+            all.then(allstate);
+            player.then(all);
             for (Claim.Permission value : Claim.Permission.values()) {
                 LiteralArgumentBuilder<ServerCommandSource> permNode = CommandManager.literal(value.id);
                 RequiredArgumentBuilder<ServerCommandSource, Boolean> allow = CommandManager.argument("allow", BoolArgumentType.bool());
