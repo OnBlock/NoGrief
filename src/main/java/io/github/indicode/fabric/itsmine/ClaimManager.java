@@ -33,11 +33,17 @@ public class ClaimManager {
     public void addClaimBlocks(UUID player, int amount) {
         useBlocksUntil0(player, -amount);
     }
+    public void addClaimBlocks(Collection<ServerPlayerEntity> players, int amount) {
+        players.forEach(player -> useBlocksUntil0(player.getGameProfile().getId(), -amount));
+    }
     public void useBlocksUntil0(UUID player, int amount) {
         if (!useClaimBlocks(player, amount)) blocksLeft.put(player, 0);
     }
+    public void setClaimBlocks(Collection<ServerPlayerEntity> players, int amount) {
+        players.forEach(player -> setClaimBlocks(player.getGameProfile().getId(), -amount));
+    }
     public void setClaimBlocks(UUID player, int amount) {
-        blocksLeft.put(player, amount < 0 ? 0 : amount);
+        blocksLeft.put(player, Math.max(amount, 0));
     }
     public void releaseBlocksToOwner(Claim claim) {
         if (claim.claimBlockOwner != null) addClaimBlocks(claim.claimBlockOwner, claim.getArea());

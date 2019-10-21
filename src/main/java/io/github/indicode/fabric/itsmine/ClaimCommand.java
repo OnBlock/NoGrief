@@ -293,11 +293,11 @@ public class ClaimCommand {
             {
                 LiteralArgumentBuilder<ServerCommandSource> add = CommandManager.literal("add_blocks");
                 add.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.modify_balance", 2));
-                RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = CommandManager.argument("player", EntityArgumentType.player());
+                RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = CommandManager.argument("player", EntityArgumentType.players());
                 RequiredArgumentBuilder<ServerCommandSource, Integer> amount = CommandManager.argument("amount", IntegerArgumentType.integer());
                 amount.executes(context -> {
-                    ClaimManager.INSTANCE.addClaimBlocks(EntityArgumentType.getPlayer(context, "player").getGameProfile().getId(), IntegerArgumentType.getInteger(context, "amount"));
-                    context.getSource().sendFeedback(new LiteralText("Gave " + IntegerArgumentType.getInteger(context, "amount") + " claim blocks to " + EntityArgumentType.getPlayer(context, "player").getGameProfile().getName()).formatted(Formatting.GREEN), true);
+                    ClaimManager.INSTANCE.addClaimBlocks(EntityArgumentType.getPlayers(context, "player"), IntegerArgumentType.getInteger(context, "amount"));
+                    context.getSource().sendFeedback(new LiteralText("Gave " + IntegerArgumentType.getInteger(context, "amount") + " claim blocks").formatted(Formatting.GREEN), true);
                     return 0;
                 });
                 player.then(amount);
@@ -307,11 +307,11 @@ public class ClaimCommand {
             {
                 LiteralArgumentBuilder<ServerCommandSource> remove = CommandManager.literal("remove_blocks");
                 remove.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.modify_balance", 2));
-                RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = CommandManager.argument("player", EntityArgumentType.player());
+                RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = CommandManager.argument("player", EntityArgumentType.players());
                 RequiredArgumentBuilder<ServerCommandSource, Integer> amount = CommandManager.argument("amount", IntegerArgumentType.integer());
                 amount.executes(context -> {
-                    ClaimManager.INSTANCE.addClaimBlocks(EntityArgumentType.getPlayer(context, "player").getGameProfile().getId(), -IntegerArgumentType.getInteger(context, "amount"));
-                    context.getSource().sendFeedback(new LiteralText("Took " + IntegerArgumentType.getInteger(context, "amount") + " claim blocks from " + EntityArgumentType.getPlayer(context, "player").getGameProfile().getName()).formatted(Formatting.GREEN), true);
+                    ClaimManager.INSTANCE.addClaimBlocks(EntityArgumentType.getPlayers(context, "player"), -IntegerArgumentType.getInteger(context, "amount"));
+                    context.getSource().sendFeedback(new LiteralText("Took " + IntegerArgumentType.getInteger(context, "amount") + " claim blocks").formatted(Formatting.GREEN), true);
                     return 0;
                 });
                 player.then(amount);
@@ -321,11 +321,11 @@ public class ClaimCommand {
             {
                 LiteralArgumentBuilder<ServerCommandSource> set = CommandManager.literal("set_blocks");
                 set.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.modify_balance", 2));
-                RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = CommandManager.argument("player", EntityArgumentType.player());
+                RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = CommandManager.argument("player", EntityArgumentType.players());
                 RequiredArgumentBuilder<ServerCommandSource, Integer> amount = CommandManager.argument("amount", IntegerArgumentType.integer());
                 amount.executes(context -> {
-                    ClaimManager.INSTANCE.setClaimBlocks(EntityArgumentType.getPlayer(context, "player").getGameProfile().getId(), IntegerArgumentType.getInteger(context, "amount"));
-                    context.getSource().sendFeedback(new LiteralText("Set " + EntityArgumentType.getPlayer(context, "player").getGameProfile().getName() + "'s claim block amount to " + IntegerArgumentType.getInteger(context, "amount")).formatted(Formatting.GREEN), true);
+                    ClaimManager.INSTANCE.setClaimBlocks(EntityArgumentType.getPlayers(context, "player"), IntegerArgumentType.getInteger(context, "amount"));
+                    context.getSource().sendFeedback(new LiteralText("Set claim block amount to " + IntegerArgumentType.getInteger(context, "amount")).formatted(Formatting.GREEN), true);
                     return 0;
                 });
                 player.then(amount);
