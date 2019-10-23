@@ -16,16 +16,16 @@ public class ItsMine implements ModInitializer {
     @Override
     public void onInitialize() {
         Config.sync(false);
-        Thimble.permissionWriters.add(pair -> {
+        Thimble.permissionWriters.add((map, server) -> {
             try {
-                pair.getLeft().getPermission("itsmine", CommandPermission.class);
-                pair.getLeft().getPermission("itsmine.specify_groups", CommandPermission.class);
-                pair.getLeft().getPermission("itsmine.admin", CommandPermission.class);
-                pair.getLeft().getPermission("itsmine.admin.infinite_claim", CommandPermission.class);
-                pair.getLeft().getPermission("itsmine.admin.check_others", CommandPermission.class);
-                pair.getLeft().getPermission("itsmine.admin.modify_balance", CommandPermission.class);
-                pair.getLeft().getPermission("itsmine.admin.modify", CommandPermission.class);
-                pair.getLeft().getPermission("itsmine.admin.ignore_claims", CommandPermission.class);
+                map.getPermission("itsmine", CommandPermission.class);
+                map.getPermission("itsmine.specify_groups", CommandPermission.class);
+                map.getPermission("itsmine.admin", CommandPermission.class);
+                map.getPermission("itsmine.admin.infinite_claim", CommandPermission.class);
+                map.getPermission("itsmine.admin.check_others", CommandPermission.class);
+                map.getPermission("itsmine.admin.modify_balance", CommandPermission.class);
+                map.getPermission("itsmine.admin.modify", CommandPermission.class);
+                map.getPermission("itsmine.admin.ignore_claims", CommandPermission.class);
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
                 System.err.println("Claim permissions could not be loaded:");
                 e.printStackTrace();
