@@ -18,6 +18,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.network.packet.BlockUpdateS2CPacket;
+import net.minecraft.command.CommandException;
 import net.minecraft.command.EntitySelector;
 import net.minecraft.command.arguments.BlockPosArgumentType;
 import net.minecraft.command.arguments.EntityArgumentType;
@@ -567,7 +568,9 @@ public class ClaimCommand {
         }
     }
     private static void verifyGroup(String permission) {
-        PermissionCommand.getPermission(permission);
+        if (Thimble.PERMISSIONS.permissionExists(permission)) {
+            throw new CommandException(new LiteralText("Nonexistant permission group").formatted(Formatting.RED));
+        }
     }
 
 

@@ -1,8 +1,7 @@
 package io.github.indicode.fabric.itsmine;
 
+import io.github.indicode.fabric.permissions.PermChangeBehavior;
 import io.github.indicode.fabric.permissions.Thimble;
-import io.github.indicode.fabric.permissions.command.CommandPermission;
-import io.github.indicode.fabric.permissions.command.NoSavePermission;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.server.command.ServerCommandSource;
 
@@ -17,19 +16,12 @@ public class ItsMine implements ModInitializer {
     public void onInitialize() {
         Config.sync(false);
         Thimble.permissionWriters.add((map, server) -> {
-            try {
-                map.getPermission("itsmine", CommandPermission.class);
-                map.getPermission("itsmine.specify_groups", CommandPermission.class);
-                map.getPermission("itsmine.admin", CommandPermission.class);
-                map.getPermission("itsmine.admin.infinite_claim", CommandPermission.class);
-                map.getPermission("itsmine.admin.check_others", CommandPermission.class);
-                map.getPermission("itsmine.admin.modify_balance", CommandPermission.class);
-                map.getPermission("itsmine.admin.modify", CommandPermission.class);
-                map.getPermission("itsmine.admin.ignore_claims", CommandPermission.class);
-            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
-                System.err.println("Claim permissions could not be loaded:");
-                e.printStackTrace();
-            }
+            map.registerPermission("itsmine.specify_groups", PermChangeBehavior.UPDATE_COMMAND_TREE);
+            map.registerPermission("itsmine.admin.infinite_claim", PermChangeBehavior.UPDATE_COMMAND_TREE);
+            map.registerPermission("itsmine.admin.check_others", PermChangeBehavior.UPDATE_COMMAND_TREE);
+            map.registerPermission("itsmine.admin.modify_balance", PermChangeBehavior.UPDATE_COMMAND_TREE);
+            map.registerPermission("itsmine.admin.modify", PermChangeBehavior.UPDATE_COMMAND_TREE);
+            map.registerPermission("itsmine.admin.ignore_claims", PermChangeBehavior.UPDATE_COMMAND_TREE);
         });
     }
     public static String blocksToAreaString(int blocks) {
