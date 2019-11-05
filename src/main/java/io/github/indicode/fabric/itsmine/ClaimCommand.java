@@ -440,6 +440,7 @@ public class ClaimCommand {
 
     private static void createExceptionCommand(LiteralArgumentBuilder<ServerCommandSource> command, boolean admin) {
         LiteralArgumentBuilder<ServerCommandSource> exceptions = CommandManager.literal("permissions");
+        if (admin) exceptions.requires(source -> Thimble.hasPermissionOrOp(source, "claim.admin.modify_permissions", 2));
         RequiredArgumentBuilder<ServerCommandSource, String> claim = CommandManager.argument("claim", StringArgumentType.word());
         LiteralArgumentBuilder<ServerCommandSource> playerLiteral = CommandManager.literal("player");
         {
