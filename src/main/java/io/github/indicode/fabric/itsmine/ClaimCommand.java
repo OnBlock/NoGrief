@@ -652,6 +652,7 @@ public class ClaimCommand {
         BlockPos min = new BlockPos(x, y, z);
         BlockPos max = new BlockPos(mx, my, mz);
         BlockPos sub = max.subtract(min);
+        sub = sub.add(1,Config.claims2d ? 0 : 1,1);
         int subInt = sub.getX() * (Config.claims2d ? 1 : sub.getY()) * sub.getZ();
 
         Claim claim = new Claim(name, admin ? null : ownerID, min, max, owner.getWorld().getDimension().getType());
