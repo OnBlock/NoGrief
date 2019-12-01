@@ -25,11 +25,21 @@ public class ItsMine implements ModInitializer {
             map.registerPermission("itsmine.admin.ignore_claims", PermChangeBehavior.UPDATE_COMMAND_TREE);
         });
     }
-    public static String blocksToAreaString(int blocks) {
+    public static String blocksToAreaString3d(int blocks) {
         int base = (int) Math.floor(Math.cbrt(blocks));
         int additionalBlocks = blocks - (int) Math.pow(base, 3);
         int extraRows = (int) Math.floor(Math.cbrt(Math.floor((float)additionalBlocks / base)));
         int leftoverBlocks = additionalBlocks % base;
         return (base + extraRows) + "x" + base + "x" + base + "(+" + leftoverBlocks + ")";
+    }
+    public static String blocksToAreaString2d(int blocks) {
+        int base = (int) Math.floor(Math.sqrt(blocks));
+        int additionalBlocks = blocks - (int) Math.pow(base, 2);
+        int extraRows = (int) Math.floor((float)additionalBlocks / base);
+        int leftoverBlocks = additionalBlocks % base;
+        return (base + extraRows) + "x" + base + "(+" + leftoverBlocks + ")";
+    }
+    public static String blocksToAreaString(int blocks) {
+        return Config.claims2d ? blocksToAreaString2d(blocks) : blocksToAreaString3d(blocks);
     }
 }

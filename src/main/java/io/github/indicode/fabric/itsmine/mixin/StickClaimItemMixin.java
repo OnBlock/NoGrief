@@ -1,6 +1,7 @@
 package io.github.indicode.fabric.itsmine.mixin;
 
 import io.github.indicode.fabric.itsmine.ClaimManager;
+import io.github.indicode.fabric.itsmine.Config;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -28,10 +29,10 @@ public class StickClaimItemMixin {
                 if (posPair == null) return;
                 else posPair = new Pair<>(context.getBlockPos(), posPair.getRight());
                 ClaimManager.INSTANCE.stickPositions.put(context.getPlayer(), posPair);
-                context.getPlayer().sendMessage(new LiteralText("Position #1 set: " + context.getBlockPos().getX() + " " + context.getBlockPos().getY() + " " + context.getBlockPos().getZ()).formatted(Formatting.GREEN));
+                context.getPlayer().sendMessage(new LiteralText("Position #1 set: " + context.getBlockPos().getX() + (Config.claims2d ? "" : " " + context.getBlockPos().getY()) + " " + context.getBlockPos().getZ()).formatted(Formatting.GREEN));
                 if (posPair.getRight() != null) {
                     context.getPlayer().sendMessage(new LiteralText("Area Selected. Type /claim create <name> to create your claim!").formatted(Formatting.GOLD));
-                    context.getPlayer().sendMessage(new LiteralText("Remember that claims are three dimensional. Don't forget to expand up/down or select a big enough area...").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC));
+                    if (!Config.claims2d) context.getPlayer().sendMessage(new LiteralText("Remember that claims are three dimensional. Don't forget to expand up/down or select a big enough area...").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC));
                 }
                 cir.setReturnValue(ActionResult.SUCCESS);
             }
@@ -46,10 +47,10 @@ public class StickClaimItemMixin {
                 if (posPair == null) return;
                 else posPair = new Pair<>(posPair.getLeft(), pos);
                 ClaimManager.INSTANCE.stickPositions.put(player, posPair);
-                player.sendMessage(new LiteralText("Position #2 set: " + pos.getX() + " " + pos.getY() + " " + pos.getZ()).formatted(Formatting.GREEN));
+                player.sendMessage(new LiteralText("Position #2 set: " + pos.getX() + (Config.claims2d ? "" : " " + pos.getY()) + " " + pos.getZ()).formatted(Formatting.GREEN));
                 if (posPair.getLeft() != null) {
                     player.sendMessage(new LiteralText("Area Selected. Type /claim create <name> to create your claim!").formatted(Formatting.GOLD));
-                    player.sendMessage(new LiteralText("Remember that claims are three dimensional. Don't forget to expand up/down or select a big enough area...").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC));
+                    if (!Config.claims2d) player.sendMessage(new LiteralText("Remember that claims are three dimensional. Don't forget to expand up/down or select a big enough area...").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC));
                 }
                 cir.setReturnValue(false);
             }

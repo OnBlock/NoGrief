@@ -2,13 +2,17 @@ package io.github.indicode.fabric.itsmine.mixin;
 
 import io.github.indicode.fabric.itsmine.Claim;
 import io.github.indicode.fabric.itsmine.ClaimManager;
+import io.github.indicode.fabric.itsmine.Functions;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -30,6 +34,16 @@ public class ServerPlayNetworkHandlerMixin {
         }
         return entity.interactAt(playerEntity_1, vec3d_1, hand_1);
     }
+    // This is just so i can connect peeps
+    @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayNetworkHandler;disconnect(Lnet/minecraft/text/Text;)V"))
+    public void dontDisconnect(ServerPlayNetworkHandler handler, Text text_1) {
+
+    }
+    @Redirect(method = "onKeepAlive", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayNetworkHandler;isServerOwner()Z"))
+    public boolean yesIAm(ServerPlayNetworkHandler handler) {
+        return true;
+    }
+
     @Redirect(method = "onPlayerInteractBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;canPlayerModifyAt(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/math/BlockPos;)Z"))
     private boolean canITouchie(ServerWorld world, PlayerEntity playerEntity_1, BlockPos blockPos_1) {
         return Functions.canPlayerActuallyModifyAt(world, playerEntity_1, blockPos_1);

@@ -22,7 +22,7 @@ public class ClaimManager {
     private HashMap<UUID, Integer> blocksLeft = new HashMap<>();
     public List<UUID> ignoringClaims = new ArrayList<>();
     public int getClaimBlocks(UUID id) {
-        return blocksLeft.getOrDefault(id, Config.baseClaimBlocks);
+        return blocksLeft.getOrDefault(id, Config.claims2d ? Config.baseClaimBlocks2d : Config.baseClaimBlocks3d);
     }
     public boolean useClaimBlocks(UUID player, int amount) {
         int blocks = getClaimBlocks(player) - amount;

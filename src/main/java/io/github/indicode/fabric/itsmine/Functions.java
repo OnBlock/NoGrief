@@ -25,7 +25,7 @@ public class Functions {
             if ((accessor.getBlock() == Blocks.PISTON || accessor.getBlock() == Blocks.PISTON_HEAD || accessor.getBlock() == Blocks.STICKY_PISTON)) {
                 Direction direction = Direction.byId(accessor.getData());
                 BlockPos pos = BlockPos.fromLong(accessor.getPos().offset(2, direction));
-                world.method_14178().markForUpdate(pos);
+                world.getChunkManager().markForUpdate(pos);
             }
         }
     }

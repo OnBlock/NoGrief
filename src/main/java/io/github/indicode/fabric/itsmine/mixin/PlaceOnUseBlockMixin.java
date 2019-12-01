@@ -28,7 +28,7 @@ public class PlaceOnUseBlockMixin {
             if (Functions.canModifyAtClaimed(playerEntity_1, blockPos_1)) return true;
             else {
                 if ((Object)this instanceof LilyPadItem){
-                    ((ServerWorld)world).method_14178().markForUpdate(blockPos_1);
+                    ((ServerWorld)world).getChunkManager().markForUpdate(blockPos_1);
                 }
                 return false;
             }
