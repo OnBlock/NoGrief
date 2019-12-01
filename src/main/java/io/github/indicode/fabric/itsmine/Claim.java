@@ -149,7 +149,7 @@ public class Claim {
         return shrink(new BlockPos(direction.getOffsetX() * distance, direction.getOffsetY() * distance, direction.getOffsetZ() * distance));
     }
     public int getArea() {
-        return getSize().getX() * getSize().getY() * getSize().getZ();
+        return getSize().getX() * (Config.claims2d ? 1 : getSize().getY()) * getSize().getZ();
     }
     public CompoundTag toTag() {
         CompoundTag tag =  new CompoundTag();

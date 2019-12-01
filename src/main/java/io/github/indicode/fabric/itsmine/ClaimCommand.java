@@ -633,12 +633,14 @@ public class ClaimCommand {
             x =  posA.getX();
             mx = posB.getX();
         }
-        if (posA.getY() > posB.getY()) {
-            y = posB.getY();
-            my = posA.getY();
-        } else {
-            y =  posA.getY();
-            my = posB.getY();
+        if (!Config.claims2d) {
+            if (posA.getY() > posB.getY()) {
+                y = posB.getY();
+                my = posA.getY();
+            } else {
+                y = posA.getY();
+                my = posB.getY();
+            }
         }
         if (posA.getZ() > posB.getZ()) {
             z = posB.getZ();
@@ -650,7 +652,7 @@ public class ClaimCommand {
         BlockPos min = new BlockPos(x,y, z);
         BlockPos max = new BlockPos(mx, my, mz);
         BlockPos sub = max.subtract(min);
-        int subInt = sub.getX() * sub.getY() * sub.getZ();
+        int subInt = sub.getX() * (Config.claims2d ? 1 : sub.getY()) * sub.getZ();
 
         Claim claim = new Claim(name, admin ? null : ownerID, min, max, owner.getWorld().getDimension().getType());
         claim.permissionManager.playerPermissions.put(ownerID, new Claim.InvertedPermissionMap());
