@@ -625,7 +625,7 @@ public class ClaimCommand {
     }
     private static int createClaim(String name, ServerCommandSource owner, BlockPos posA, BlockPos posB, boolean admin) throws CommandSyntaxException {
         UUID ownerID = owner.getPlayer().getGameProfile().getId();
-        int x, y, z, mx, my, mz;
+        int x, y = 0, z, mx, my = 255, mz;
         if (posA.getX() > posB.getX()) {
             x = posB.getX();
             mx = posA.getX();
@@ -649,7 +649,7 @@ public class ClaimCommand {
             z =  posA.getZ();
             mz = posB.getZ();
         }
-        BlockPos min = new BlockPos(x,y, z);
+        BlockPos min = new BlockPos(x, y, z);
         BlockPos max = new BlockPos(mx, my, mz);
         BlockPos sub = max.subtract(min);
         int subInt = sub.getX() * (Config.claims2d ? 1 : sub.getY()) * sub.getZ();
