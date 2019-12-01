@@ -185,6 +185,7 @@ public class Claim {
             int minZ = pos.getInt("minZ");
             int maxX = pos.getInt("maxX");
             int maxY = Config.claims2d ? 255 : pos.getInt("maxY");
+            if (maxY == 0) maxY = 255;
             int maxZ = pos.getInt("maxZ");
             this.min = new BlockPos(minX, minY, minZ);
             this.max = new BlockPos(maxX, maxY, maxZ);
