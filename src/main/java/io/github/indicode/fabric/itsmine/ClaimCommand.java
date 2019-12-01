@@ -595,7 +595,7 @@ public class ClaimCommand {
     }
     private static void silentHideShow(ServerPlayerEntity player, Claim claim, boolean hide, boolean updateStatus) {
         BlockState block = hide ? null : Blocks.LAPIS_BLOCK.getDefaultState();
-        for (int x = claim.min.getX(); x < claim.max.getX(); x++) {
+        if (!Config.claims2d) for (int x = claim.min.getX(); x < claim.max.getX(); x++) {
             sendBlockPacket(player, new BlockPos(x, claim.min.getY(), claim.min.getZ()), block);
             sendBlockPacket(player, new BlockPos(x, claim.max.getY(), claim.min.getZ()), block);
             sendBlockPacket(player, new BlockPos(x, claim.min.getY(), claim.max.getZ()), block);
@@ -607,7 +607,7 @@ public class ClaimCommand {
             sendBlockPacket(player, new BlockPos(claim.min.getX(), y, claim.max.getZ()), block);
             sendBlockPacket(player, new BlockPos(claim.max.getX(), y, claim.max.getZ()), block);
         }
-        for (int z = claim.min.getZ(); z < claim.max.getZ(); z++) {
+        if (!Config.claims2d) for (int z = claim.min.getZ(); z < claim.max.getZ(); z++) {
             sendBlockPacket(player, new BlockPos(claim.min.getX(), claim.min.getY(), z), block);
             sendBlockPacket(player, new BlockPos(claim.max.getX(), claim.min.getY(), z), block);
             sendBlockPacket(player, new BlockPos(claim.min.getX(), claim.max.getY(), z), block);
