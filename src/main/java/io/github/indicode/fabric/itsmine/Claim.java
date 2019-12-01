@@ -156,10 +156,10 @@ public class Claim {
         {
             CompoundTag pos = new CompoundTag();
             pos.putInt("minX", min.getX());
-            pos.putInt("minY", min.getY());
+            if (!Config.claims2d) pos.putInt("minY", min.getY());
             pos.putInt("minZ", min.getZ());
             pos.putInt("maxX", max.getX());
-            pos.putInt("maxY", max.getY());
+            if (!Config.claims2d) pos.putInt("maxY", max.getY());
             pos.putInt("maxZ", max.getZ());
             pos.putString("dimension", DimensionType.getId(dimension).toString());
             tag.put("position", pos);
@@ -181,10 +181,10 @@ public class Claim {
         {
             CompoundTag pos = tag.getCompound("position");
             int minX = pos.getInt("minX");
-            int minY = pos.getInt("minY");
+            int minY = Config.claims2d ? 0 : pos.getInt("minY");
             int minZ = pos.getInt("minZ");
             int maxX = pos.getInt("maxX");
-            int maxY = pos.getInt("maxY");
+            int maxY = Config.claims2d ? 255 : pos.getInt("maxY");
             int maxZ = pos.getInt("maxZ");
             this.min = new BlockPos(minX, minY, minZ);
             this.max = new BlockPos(maxX, maxY, maxZ);
