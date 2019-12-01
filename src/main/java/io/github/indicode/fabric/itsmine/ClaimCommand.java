@@ -45,7 +45,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ClaimCommand {
     public static final SuggestionProvider DIRECTION_SUGGESTION_BUILDER = (source, builder) -> {
         for (Direction direction: Direction.values()) {
-            builder.suggest(direction.getName());
+            if (!(Config.claims2d && direction.getAxis() == Direction.Axis.Y))builder.suggest(direction.getName());
         };
         return builder.buildFuture();
     };
@@ -749,6 +749,10 @@ public class ClaimCommand {
         return null;
     }
     private static int expand(Claim claim, int amount, Direction direction, ServerCommandSource source, boolean admin) throws CommandSyntaxException {
+        if (Config.claims2d && direction.getAxis() == Direction.Axis.Y) {
+            source.sendFeedback(new LiteralText("You cannot vertically expand or shrink claims.").formatted(Formatting.RED), false);
+            return 0;
+        }
         UUID ownerID = source.getPlayer().getGameProfile().getId();
         if (claim == null) {
             source.sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
