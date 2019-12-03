@@ -37,6 +37,8 @@ import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -212,6 +214,15 @@ public class ClaimCommand {
             ));
             info.then(claim);
             command.then(info);
+        }
+        {
+            LiteralArgumentBuilder<ServerCommandSource> list = CommandManager.literal("list");
+            RequiredArgumentBuilder<ServerCommandSource, String> player = CommandManager.argument("player", StringArgumentType.word());
+            player.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.check_others", 2));
+            list.executes(context -> list(context.getSource(), null));
+            player.executes(context -> list(context.getSource(), StringArgumentType.getString(context, "player")));
+            list.then(player);
+            command.then(list);
         }
         createExceptionCommand(command, false);
         {
@@ -828,6 +839,36 @@ public class ClaimCommand {
         source.sendFeedback(new LiteralText("").append(new LiteralText("Claim Size: ").formatted(Formatting.YELLOW)).append(new LiteralText(size.getX() + (Config.claims2d ? "x" : ("x" + size.getY() + "x")) + size.getZ()).formatted(Formatting.GOLD)), false);
         source.sendFeedback(new LiteralText("").append(new LiteralText("Start position: ").formatted(Formatting.YELLOW)).append(new LiteralText("X:" + claim.min.getX() + (Config.claims2d ? "" : " Y:" + claim.min.getY()) + " Z:" + claim.min.getZ()).formatted(Formatting.GOLD)), false);
         source.sendFeedback(new LiteralText("").append(new LiteralText("End position: ").formatted(Formatting.YELLOW)).append(new LiteralText("X:" + claim.max.getX() + (Config.claims2d ? "" : " Y:" + claim.max.getY()) + " Z:" + claim.max.getZ()).formatted(Formatting.GOLD)), false);
+        return 0;
+    }
+    private static int list(ServerCommandSource source, String player) {
+        source.sendFeedback(new LiteralText(player == null ? "Your Claims:" : player + "'s Claims:").formatted(Formatting.YELLOW), false);
+        try {
+            GameProfile profile = player == null ? source.getPlayer().getGameProfile() : source.getMinecraftServer().getUserCache().findByName(player);
+            if (profile == null) {
+                source.sendFeedback(new LiteralText("No player has joined under that name or they have not joined in two months").formatted(Formatting.RED), false);
+            } else {
+                UUID id = profile.getId();
+                List<Claim> claims = ClaimManager.INSTANCE.getPlayerClaims(id);
+                if (claims.isEmpty()) {
+                    source.sendFeedback(new LiteralText("None").formatted(Formatting.YELLOW), false);
+                    return 0;
+                }
+                LiteralText feedback = new LiteralText("");
+                for (int i = 0; i < claims.size(); i++) {
+                    feedback.append(new LiteralText(claims.get(i).name).setStyle(
+                            new Style().setColor(Formatting.GOLD)
+                            .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/claim info " + claims.get(i).name))
+                    ));
+                    if (i < claims.size() - 1) {
+                        feedback.append(new LiteralText(", ").formatted(Formatting.YELLOW));
+                    }
+                }
+                source.sendFeedback(feedback, false);
+            }
+        } catch (CommandSyntaxException e) {
+            source.sendFeedback(new LiteralText("No player is specified").formatted(Formatting.RED), false);
+        }
         return 0;
     }
 }
