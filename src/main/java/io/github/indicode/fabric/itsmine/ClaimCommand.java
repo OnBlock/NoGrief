@@ -15,6 +15,7 @@ import com.mojang.brigadier.suggestion.SuggestionProvider;
 import io.github.indicode.fabric.itsmine.mixin.BlockUpdatePacketMixin;
 import io.github.indicode.fabric.permissions.Thimble;
 import io.github.indicode.fabric.permissions.command.PermissionCommand;
+import io.github.voidpointerdev.minecraft.offlineinfo.OfflineInfo;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -26,6 +27,7 @@ import net.minecraft.command.arguments.EntityArgumentType;
 import net.minecraft.command.arguments.PosArgument;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.command.CommandSource;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.ClickEvent;
@@ -37,6 +39,7 @@ import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
@@ -50,6 +53,15 @@ public class ClaimCommand {
         for (Direction direction: Direction.values()) {
             if (!(Config.claims2d && direction.getAxis() == Direction.Axis.Y))builder.suggest(direction.getName());
         };
+        return builder.buildFuture();
+    };
+    public static final SuggestionProvider<ServerCommandSource> CLAIM_PROVIDER = (source, builder) -> {
+        List<Claim> claims = ClaimManager.INSTANCE.getPlayerClaims(source.getSource().getPlayer().getGameProfile().getId());
+        List<String> names = new ArrayList<>();
+        for (Claim claim : claims) {
+            names.add(claim.name);
+        }
+        CommandSource.suggestMatching(names, builder);
         return builder.buildFuture();
     };
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
@@ -107,6 +119,7 @@ public class ClaimCommand {
             LiteralArgumentBuilder<ServerCommandSource> show = CommandManager.literal("show");
             show.executes(context -> showClaim(context.getSource(), ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().dimension.getType()), false));
             RequiredArgumentBuilder<ServerCommandSource, String> name = CommandManager.argument("name", StringArgumentType.word());
+            name.suggests(CLAIM_PROVIDER);
             name.executes(context -> showClaim(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "name")), false));
             show.then(name);
             command.then(show);
@@ -128,6 +141,7 @@ public class ClaimCommand {
         {
             LiteralArgumentBuilder<ServerCommandSource> delete = CommandManager.literal("destroy");
             RequiredArgumentBuilder<ServerCommandSource, String> claim = CommandManager.argument("claim", StringArgumentType.word());
+            claim.suggests(CLAIM_PROVIDER);
             LiteralArgumentBuilder<ServerCommandSource> confirm = CommandManager.literal("confirm");
             confirm.executes(context -> delete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")), false));
             claim.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")), false));
@@ -193,6 +207,7 @@ public class ClaimCommand {
         {
             LiteralArgumentBuilder<ServerCommandSource> delete = CommandManager.literal("destroy");
             RequiredArgumentBuilder<ServerCommandSource, String> claim = CommandManager.argument("claim", StringArgumentType.word());
+            claim.suggests(CLAIM_PROVIDER);
             LiteralArgumentBuilder<ServerCommandSource> confirm = CommandManager.literal("confirm");
             confirm.executes(context -> delete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")), false));
             claim.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")), false));
@@ -204,6 +219,7 @@ public class ClaimCommand {
         {
             LiteralArgumentBuilder<ServerCommandSource> info = CommandManager.literal("info");
             RequiredArgumentBuilder<ServerCommandSource, String> claim = CommandManager.argument("claim", StringArgumentType.word());
+            claim.suggests(CLAIM_PROVIDER);
             info.executes(context -> info(
                     context.getSource(),
                     ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition()), context.getSource().getWorld().getDimension().getType())
@@ -219,6 +235,7 @@ public class ClaimCommand {
             LiteralArgumentBuilder<ServerCommandSource> list = CommandManager.literal("list");
             RequiredArgumentBuilder<ServerCommandSource, String> player = CommandManager.argument("player", StringArgumentType.word());
             player.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.check_others", 2));
+            player.suggests(OfflineInfo.ONLINE_PROVIDER);
             list.executes(context -> list(context.getSource(), null));
             player.executes(context -> list(context.getSource(), StringArgumentType.getString(context, "player")));
             list.then(player);
@@ -228,6 +245,7 @@ public class ClaimCommand {
         {
             LiteralArgumentBuilder<ServerCommandSource> settings = CommandManager.literal("flags");
             RequiredArgumentBuilder<ServerCommandSource, String> claim = CommandManager.argument("claim", StringArgumentType.word());
+            claim.suggests(CLAIM_PROVIDER);
             for (Claim.ClaimSettings.Setting setting: Claim.ClaimSettings.Setting.values()) {
                 LiteralArgumentBuilder<ServerCommandSource> arg = CommandManager.literal(setting.id);
                 arg.executes(context -> {
@@ -357,6 +375,7 @@ public class ClaimCommand {
                 LiteralArgumentBuilder<ServerCommandSource> delete = CommandManager.literal("destroy");
                 delete.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.modify", 4));
                 RequiredArgumentBuilder<ServerCommandSource, String> claim = CommandManager.argument("claim", StringArgumentType.word());
+                claim.suggests(CLAIM_PROVIDER);
                 LiteralArgumentBuilder<ServerCommandSource> confirm = CommandManager.literal("confirm");
                 confirm.executes(context -> delete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")), true));
                 claim.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")), true));
@@ -462,6 +481,7 @@ public class ClaimCommand {
         LiteralArgumentBuilder<ServerCommandSource> exceptions = CommandManager.literal("permissions");
         if (admin) exceptions.requires(source -> Thimble.hasPermissionOrOp(source, "claim.admin.modify_permissions", 2));
         RequiredArgumentBuilder<ServerCommandSource, String> claim = CommandManager.argument("claim", StringArgumentType.word());
+        claim.suggests(CLAIM_PROVIDER);
         LiteralArgumentBuilder<ServerCommandSource> playerLiteral = CommandManager.literal("player");
         {
             RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = CommandManager.argument("player", EntityArgumentType.player());
@@ -844,11 +864,7 @@ public class ClaimCommand {
     private static int list(ServerCommandSource source, String player) {
         source.sendFeedback(new LiteralText(player == null ? "Your Claims:" : player + "'s Claims:").formatted(Formatting.YELLOW), false);
         try {
-            GameProfile profile = player == null ? source.getPlayer().getGameProfile() : source.getMinecraftServer().getUserCache().findByName(player);
-            if (profile == null) {
-                source.sendFeedback(new LiteralText("No player has joined under that name or they have not joined in two months").formatted(Formatting.RED), false);
-            } else {
-                UUID id = profile.getId();
+                UUID id = player == null ? source.getPlayer().getGameProfile().getId() : OfflineInfo.getIdByName(source.getMinecraftServer().getUserCache(), player);
                 List<Claim> claims = ClaimManager.INSTANCE.getPlayerClaims(id);
                 if (claims.isEmpty()) {
                     source.sendFeedback(new LiteralText("None").formatted(Formatting.YELLOW), false);
@@ -865,7 +881,6 @@ public class ClaimCommand {
                     }
                 }
                 source.sendFeedback(feedback, false);
-            }
         } catch (CommandSyntaxException e) {
             source.sendFeedback(new LiteralText("No player is specified").formatted(Formatting.RED), false);
         }

@@ -25,6 +25,7 @@ dependencies {
 
 	modImplementation "com.github.indi-code:TinyConfig:${project.tiny_config_version}"
 	modImplementation /*"io.github.indicode.fabric:thimble-permissions:0.0.9"//*/"com.github.voidpointerdev:Thimble-Permissions:${project.thimble_permissions_version}"
+	modImplementation "com.github.voidpointerdev:OfflineInfo:${project.offline_info_version}"
 
 	include "com.github.indi-code:TinyConfig:${project.tiny_config_version}"
 	//include "com.github.indi-code:Thimble-Permissions:${project.thimble_permissions_version}"
