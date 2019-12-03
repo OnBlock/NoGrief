@@ -32,6 +32,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements ClaimSho
         super(entityType_1, world_1);
     }
     private Claim shownClaim = null;
+    private int lastClaimHeight = 0;
 
     @Redirect(method = "interact", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;interact(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/Hand;)Z"))
     private boolean dontYouDareTouchMe(Entity entity, PlayerEntity playerEntity_1, Hand hand_1) {
@@ -57,13 +58,19 @@ public abstract class PlayerEntityMixin extends LivingEntity implements ClaimSho
             }
         }
     }
+
+    @Override
+    public void setLast2dHeight(int height) {
+        lastClaimHeight = height;
+    }
+
     /*@Inject(method = "canPlaceOn", at = @At("HEAD"))
-    public void iDontWantYerStuff(BlockPos blockPos_1, Direction direction_1, ItemStack itemStack_1, CallbackInfoReturnable<Boolean> cir) {
-        Claim claim = ClaimManager.INSTANCE.getClaimAt(blockPos_1, world.getDimension().getType());
-        if (claim != null) {
-            cir.setReturnValue(false);
-        }
-    }*/ // Replace with specific undos on certain methods(buttons, containers, etc)
+        public void iDontWantYerStuff(BlockPos blockPos_1, Direction direction_1, ItemStack itemStack_1, CallbackInfoReturnable<Boolean> cir) {
+            Claim claim = ClaimManager.INSTANCE.getClaimAt(blockPos_1, world.getDimension().getType());
+            if (claim != null) {
+                cir.setReturnValue(false);
+            }
+        }*/ // Replace with specific undos on certain methods(buttons, containers, etc)
     @Override
     public void setShownClaim(Claim claim) {
         shownClaim = claim;
@@ -71,5 +78,10 @@ public abstract class PlayerEntityMixin extends LivingEntity implements ClaimSho
     @Override
     public Claim getShownClaim() {
         return shownClaim;
+    }
+
+    @Override
+    public int getLast2dHeight() {
+        return lastClaimHeight;
     }
 }

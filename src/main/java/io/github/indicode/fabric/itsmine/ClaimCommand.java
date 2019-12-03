@@ -617,7 +617,7 @@ public class ClaimCommand {
 
     private static int showClaim(ServerCommandSource source, Claim claim, boolean reset) throws CommandSyntaxException {
         ServerPlayerEntity player = source.getPlayer();
-        if (!reset && ((ClaimShower)player).getShownClaim() != null && ((ClaimShower)player).getShownClaim() != claim) showClaim(source, ((ClaimShower)player).getShownClaim(), true);
+        if (!reset && ((ClaimShower)player).getShownClaim() != null && !(!Config.claims2d &&((ClaimShower)player).getShownClaim() != claim)) showClaim(source, ((ClaimShower)player).getShownClaim(), true);
         if (reset && ((ClaimShower)player).getShownClaim() != null) claim = ((ClaimShower)player).getShownClaim();
         if (claim != null) {
             if (!claim.dimension.equals(source.getWorld().getDimension().getType())) {
@@ -641,7 +641,10 @@ public class ClaimCommand {
             sendBlockPacket(player, new BlockPos(x, claim.min.getY(), claim.max.getZ()), block);
             sendBlockPacket(player, new BlockPos(x, claim.max.getY(), claim.max.getZ()), block);
         }
-        for (int y = claim.min.getY(); y < claim.max.getY(); y++) {
+        int min = hide ? ((ClaimShower)player).getLast2dHeight() - 8: Config.claims2d ? player.getBlockPos().getY() - 8 : claim.min.getY();
+        int max = hide ? ((ClaimShower)player).getLast2dHeight() + 8 : Config.claims2d ? player.getBlockPos().getY() + 8 : claim.max.getY();
+        if (!hide) ((ClaimShower)player).setLast2dHeight(player.getBlockPos().getY());
+        for (int y = min; y < max; y++) {
             sendBlockPacket(player, new BlockPos(claim.min.getX(), y, claim.min.getZ()), block);
             sendBlockPacket(player, new BlockPos(claim.max.getX(), y, claim.min.getZ()), block);
             sendBlockPacket(player, new BlockPos(claim.min.getX(), y, claim.max.getZ()), block);
