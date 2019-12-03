@@ -1,5 +1,6 @@
 package io.github.indicode.fabric.itsmine;
 
+import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.BoolArgumentType;
@@ -201,8 +202,16 @@ public class ClaimCommand {
         {
             LiteralArgumentBuilder<ServerCommandSource> info = CommandManager.literal("info");
             RequiredArgumentBuilder<ServerCommandSource, String> claim = CommandManager.argument("claim", StringArgumentType.word());
-
-            //TODO
+            info.executes(context -> info(
+                    context.getSource(),
+                    ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition()), context.getSource().getWorld().getDimension().getType())
+            ));
+            claim.executes(context -> info(
+                    context.getSource(),
+                    ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"))
+            ));
+            info.then(claim);
+            command.then(info);
         }
         createExceptionCommand(command, false);
         {
@@ -805,6 +814,20 @@ public class ClaimCommand {
                 if (((ClaimShower)playerEntity).getShownClaim() != null && ((ClaimShower)playerEntity).getShownClaim().name.equals(claim.name)) silentHideShow(playerEntity, claim, false, false);
             });
         }
+        return 0;
+    }
+    private static int info(ServerCommandSource source, Claim claim) {
+        if (claim == null) {
+            source.sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
+            return 0;
+        }
+        source.sendFeedback(new LiteralText("").append(new LiteralText("Claim Name: ").formatted(Formatting.YELLOW)).append(new LiteralText(claim.name).formatted(Formatting.GOLD)), false);
+        GameProfile owner = claim.claimBlockOwner == null ? null : source.getMinecraftServer().getUserCache().getByUuid(claim.claimBlockOwner);
+        source.sendFeedback(new LiteralText("").append(new LiteralText("Claim Owner: ").formatted(Formatting.YELLOW)).append(new LiteralText(owner == null ? "No owner" : owner.getName()).formatted(Formatting.GOLD)), false);
+        BlockPos size = claim.getSize();
+        source.sendFeedback(new LiteralText("").append(new LiteralText("Claim Size: ").formatted(Formatting.YELLOW)).append(new LiteralText(size.getX() + (Config.claims2d ? "x" : ("x" + size.getY() + "x")) + size.getZ()).formatted(Formatting.GOLD)), false);
+        source.sendFeedback(new LiteralText("").append(new LiteralText("Start position: ").formatted(Formatting.YELLOW)).append(new LiteralText("X:" + claim.min.getX() + (Config.claims2d ? "" : " Y:" + claim.min.getY()) + " Z:" + claim.min.getZ()).formatted(Formatting.GOLD)), false);
+        source.sendFeedback(new LiteralText("").append(new LiteralText("End position: ").formatted(Formatting.YELLOW)).append(new LiteralText("X:" + claim.max.getX() + (Config.claims2d ? "" : " Y:" + claim.max.getY()) + " Z:" + claim.max.getZ()).formatted(Formatting.GOLD)), false);
         return 0;
     }
 }
