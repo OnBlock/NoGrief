@@ -38,22 +38,4 @@ public class StickClaimItemMixin {
             }
         }
     }
-    @Inject(method = "canMine", at = @At("HEAD"), cancellable = true)
-    private void setStickPositionSecond(BlockState blockState_1, World world, BlockPos pos, PlayerEntity player, CallbackInfoReturnable<Boolean> cir) {
-        if (world.isClient) return;
-        if (!player.isSneaking()) {
-            if ((Object)this == Items.STICK) {
-                Pair<BlockPos, BlockPos> posPair = ClaimManager.INSTANCE.stickPositions.get(player);
-                if (posPair == null) return;
-                else posPair = new Pair<>(posPair.getLeft(), pos);
-                ClaimManager.INSTANCE.stickPositions.put(player, posPair);
-                player.sendMessage(new LiteralText("Position #2 set: " + pos.getX() + (Config.claims2d ? "" : " " + pos.getY()) + " " + pos.getZ()).formatted(Formatting.GREEN));
-                if (posPair.getLeft() != null) {
-                    player.sendMessage(new LiteralText("Area Selected. Type /claim create <name> to create your claim!").formatted(Formatting.GOLD));
-                    if (!Config.claims2d) player.sendMessage(new LiteralText("Remember that claims are three dimensional. Don't forget to expand up/down or select a big enough area...").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC));
-                }
-                cir.setReturnValue(false);
-            }
-        }
-    }
 }
