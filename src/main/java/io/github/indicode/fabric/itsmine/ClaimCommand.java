@@ -81,8 +81,9 @@ public class ClaimCommand {
                     context.getSource().sendFeedback(new LiteralText("You need to specify block positions or select position #2(Left Click) with a stick.").formatted(Formatting.RED), false);
                 } else {
                     String cname = StringArgumentType.getString(context, "name");
-                    createClaim(cname, context.getSource(), selectedPositions.getLeft(), selectedPositions.getRight(), false);
-                    ClaimManager.INSTANCE.stickPositions.remove(player);
+                    if (createClaim(cname, context.getSource(), selectedPositions.getLeft(), selectedPositions.getRight(), false) > 0) {
+                        ClaimManager.INSTANCE.stickPositions.remove(player);
+                    }
                 }
                 return 0;
             });
@@ -711,6 +712,7 @@ public class ClaimCommand {
                     showClaim(owner, claim, false);
                     if (admin)
                         owner.getMinecraftServer().sendMessage(new LiteralText(owner.getPlayer().getGameProfile().getName() + " Has created a new claim(" + claim.name + ") using the admin command."));
+                    return 1;
                 } else {
                     owner.sendFeedback(new LiteralText("You don't have enough claim blocks. You have " + ClaimManager.INSTANCE.getClaimBlocks(ownerID) + ", you need " + subInt + "(" + (subInt - ClaimManager.INSTANCE.getClaimBlocks(ownerID)) + " more)").formatted(Formatting.RED), false);
                 }
