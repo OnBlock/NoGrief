@@ -51,7 +51,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ClaimCommand {
     public static final SuggestionProvider DIRECTION_SUGGESTION_BUILDER = (source, builder) -> {
         for (Direction direction: Direction.values()) {
-            if (!(Config.claims2d && direction.getAxis() == Direction.Axis.Y))builder.suggest(direction.getName());
+            builder.suggest(direction.getName());
         };
         return builder.buildFuture();
     };
@@ -636,14 +636,14 @@ public class ClaimCommand {
     }
     private static void silentHideShow(ServerPlayerEntity player, Claim claim, boolean hide, boolean updateStatus) {
         BlockState block = hide ? null : Blocks.LAPIS_BLOCK.getDefaultState();
-        if (!Config.claims2d) for (int x = claim.min.getX(); x < claim.max.getX(); x++) {
+        if (claim.is2d()) for (int x = claim.min.getX(); x < claim.max.getX(); x++) {
             sendBlockPacket(player, new BlockPos(x, claim.min.getY(), claim.min.getZ()), block);
             sendBlockPacket(player, new BlockPos(x, claim.max.getY(), claim.min.getZ()), block);
             sendBlockPacket(player, new BlockPos(x, claim.min.getY(), claim.max.getZ()), block);
             sendBlockPacket(player, new BlockPos(x, claim.max.getY(), claim.max.getZ()), block);
         }
-        int min = hide ? ((ClaimShower)player).getLast2dHeight() - 8: Config.claims2d ? player.getBlockPos().getY() - 8 : claim.min.getY();
-        int max = hide ? ((ClaimShower)player).getLast2dHeight() + 8 : Config.claims2d ? player.getBlockPos().getY() + 8 : claim.max.getY();
+        int min = hide ? ((ClaimShower)player).getLast2dHeight() - 8: claim.is2d() ? player.getBlockPos().getY() - 8 : claim.min.getY();
+        int max = hide ? ((ClaimShower)player).getLast2dHeight() + 8 : claim.is2d() ? player.getBlockPos().getY() + 8 : claim.max.getY();
         if (!hide) ((ClaimShower)player).setLast2dHeight(player.getBlockPos().getY());
         for (int y = min; y < max; y++) {
             sendBlockPacket(player, new BlockPos(claim.min.getX(), y, claim.min.getZ()), block);
@@ -651,7 +651,7 @@ public class ClaimCommand {
             sendBlockPacket(player, new BlockPos(claim.min.getX(), y, claim.max.getZ()), block);
             sendBlockPacket(player, new BlockPos(claim.max.getX(), y, claim.max.getZ()), block);
         }
-        if (!Config.claims2d) for (int z = claim.min.getZ(); z < claim.max.getZ(); z++) {
+        if (!claim.is2d()) for (int z = claim.min.getZ(); z < claim.max.getZ(); z++) {
             sendBlockPacket(player, new BlockPos(claim.min.getX(), claim.min.getY(), z), block);
             sendBlockPacket(player, new BlockPos(claim.max.getX(), claim.min.getY(), z), block);
             sendBlockPacket(player, new BlockPos(claim.min.getX(), claim.max.getY(), z), block);
@@ -703,7 +703,7 @@ public class ClaimCommand {
         claim.permissionManager.playerPermissions.put(ownerID, new Claim.InvertedPermissionMap());
         if (!ClaimManager.INSTANCE.claimsByName.containsKey(name)) {
             if (!ClaimManager.INSTANCE.wouldIntersect(claim)) {
-                // works because only the first statemet is evaluated if true
+                // works because only the first statement is evaluated if true
                 if ((admin && Thimble.hasPermissionOrOp(owner, "itsmine.admin.infinite_blocks", 4)) || ClaimManager.INSTANCE.useClaimBlocks(ownerID, subInt)) {
                     ClaimManager.INSTANCE.addClaim(claim);
                     owner.sendFeedback(new LiteralText("").append(new LiteralText("Your claim was created").formatted(Formatting.GREEN)).append(new LiteralText("(Area: " + sub.getX() + "x" + sub.getY() + "x" + sub.getZ() + ")").setStyle(new Style()
@@ -797,10 +797,6 @@ public class ClaimCommand {
         return null;
     }
     private static int expand(Claim claim, int amount, Direction direction, ServerCommandSource source, boolean admin) throws CommandSyntaxException {
-        if (Config.claims2d && direction.getAxis() == Direction.Axis.Y) {
-            source.sendFeedback(new LiteralText("You cannot vertically expand or shrink claims.").formatted(Formatting.RED), false);
-            return 0;
-        }
         UUID ownerID = source.getPlayer().getGameProfile().getId();
         if (claim == null) {
             source.sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
@@ -861,9 +857,9 @@ public class ClaimCommand {
         GameProfile owner = claim.claimBlockOwner == null ? null : source.getMinecraftServer().getUserCache().getByUuid(claim.claimBlockOwner);
         source.sendFeedback(new LiteralText("").append(new LiteralText("Claim Owner: ").formatted(Formatting.YELLOW)).append(new LiteralText(owner == null ? "No owner" : owner.getName()).formatted(Formatting.GOLD)), false);
         BlockPos size = claim.getSize();
-        source.sendFeedback(new LiteralText("").append(new LiteralText("Claim Size: ").formatted(Formatting.YELLOW)).append(new LiteralText(size.getX() + (Config.claims2d ? "x" : ("x" + size.getY() + "x")) + size.getZ()).formatted(Formatting.GOLD)), false);
-        source.sendFeedback(new LiteralText("").append(new LiteralText("Start position: ").formatted(Formatting.YELLOW)).append(new LiteralText("X:" + claim.min.getX() + (Config.claims2d ? "" : " Y:" + claim.min.getY()) + " Z:" + claim.min.getZ()).formatted(Formatting.GOLD)), false);
-        source.sendFeedback(new LiteralText("").append(new LiteralText("End position: ").formatted(Formatting.YELLOW)).append(new LiteralText("X:" + claim.max.getX() + (Config.claims2d ? "" : " Y:" + claim.max.getY()) + " Z:" + claim.max.getZ()).formatted(Formatting.GOLD)), false);
+        source.sendFeedback(new LiteralText("").append(new LiteralText("Claim Size: ").formatted(Formatting.YELLOW)).append(new LiteralText(size.getX() + (claim.is2d() ? "x" : ("x" + size.getY() + "x")) + size.getZ()).formatted(Formatting.GOLD)), false);
+        source.sendFeedback(new LiteralText("").append(new LiteralText("Start position: ").formatted(Formatting.YELLOW)).append(new LiteralText("X:" + claim.min.getX() + (claim.is2d() ? "" : " Y:" + claim.min.getY()) + " Z:" + claim.min.getZ()).formatted(Formatting.GOLD)), false);
+        source.sendFeedback(new LiteralText("").append(new LiteralText("End position: ").formatted(Formatting.YELLOW)).append(new LiteralText("X:" + claim.max.getX() + (claim.is2d() ? "" : " Y:" + claim.max.getY()) + " Z:" + claim.max.getZ()).formatted(Formatting.GOLD)), false);
         return 0;
     }
     private static int list(ServerCommandSource source, String player) {

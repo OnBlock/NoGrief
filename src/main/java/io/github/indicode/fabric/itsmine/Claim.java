@@ -156,10 +156,10 @@ public class Claim {
         {
             CompoundTag pos = new CompoundTag();
             pos.putInt("minX", min.getX());
-            if (!Config.claims2d) pos.putInt("minY", min.getY());
+            pos.putInt("minY", min.getY());
             pos.putInt("minZ", min.getZ());
             pos.putInt("maxX", max.getX());
-            if (!Config.claims2d) pos.putInt("maxY", max.getY());
+            pos.putInt("maxY", max.getY());
             pos.putInt("maxZ", max.getZ());
             pos.putString("dimension", DimensionType.getId(dimension).toString());
             tag.put("position", pos);
@@ -181,12 +181,12 @@ public class Claim {
         {
             CompoundTag pos = tag.getCompound("position");
             int minX = pos.getInt("minX");
-            int minY = Config.claims2d ? 0 : pos.getInt("minY");
+            int minY = pos.getInt("minY");
             int minZ = pos.getInt("minZ");
             int maxX = pos.getInt("maxX");
-            int maxY = Config.claims2d ? 255 : pos.getInt("maxY");
-            if (maxY == 0) maxY = 255;
+            int maxY = pos.getInt("maxY");
             int maxZ = pos.getInt("maxZ");
+            if (maxY == 0) maxY = 255;
             this.min = new BlockPos(minX, minY, minZ);
             this.max = new BlockPos(maxX, maxY, maxZ);
             this.dimension = DimensionType.byId(new Identifier(pos.getString("dimension")));
@@ -205,6 +205,10 @@ public class Claim {
             if (tag.containsUuid("top_owner")) claimBlockOwner = tag.getUuid("top_owner");
         }
         name = tag.getString("name");
+    }
+
+    public boolean is2d() {
+        return min.getY() == 0 && max.getY() == 255;
     }
 
     public enum Permission {
