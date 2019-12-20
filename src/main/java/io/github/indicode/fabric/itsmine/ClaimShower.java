@@ -1,11 +1,13 @@
 package io.github.indicode.fabric.itsmine;
 
+import net.minecraft.util.math.BlockPos;
+
 /**
  * @author Indigo Amann
  */
 public interface ClaimShower {
-    void setLast2dHeight(int height);
+    void setLastShowPos(BlockPos pos);
     void setShownClaim(Claim claim);
     Claim getShownClaim();
-    int getLast2dHeight();
+    BlockPos getLastShowPos();
 }

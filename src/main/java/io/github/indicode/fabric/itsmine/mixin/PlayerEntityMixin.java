@@ -32,7 +32,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements ClaimSho
         super(entityType_1, world_1);
     }
     private Claim shownClaim = null;
-    private int lastClaimHeight = 0;
+    private BlockPos lastShowPos = null;
 
     @Redirect(method = "interact", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;interact(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/Hand;)Z"))
     private boolean dontYouDareTouchMe(Entity entity, PlayerEntity playerEntity_1, Hand hand_1) {
@@ -60,8 +60,8 @@ public abstract class PlayerEntityMixin extends LivingEntity implements ClaimSho
     }
 
     @Override
-    public void setLast2dHeight(int height) {
-        lastClaimHeight = height;
+    public void setLastShowPos(BlockPos pos) {
+        lastShowPos = pos;
     }
 
     /*@Inject(method = "canPlaceOn", at = @At("HEAD"))
@@ -81,7 +81,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements ClaimSho
     }
 
     @Override
-    public int getLast2dHeight() {
-        return lastClaimHeight;
+    public BlockPos getLastShowPos() {
+        return lastShowPos;
     }
 }
