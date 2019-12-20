@@ -652,12 +652,10 @@ public class ClaimCommand {
             sendBlockPacket(player, new BlockPos(x, claim.min.getY(), claim.max.getZ()), block);
             sendBlockPacket(player, new BlockPos(x, claim.max.getY(), claim.max.getZ()), block);
         }
-        for (int x = pos.getX() - closeShowRange; x <= pos.getX() + closeShowRange; x++) {
+        if (claim.includesPosition(pos)) for (int x = pos.getX() - closeShowRange; x <= pos.getX() + closeShowRange; x++) {
             if (x < claim.min.getX() || x > claim.max.getX()) continue;
-            sendBlockPacket(player, new BlockPos(x, claim.min.getY(), claim.min.getZ()), block);
-            sendBlockPacket(player, new BlockPos(x, claim.max.getY(), claim.min.getZ()), block);
-            sendBlockPacket(player, new BlockPos(x, claim.min.getY(), claim.max.getZ()), block);
-            sendBlockPacket(player, new BlockPos(x, claim.max.getY(), claim.max.getZ()), block);
+            sendBlockPacket(player, new BlockPos(x, pos.getY(), claim.min.getZ()), block);
+            sendBlockPacket(player, new BlockPos(x, pos.getY(), claim.max.getZ()), block);
         }
         for (int y = claim.min.getY(); y <= claim.min.getY() + showRange; y++) {
             sendBlockPacket(player, new BlockPos(claim.min.getX(), y, claim.min.getZ()), block);
@@ -671,12 +669,12 @@ public class ClaimCommand {
             sendBlockPacket(player, new BlockPos(claim.min.getX(), y, claim.max.getZ()), block);
             sendBlockPacket(player, new BlockPos(claim.max.getX(), y, claim.max.getZ()), block);
         }
-        for (int y = pos.getY() - closeShowRange; y <= pos.getY() + closeShowRange; y++) {
+        if (claim.includesPosition(pos)) for (int y = pos.getY() - closeShowRange; y <= pos.getY() + closeShowRange; y++) {
             if (y < claim.min.getY() || y > claim.max.getY()) continue;
-            sendBlockPacket(player, new BlockPos(claim.min.getX(), y, claim.min.getZ()), block);
-            sendBlockPacket(player, new BlockPos(claim.max.getX(), y, claim.min.getZ()), block);
-            sendBlockPacket(player, new BlockPos(claim.min.getX(), y, claim.max.getZ()), block);
-            sendBlockPacket(player, new BlockPos(claim.max.getX(), y, claim.max.getZ()), block);
+            sendBlockPacket(player, new BlockPos(pos.getX(), y, claim.min.getZ()), block);
+            sendBlockPacket(player, new BlockPos(claim.max.getX(), y, pos.getZ()), block);
+            sendBlockPacket(player, new BlockPos(claim.min.getX(), y, pos.getZ()), block);
+            sendBlockPacket(player, new BlockPos(pos.getX(), y, claim.max.getZ()), block);
         }
         for (int z = claim.min.getZ(); z <= claim.min.getZ() + showRange; z++) {
             sendBlockPacket(player, new BlockPos(claim.min.getX(), claim.min.getY(), z), block);
@@ -690,12 +688,10 @@ public class ClaimCommand {
             sendBlockPacket(player, new BlockPos(claim.min.getX(), claim.max.getY(), z), block);
             sendBlockPacket(player, new BlockPos(claim.max.getX(), claim.max.getY(), z), block);
         }
-        for (int z = pos.getZ() - closeShowRange; z <= pos.getZ() + closeShowRange; z++) {
+        if (claim.includesPosition(pos)) for (int z = pos.getZ() - closeShowRange; z <= pos.getZ() + closeShowRange; z++) {
             if (z < claim.min.getZ() || z > claim.max.getZ()) continue;
-            sendBlockPacket(player, new BlockPos(claim.min.getX(), claim.min.getY(), z), block);
-            sendBlockPacket(player, new BlockPos(claim.max.getX(), claim.min.getY(), z), block);
-            sendBlockPacket(player, new BlockPos(claim.min.getX(), claim.max.getY(), z), block);
-            sendBlockPacket(player, new BlockPos(claim.max.getX(), claim.max.getY(), z), block);
+            sendBlockPacket(player, new BlockPos(claim.min.getX(), pos.getY(), z), block);
+            sendBlockPacket(player, new BlockPos(claim.max.getX(), pos.getY(), z), block);
         }
         if (updateStatus) {
             if (!hide) ((ClaimShower) player).setShownClaim(claim);
