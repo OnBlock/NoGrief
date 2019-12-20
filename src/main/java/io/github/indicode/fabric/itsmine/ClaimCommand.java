@@ -259,14 +259,10 @@ public class ClaimCommand {
                         context.getSource().sendFeedback(new LiteralText("You cannot change flags in this claim").formatted(Formatting.RED), false);
                         return 0;
                     }
-                    AtomicReference<String> stringify = new AtomicReference<>();
-                    setting.stringifier.accept(claim1.settings.getSetting(setting), stringify);
-                    context.getSource().sendFeedback(new LiteralText(setting.name + " is equal to " + stringify.get()).formatted(Formatting.YELLOW), false);
+                    context.getSource().sendFeedback(new LiteralText(setting.name + " is equal to " + claim1.settings.settings.get(setting)).formatted(Formatting.YELLOW), false);
                     return 0;
                 });
-                AtomicReference<ArgumentType> ref = new AtomicReference<>();
-                setting.argumentType.accept(ref);
-                RequiredArgumentBuilder<ServerCommandSource, ?> setter = CommandManager.argument("value", ref.get());
+                RequiredArgumentBuilder<ServerCommandSource, ?> setter = CommandManager.argument("value", BoolArgumentType.bool());
                 setter.executes(context -> {
                     Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
                     if (claim1 == null) {
@@ -277,13 +273,8 @@ public class ClaimCommand {
                         context.getSource().sendFeedback(new LiteralText("You cannot change flags in this claim").formatted(Formatting.RED), false);
                         return 0;
                     }
-                    AtomicReference data = new AtomicReference();
-                    data.set("value");
-                    setting.parser.accept(context, data);
-                    claim1.settings.settings.put(setting, data.get());
-                    AtomicReference<String> stringify = new AtomicReference<>();
-                    setting.stringifier.accept(data.get(), stringify);
-                    context.getSource().sendFeedback(new LiteralText(setting.name + " is now equal to " + stringify.get()).formatted(Formatting.GREEN), false);
+                    claim1.settings.settings.put(setting, BoolArgumentType.getBool(context, "value"));
+                    context.getSource().sendFeedback(new LiteralText(setting.name + " is now equal to " + BoolArgumentType.getBool(context, "value")).formatted(Formatting.GREEN), false);
                     return 0;
                 });
                 arg.then(setter);

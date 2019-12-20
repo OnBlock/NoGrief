@@ -432,53 +432,19 @@ public class Claim {
         }
     }
     public static class ClaimSettings{
-        private static class SettingData { // Wdym overcomplicated...
-            private static BiConsumer<Object, AtomicReference<Tag>> BOOL_WRITER = (data, ref) -> {
-                CompoundTag compat = new CompoundTag();
-                compat.putBoolean("it", (Boolean) data);
-                ref.set(compat.get("it"));
-            };
-            private static BiConsumer<Tag, AtomicReference> BOOL_READER = (data, ref) -> ref.set(((ByteTag) data).getByte() != 0);
-            private static Consumer<AtomicReference<ArgumentType>> BOOL_ARGUMENT = ref -> ref.set(BoolArgumentType.bool());
-            private static BiConsumer<CommandContext<ServerCommandSource>, AtomicReference> BOOL_PARSER = (context, ref) -> ref.set(BoolArgumentType.getBool(context, (String)ref.get()));
-            private static BiConsumer<Object, AtomicReference<Tag>> STRING_WRITER = (data, ref) -> {
-                CompoundTag compat = new CompoundTag();
-                compat.putString("it", (String) data);
-                ref.set(compat.get("it"));
-            };
-            private static BiConsumer<Tag, AtomicReference> STRING_READER = (data, ref) -> ref.set(data.asString());
-            private static Consumer<AtomicReference<ArgumentType>> GREEDY_STRING_ARGUMENT = ref -> ref.set(StringArgumentType.greedyString());
-            private static BiConsumer<CommandContext<ServerCommandSource>, AtomicReference> STRING_PARSER = (context, ref) -> ref.set(StringArgumentType.getString(context, (String)ref.get()));
-            private static BiConsumer<Object, AtomicReference<String>> TOSTRING_STRINGIFIER = (data, ref) -> ref.set(data.toString());
-        }
         public enum Setting {
 
-            EXPLOSIONS("explosion_destruction", "Explosions Destroy Blocks", SettingData.BOOL_WRITER, SettingData.BOOL_READER, SettingData.BOOL_ARGUMENT, SettingData.BOOL_PARSER, SettingData.TOSTRING_STRINGIFIER, false),
-            FLUID_CROSSES_BORDERS("fluid_crosses_borders", "Fluid Crosses Borders", SettingData.BOOL_WRITER, SettingData.BOOL_READER, SettingData.BOOL_ARGUMENT, SettingData.BOOL_PARSER, SettingData.TOSTRING_STRINGIFIER, false),
-            FIRE_CROSSES_BORDERS("fire_crosses_borders", "Fire Crosses Borders", SettingData.BOOL_WRITER, SettingData.BOOL_READER, SettingData.BOOL_ARGUMENT, SettingData.BOOL_PARSER, SettingData.TOSTRING_STRINGIFIER, false),
-            PISTON_FROM_INSIDE("pistons_inside_border", "Pistons Cross border from Inside", SettingData.BOOL_WRITER, SettingData.BOOL_READER, SettingData.BOOL_ARGUMENT, SettingData.BOOL_PARSER, SettingData.TOSTRING_STRINGIFIER, true),
-            PISTON_FROM_OUTSIDE("pistons_outside_border", "Pistons Cross border from Outside", SettingData.BOOL_WRITER, SettingData.BOOL_READER, SettingData.BOOL_ARGUMENT, SettingData.BOOL_PARSER, SettingData.TOSTRING_STRINGIFIER, false);
+            EXPLOSIONS("explosion_destruction", "Explosions Destroy Blocks", false),
+            FLUID_CROSSES_BORDERS("fluid_crosses_borders", "Fluid Crosses Borders", false),
+            FIRE_CROSSES_BORDERS("fire_crosses_borders", "Fire Crosses Borders", false),
+            PISTON_FROM_INSIDE("pistons_inside_border", "Pistons Cross border from Inside", true),
+            PISTON_FROM_OUTSIDE("pistons_outside_border", "Pistons Cross border from Outside", false);
 
             String id, name;
-            BiConsumer<Object, AtomicReference<Tag>> writer;
-            BiConsumer<Tag, AtomicReference> reader;
-            Consumer<AtomicReference<ArgumentType>> argumentType;
-            BiConsumer<CommandContext<ServerCommandSource>, AtomicReference> parser;
-            BiConsumer<Object, AtomicReference<String>> stringifier;
-            Object defaultValue;
-            Setting(String id, String name, BiConsumer<Object, AtomicReference<Tag>> writer,
-                    BiConsumer<Tag, AtomicReference> reader,
-                    Consumer<AtomicReference<ArgumentType>> argumentType,
-                    BiConsumer<CommandContext<ServerCommandSource>, AtomicReference> parser,
-                    BiConsumer<Object, AtomicReference<String>> stringifer,
-                    Object defaultValue) {
+            boolean defaultValue;
+            Setting(String id, String name, boolean defaultValue) {
                 this.id = id;
                 this.name =  name;
-                this.argumentType = argumentType;
-                this.parser = parser;
-                this.writer = writer;
-                this.reader = reader;
-                this.stringifier = stringifer;
                 this.defaultValue = defaultValue;
             }
             public static ClaimSettings.Setting byId(String id) {
@@ -488,21 +454,19 @@ public class Claim {
                 return null;
             }
         }
-        public  Map<Setting, Object> settings = new HashMap<>();
+        public  Map<Setting, Boolean> settings = new HashMap<>();
         public ClaimSettings(CompoundTag tag) {
             fromTag(tag);
         }
         public ClaimSettings() {
         }
-        public Object getSetting(Setting setting) {
+        public boolean getSetting(Setting setting) {
             return settings.getOrDefault(setting, setting.defaultValue);
         }
         public CompoundTag toTag() {
             CompoundTag tag =  new CompoundTag();
             this.settings.forEach((setting, data) -> {
-                AtomicReference<Tag> writer = new AtomicReference<>();
-                setting.writer.accept(data, writer);
-                tag.put(setting.id, writer.get());
+                tag.putBoolean(setting.id, data);
             });
             return tag;
         }
@@ -511,10 +475,7 @@ public class Claim {
             tag.getKeys().forEach(key -> {
                 Setting setting = Setting.byId(key);
                 if (setting == null) return;
-                Tag value = tag.get(key);
-                AtomicReference data = new AtomicReference();
-                setting.reader.accept(value, data);
-                this.settings.put(setting, data.get());
+                this.settings.put(setting, tag.getBoolean(key));
             });
         }
     }
