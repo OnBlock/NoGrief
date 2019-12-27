@@ -39,10 +39,6 @@ public class ServerPlayNetworkHandlerMixin {
     public void dontDisconnect(ServerPlayNetworkHandler handler, Text text_1) {
 
     }
-    @Redirect(method = "onKeepAlive", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayNetworkHandler;isServerOwner()Z"))
-    public boolean yesIAm(ServerPlayNetworkHandler handler) {
-        return true;
-    }
 
     @Redirect(method = "onPlayerInteractBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;canPlayerModifyAt(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/math/BlockPos;)Z"))
     private boolean canITouchie(ServerWorld world, PlayerEntity playerEntity_1, BlockPos blockPos_1) {
