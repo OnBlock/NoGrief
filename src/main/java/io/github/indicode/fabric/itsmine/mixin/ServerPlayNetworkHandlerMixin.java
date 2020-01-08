@@ -34,11 +34,6 @@ public class ServerPlayNetworkHandlerMixin {
         }
         return entity.interactAt(playerEntity_1, vec3d_1, hand_1);
     }
-    // This is just so i can connect peeps
-    @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayNetworkHandler;disconnect(Lnet/minecraft/text/Text;)V"))
-    public void dontDisconnect(ServerPlayNetworkHandler handler, Text text_1) {
-
-    }
 
     @Redirect(method = "onPlayerInteractBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;canPlayerModifyAt(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/math/BlockPos;)Z"))
     private boolean canITouchie(ServerWorld world, PlayerEntity playerEntity_1, BlockPos blockPos_1) {
