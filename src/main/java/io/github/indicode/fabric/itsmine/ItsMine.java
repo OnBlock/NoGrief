@@ -17,6 +17,9 @@ public class ItsMine implements ModInitializer {
         Config.sync(false);
         Thimble.permissionWriters.add((map, server) -> {
             map.registerPermission("itsmine.specify_groups", PermChangeBehavior.UPDATE_COMMAND_TREE);
+            map.registerPermission("itsmine.claim_fly", (enabled, player) -> {
+                Functions.refreshFly(player);
+            });
             map.registerPermission("itsmine.admin.infinite_claim", PermChangeBehavior.UPDATE_COMMAND_TREE);
             map.registerPermission("itsmine.admin.check_others", PermChangeBehavior.UPDATE_COMMAND_TREE);
             map.registerPermission("itsmine.admin.modify_balance", PermChangeBehavior.UPDATE_COMMAND_TREE);

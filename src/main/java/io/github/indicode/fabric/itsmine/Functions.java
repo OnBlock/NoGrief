@@ -2,18 +2,24 @@ package io.github.indicode.fabric.itsmine;
 
 import io.github.indicode.fabric.itsmine.mixin.BlockActionPacketMixin;
 import io.github.indicode.fabric.itsmine.mixin.BucketItemMixin;
+import io.github.indicode.fabric.permissions.Thimble;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.network.packet.BlockActionS2CPacket;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.BucketItem;
 import net.minecraft.network.Packet;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * @author Indigo Amann
@@ -44,5 +50,17 @@ public class Functions {
     }
     public static boolean isBucketEmpty(BucketItem item) {
         return ((BucketItemMixin)item).getFluid() != Fluids.EMPTY;
+    }
+    private static Map<UUID, Boolean> flyers = new HashMap<>();
+    public static boolean canClaimFly(ServerPlayerEntity player) {
+        if (flyers.containsKey(player.getGameProfile().getId())) {
+            return flyers.get(player.getGameProfile().getId());
+        } else {
+            refreshFly(player);
+            return canClaimFly(player);
+        }
+    }
+    public static void refreshFly(ServerPlayerEntity player) {
+        flyers.put(player.getGameProfile().getId(), player.world.getServer().getPlayerManager().isOperator(player.getGameProfile())  &&Thimble.PERMISSIONS.hasPermission("itsmine.claim_fly", player.getGameProfile().getId()));
     }
 }
