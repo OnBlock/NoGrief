@@ -17,9 +17,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author Indigo Amann
@@ -62,5 +60,16 @@ public class Functions {
     }
     public static void refreshFly(ServerPlayerEntity player) {
         flyers.put(player.getGameProfile().getId(), player.world.getServer().getPlayerManager().isOperator(player.getGameProfile())  &&Thimble.PERMISSIONS.hasPermission("itsmine.claim_fly", player.getGameProfile().getId()));
+    }
+    private static List<UUID> claimFlyNow = new ArrayList<>();
+    public static boolean isClaimFlying(UUID player) {
+        return claimFlyNow.contains(player);
+    }
+    public static void setClaimFlying(UUID player, boolean flying) {
+        if (flying && !claimFlyNow.contains(player)) {
+            claimFlyNow.add(player);
+        } else if (!flying) {
+            claimFlyNow.remove(player);
+        }
     }
 }

@@ -48,8 +48,12 @@ public abstract class EntityMixin {
             boolean old = player.abilities.allowFlying;
             Claim claim = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.world.dimension.getType());
             if (player instanceof ServerPlayerEntity) {
-                player.abilities.allowFlying = player.abilities.creativeMode || (claim != null && claim.settings.getSetting(Claim.ClaimSettings.Setting.FLIGHT_ALLOWED) && claim.hasPermission(player.getGameProfile().getId(), Claim.Permission.FLY) && Functions.canClaimFly((ServerPlayerEntity) player));
 
+                player.abilities.allowFlying = player.abilities.creativeMode || (claim != null && claim.settings.getSetting(Claim.ClaimSettings.Setting.FLIGHT_ALLOWED) && claim.hasPermission(player.getGameProfile().getId(), Claim.Permission.FLY) && Functions.canClaimFly((ServerPlayerEntity) player));
+                if (old && !player.abilities.allowFlying && !Functions.isClaimFlying(player.getGameProfile().getId())) {
+                    player.abilities.allowFlying = true;
+                }
+                Functions.setClaimFlying(player.getGameProfile().getId(), !player.abilities.creativeMode && player.abilities.allowFlying);
                 if (old != player.abilities.allowFlying) {
                     if (!player.abilities.allowFlying) player.abilities.flying = false;
                     player.sendAbilitiesUpdate();
