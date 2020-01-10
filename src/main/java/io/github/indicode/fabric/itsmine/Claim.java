@@ -226,7 +226,8 @@ public class Claim {
         USE_LEVERS("use_levers", "Use Levers"),
         OPEN_DOORS("open_doors", "Use Doors"),
         ENTITY_INTERACT("entity_interact", "Entity Interaction"),
-        ENTITY_DAMAGE("entity_damage", "Hurt Entities");
+        ENTITY_DAMAGE("entity_damage", "Hurt Entities"),
+        FLY("fly", "Fly");
         String id, name;
         Permission(String id, String name) {
             this.id = id;
@@ -433,7 +434,7 @@ public class Claim {
     }
     public static class ClaimSettings{
         public enum Setting {
-
+            FLIGHT_ALLOWED("fly_enabled", "Flying Enabled", true),
             EXPLOSIONS("explosion_destruction", "Explosions Destroy Blocks", false),
             FLUID_CROSSES_BORDERS("fluid_crosses_borders", "Fluid Crosses Borders", false),
             FIRE_CROSSES_BORDERS("fire_crosses_borders", "Fire Crosses Borders", false),

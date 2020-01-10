@@ -9,7 +9,6 @@
     "BlockUpdatePacketMixin",
     "BucketItemMixin",
     "BlockActionPacketMixin",
-
     "ServerWorldMixin",
     "ExplosionMixin",
     "PlayerEntityMixin",
@@ -22,7 +21,8 @@
     "PlaceOnUseBlockMixin",
     "FireBlockMixin",
 
-    "StickClaimItemMixin"
+    "StickClaimItemMixin",
+    "EntityMixin"
   ],
   "client": [
     "IntegratedServerMixin"
