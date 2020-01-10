@@ -39,10 +39,7 @@ import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -216,6 +213,28 @@ public class ClaimCommand {
             delete.then(claim);
             delete.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition()), context.getSource().getWorld().getDimension().getType()), false));
             command.then(delete);
+        }
+        {
+            LiteralArgumentBuilder<ServerCommandSource> transfer = CommandManager.literal("transfer");
+            RequiredArgumentBuilder<ServerCommandSource, String> claim = CommandManager.argument("claim", StringArgumentType.word());
+            claim.suggests(CLAIM_PROVIDER);
+            RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = CommandManager.argument("player", EntityArgumentType.player());
+            LiteralArgumentBuilder<ServerCommandSource> confirm = CommandManager.literal("confirm");
+            confirm.executes(context -> transfer(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")), EntityArgumentType.getPlayer(context, "player"), false));
+            player.executes(context -> requestTransfer(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")), EntityArgumentType.getPlayer(context, "player"), false));
+            player.then(confirm);
+            claim.then(player);
+            transfer.then(claim);
+            transfer.executes(context -> requestTransfer(context.getSource(), ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition()), context.getSource().getWorld().getDimension().getType()), EntityArgumentType.getPlayer(context, "player"), false));
+            command.then(transfer);
+        }
+        {
+            LiteralArgumentBuilder<ServerCommandSource> transfer = CommandManager.literal("accept_transfer");
+            RequiredArgumentBuilder<ServerCommandSource, String> claim = CommandManager.argument("claim", StringArgumentType.word());
+            claim.suggests(CLAIM_PROVIDER);
+            claim.executes(context -> acceptTransfer(context.getSource()));
+            transfer.then(claim);
+            command.then(transfer);
         }
         {
             LiteralArgumentBuilder<ServerCommandSource> info = CommandManager.literal("info");
@@ -796,6 +815,64 @@ public class ClaimCommand {
             if (((ClaimShower)playerEntity).getShownClaim() != null && ((ClaimShower)playerEntity).getShownClaim().name.equals(claim.name)) silentHideShow(playerEntity, claim, true, true);
         });
         sender.sendFeedback(new LiteralText("Deleted the claim \"" + claim.name + "\"").formatted(Formatting.GREEN), !claim.permissionManager.hasPermission(sender.getPlayer().getGameProfile().getId(), Claim.Permission.DELETE_CLAIM));
+        return 0;
+    }
+    private static int requestTransfer(ServerCommandSource sender, Claim claim, ServerPlayerEntity player, boolean admin) throws CommandSyntaxException {
+        if (claim == null) {
+            sender.sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
+            return 0;
+        }
+        if (!claim.claimBlockOwner.equals(sender.getPlayer().getGameProfile().getId())) {
+            if (admin && Thimble.hasPermissionOrOp(sender, "itsmine.admin.modify", 4)) {
+                sender.sendFeedback(new LiteralText("WARNING: This is not your claim...").formatted(Formatting.DARK_RED, Formatting.BOLD), false);
+            } else {
+                sender.sendFeedback(new LiteralText("You cannot transfer ownership that claim").formatted(Formatting.RED), false);
+                return 0;
+            }
+        }
+        sender.sendFeedback(new LiteralText("").append(new LiteralText("Are you sure you want to transfer ownership of \"" + claim.name + "\" to " + player.getGameProfile().getName() + "? ").formatted(Formatting.GOLD))
+                .append(new LiteralText("[I'M SURE]").setStyle(new Style()
+                        .setColor(Formatting.DARK_RED)
+                        .setBold(true)
+                        .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, (admin ? "/claim admin" : "/claim") + " transfer " + claim.name + " " + player.getGameProfile().getName() + " confirm")))), false);
+        return 0;
+    }
+    private static Map<UUID, String> pendingClaimTransfers = new HashMap<>();
+    private static int transfer(ServerCommandSource sender, Claim claim, ServerPlayerEntity player, boolean admin) throws CommandSyntaxException {
+        if (claim == null) {
+            sender.sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
+            return 0;
+        }
+        if (!claim.claimBlockOwner.equals(sender.getPlayer().getGameProfile().getId())) {
+            if (admin && Thimble.hasPermissionOrOp(sender, "itsmine.admin.modify", 4)) {
+                sender.sendFeedback(new LiteralText("Transfering ownership of a claim belonging to somebody else").formatted(Formatting.DARK_RED, Formatting.BOLD), false);
+            } else {
+                sender.sendFeedback(new LiteralText("You cannot transfer ownership that claim").formatted(Formatting.RED), false);
+                return 0;
+            }
+        }
+        sender.sendFeedback(new LiteralText("Transferring ownership of the claim \"" + claim.name + "\" to " + player.getGameProfile().getName() + " if they accept").formatted(Formatting.GREEN), claim.claimBlockOwner != player.getGameProfile().getId());
+        player.sendMessage(new LiteralText("").append(new LiteralText("Do you want to accept ownership of the claim \"" + claim.name + "\" from " + OfflineInfo.getNameById(sender.getWorld().getServer().getUserCache(), claim.claimBlockOwner) + "? ").formatted(Formatting.GOLD))
+                .append(new LiteralText("[ACCEPT OWNERSHIP]").setStyle(new Style()
+                        .setColor(Formatting.GREEN)
+                        .setBold(true)
+                        .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/claim accept_transfer " + claim.name)))));
+        pendingClaimTransfers.put(player.getGameProfile().getId(), claim.name);
+        return 0;
+    }
+    public static int acceptTransfer(ServerCommandSource sender) throws CommandSyntaxException {
+        Claim claim = ClaimManager.INSTANCE.claimsByName.get(pendingClaimTransfers.get(sender.getPlayer().getGameProfile().getId()));
+        if (claim == null) {
+            sender.sendFeedback(new LiteralText("You have no pending claim transfers").formatted(Formatting.RED), false);
+            return 0;
+        }
+        if (sender.getMinecraftServer().getPlayerManager().getPlayer(claim.claimBlockOwner) != null) {
+            sender.getMinecraftServer().getPlayerManager().getPlayer(claim.claimBlockOwner).sendMessage(new LiteralText("").append(new LiteralText(sender.getPlayer().getGameProfile().getName() + " has taken ownership of the claim \"" + claim.name + "\"").formatted(Formatting.YELLOW)));
+        }
+        Claim.ClaimPermissionMap op = claim.permissionManager.playerPermissions.get(claim.claimBlockOwner);
+        claim.permissionManager.playerPermissions.put(claim.claimBlockOwner, claim.permissionManager.playerPermissions.get(sender.getPlayer().getGameProfile().getId()));
+        claim.permissionManager.playerPermissions.put(sender.getPlayer().getGameProfile().getId(), op);
+        claim.claimBlockOwner = sender.getPlayer().getGameProfile().getId();
         return 0;
     }
     private static int showClaimInfo(ServerCommandSource sender, Claim claim) {

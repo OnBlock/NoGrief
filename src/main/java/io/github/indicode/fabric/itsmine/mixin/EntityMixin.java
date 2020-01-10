@@ -37,7 +37,9 @@ public abstract class EntityMixin {
             Claim claim = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.world.dimension.getType());
             if (pclaim != claim && player instanceof ServerPlayerEntity) {
                 ServerPlayerEntity serverPlayerEntity = (ServerPlayerEntity)player;
-                serverPlayerEntity.networkHandler.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.ACTIONBAR, new LiteralText("Now " + (claim == null ? "leaving" : "entering") + " claim ").formatted(Formatting.YELLOW).append(new LiteralText(claim == null ? pclaim.name : claim.name).formatted(Formatting.GOLD))));
+                if (serverPlayerEntity.networkHandler != null) {
+                    serverPlayerEntity.networkHandler.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.ACTIONBAR, new LiteralText("Now " + (claim == null ? "leaving" : "entering") + " claim ").formatted(Formatting.YELLOW).append(new LiteralText(claim == null ? pclaim.name : claim.name).formatted(Formatting.GOLD))));
+                }
             }
         }
     }
