@@ -59,7 +59,7 @@ public class Functions {
         }
     }
     public static void refreshFly(ServerPlayerEntity player) {
-        flyers.put(player.getGameProfile().getId(), player.world.getServer().getPlayerManager().isOperator(player.getGameProfile())  &&Thimble.PERMISSIONS.hasPermission("itsmine.claim_fly", player.getGameProfile().getId()));
+        flyers.put(player.getGameProfile().getId(), player.world.getServer().getPlayerManager().isOperator(player.getGameProfile()) || Thimble.PERMISSIONS.hasPermission("itsmine.claim_fly", player.getGameProfile().getId()));
     }
     private static List<UUID> claimFlyNow = new ArrayList<>();
     public static boolean isClaimFlying(UUID player) {
