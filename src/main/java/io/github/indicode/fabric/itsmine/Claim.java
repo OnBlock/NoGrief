@@ -288,7 +288,7 @@ public class Claim {
             tag.put("defaults", defaults.toRegisteredNBT());
             {
                 CompoundTag players = new CompoundTag();
-                playerPermissions.forEach((player, map) -> players.put(player.toString(), map.toRegisteredNBT()));
+                if (playerPermissions != null) playerPermissions.forEach((player, map) -> {if (player != null && map != null) players.put(player.toString(), map.toRegisteredNBT());});
                 tag.put("players", players);
             }
             {
@@ -439,7 +439,8 @@ public class Claim {
             FLUID_CROSSES_BORDERS("fluid_crosses_borders", "Fluid Crosses Borders", false),
             FIRE_CROSSES_BORDERS("fire_crosses_borders", "Fire Crosses Borders", false),
             PISTON_FROM_INSIDE("pistons_inside_border", "Pistons Cross border from Inside", true),
-            PISTON_FROM_OUTSIDE("pistons_outside_border", "Pistons Cross border from Outside", false);
+            PISTON_FROM_OUTSIDE("pistons_outside_border", "Pistons Cross border from Outside", false),
+            MOB_SPAWNING("mob_spawn", "Natural mob spawning", true);
 
             String id, name;
             boolean defaultValue;

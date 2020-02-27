@@ -74,7 +74,7 @@ public class ClaimManager {
         claimsByName.values().forEach(claim -> list.add(claim.toTag()));
         tag.put("claims", list);
         CompoundTag blocksLeftTag = new CompoundTag();
-        blocksLeft.forEach((id, amount) -> {if (id != null) blocksLeftTag.putInt(id.toString(), amount)});
+        blocksLeft.forEach((id, amount) -> {if (id != null) blocksLeftTag.putInt(id.toString(), amount);});
         tag.put("blocksLeft", blocksLeftTag);
         ListTag ignoring = new ListTag();
         CompoundTag tvargetter = new CompoundTag();

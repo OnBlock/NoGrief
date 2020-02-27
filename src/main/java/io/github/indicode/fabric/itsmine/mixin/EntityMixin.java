@@ -3,9 +3,9 @@ package io.github.indicode.fabric.itsmine.mixin;
 import io.github.indicode.fabric.itsmine.Claim;
 import io.github.indicode.fabric.itsmine.ClaimManager;
 import io.github.indicode.fabric.itsmine.Functions;
-import net.minecraft.client.network.packet.TitleS2CPacket;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.network.packet.s2c.play.TitleS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.LiteralText;
@@ -54,7 +54,7 @@ public abstract class EntityMixin {
                     player.abilities.allowFlying = false;
                     player.abilities.flying = false;
                     Functions.setClaimFlying(player.getGameProfile().getId(), false);
-                } else if (!player.abilities.allowFlying && ((claim != null && claim.settings.getSetting(Claim.ClaimSettings.Setting.FLIGHT_ALLOWED) && claim.hasPermission(player.getGameProfile().getId(), Claim.Permission.FLY)) && Functions.canClaimFly((ServerPlayerEntity) player))) {
+                } else if (!player.abilities.allowFlying && claim != null && claim.settings.getSetting(Claim.ClaimSettings.Setting.FLIGHT_ALLOWED) && claim.hasPermission(player.getGameProfile().getId(), Claim.Permission.FLY) && Functions.canClaimFly((ServerPlayerEntity) player)) {
                     player.abilities.allowFlying = true;
                     Functions.setClaimFlying(player.getGameProfile().getId(), true);
                 }

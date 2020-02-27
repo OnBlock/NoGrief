@@ -3,7 +3,7 @@ package io.github.indicode.fabric.itsmine.mixin;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.block.Block;
-import net.minecraft.client.network.packet.BlockActionS2CPacket;
+import net.minecraft.network.packet.s2c.play.BlockActionS2CPacket;
 import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;

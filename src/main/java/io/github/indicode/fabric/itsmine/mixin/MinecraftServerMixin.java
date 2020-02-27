@@ -28,7 +28,6 @@ public abstract class MinecraftServerMixin {
         ClaimManager.INSTANCE = new ClaimManager();
         File claims = new File(gameDir.getPath() + "/" + string_1 + "/claims.dat");
         File claims_old = new File(gameDir.getPath() + "/" + string_1 + "/claims.dat_old");
-        ClaimManager.INSTANCE = new ClaimManager();
         if (!claims.exists()) {
             if (claims_old.exists()) {}
             else return;
