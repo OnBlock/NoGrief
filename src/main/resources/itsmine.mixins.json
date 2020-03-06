@@ -21,6 +21,7 @@
     "PlaceOnUseBlockMixin",
     "FireBlockMixin",
     "SpawnRestrictionMixin",
+    "OwnedProjectile",
 
     "StickClaimItemMixin",
     "EntityMixin"

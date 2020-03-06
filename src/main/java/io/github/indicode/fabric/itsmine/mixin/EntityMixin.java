@@ -27,14 +27,16 @@ public abstract class EntityMixin {
     public void doPrePosActions(double x, double y, double z, CallbackInfo ci) {
         if (!world.isClient && (Object)this instanceof PlayerEntity) {
             PlayerEntity player = (PlayerEntity) (Object) this;
-            pclaim = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.world.dimension.getType());
+            if (player.getSenseCenterPos() == null) return;
+            pclaim = ClaimManager.INSTANCE.getClaimAt(player.getSenseCenterPos(), player.world.dimension.getType());
         }
     }
     @Inject(method = "setPos", at = @At("RETURN"))
     public void doPostPosActions(double x, double y, double z, CallbackInfo ci) {
         if (!world.isClient && (Object)this instanceof PlayerEntity) {
             PlayerEntity player = (PlayerEntity) (Object) this;
-            Claim claim = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.world.dimension.getType());
+            if (player.getSenseCenterPos() == null) return;
+            Claim claim = ClaimManager.INSTANCE.getClaimAt(player.getSenseCenterPos(), player.world.dimension.getType());
             if (pclaim != claim && player instanceof ServerPlayerEntity) {
                 ServerPlayerEntity serverPlayerEntity = (ServerPlayerEntity)player;
                 if (serverPlayerEntity.networkHandler != null) {
@@ -47,8 +49,9 @@ public abstract class EntityMixin {
     public void doTickActions(CallbackInfo ci) {
         if (!world.isClient && (Object)this instanceof PlayerEntity) {
             PlayerEntity player = (PlayerEntity) (Object)this;
+            if (player.getSenseCenterPos() == null) return;
             boolean old = player.abilities.allowFlying;
-            Claim claim = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.world.dimension.getType());
+            Claim claim = ClaimManager.INSTANCE.getClaimAt(player.getSenseCenterPos(), player.world.dimension.getType());
             if (player instanceof ServerPlayerEntity) {
                 if (player.abilities.allowFlying && ((claim == null || !claim.settings.getSetting(Claim.ClaimSettings.Setting.FLIGHT_ALLOWED) || !claim.hasPermission(player.getGameProfile().getId(), Claim.Permission.FLY)) && Functions.isClaimFlying(player.getGameProfile().getId()))) {
                     player.abilities.allowFlying = false;

@@ -115,7 +115,7 @@ public class ClaimCommand {
         }
         {
             LiteralArgumentBuilder<ServerCommandSource> show = CommandManager.literal("show");
-            show.executes(context -> showClaim(context.getSource(), ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().dimension.getType()), false));
+            show.executes(context -> showClaim(context.getSource(), ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getSenseCenterPos(), context.getSource().getWorld().dimension.getType()), false));
             RequiredArgumentBuilder<ServerCommandSource, String> name = CommandManager.argument("name", StringArgumentType.word());
             name.suggests(CLAIM_PROVIDER);
             name.executes(context -> showClaim(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "name")), false));
@@ -156,7 +156,7 @@ public class ClaimCommand {
                 direction.suggests(DIRECTION_SUGGESTION_BUILDER);
 
                 direction.executes(context -> expand(
-                        ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
+                        ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getSenseCenterPos(), context.getSource().getWorld().getDimension().getType()),
                         IntegerArgumentType.getInteger(context, "distance"),
                         directionByName(StringArgumentType.getString(context, "direction")),
                         context.getSource(),
@@ -164,7 +164,7 @@ public class ClaimCommand {
                 ));
 
                 amount.executes(context -> expand(
-                        ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
+                        ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getSenseCenterPos(), context.getSource().getWorld().getDimension().getType()),
                         IntegerArgumentType.getInteger(context, "distance"),
                         Direction.getEntityFacingOrder(context.getSource().getPlayer())[0],
                         context.getSource(),
@@ -182,7 +182,7 @@ public class ClaimCommand {
                 direction.suggests(DIRECTION_SUGGESTION_BUILDER);
 
                 direction.executes(context -> expand(
-                        ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
+                        ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getSenseCenterPos(), context.getSource().getWorld().getDimension().getType()),
                         -IntegerArgumentType.getInteger(context, "distance"),
                         directionByName(StringArgumentType.getString(context, "direction")),
                         context.getSource(),
@@ -190,7 +190,7 @@ public class ClaimCommand {
                 ));
 
                 amount.executes(context -> expand(
-                        ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
+                        ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getSenseCenterPos(), context.getSource().getWorld().getDimension().getType()),
                         -IntegerArgumentType.getInteger(context, "distance"),
                         Direction.getEntityFacingOrder(context.getSource().getPlayer())[0],
                         context.getSource(),
@@ -435,7 +435,7 @@ public class ClaimCommand {
                     direction.suggests(DIRECTION_SUGGESTION_BUILDER);
 
                     direction.executes(context -> expand(
-                            ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
+                            ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getSenseCenterPos(), context.getSource().getWorld().getDimension().getType()),
                             IntegerArgumentType.getInteger(context, "distance"),
                             directionByName(StringArgumentType.getString(context, "direction")),
                             context.getSource(),
@@ -443,7 +443,7 @@ public class ClaimCommand {
                     ));
 
                     amount.executes(context -> expand(
-                            ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
+                            ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getSenseCenterPos(), context.getSource().getWorld().getDimension().getType()),
                             IntegerArgumentType.getInteger(context, "distance"),
                             Direction.getEntityFacingOrder(context.getSource().getPlayer())[0],
                             context.getSource(),
@@ -462,7 +462,7 @@ public class ClaimCommand {
                     direction.suggests(DIRECTION_SUGGESTION_BUILDER);
 
                     direction.executes(context -> expand(
-                            ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
+                            ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getSenseCenterPos(), context.getSource().getWorld().getDimension().getType()),
                             -IntegerArgumentType.getInteger(context, "distance"),
                             directionByName(StringArgumentType.getString(context, "direction")),
                             context.getSource(),
@@ -470,7 +470,7 @@ public class ClaimCommand {
                     ));
 
                     amount.executes(context -> expand(
-                            ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
+                            ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getSenseCenterPos(), context.getSource().getWorld().getDimension().getType()),
                             -IntegerArgumentType.getInteger(context, "distance"),
                             Direction.getEntityFacingOrder(context.getSource().getPlayer())[0],
                             context.getSource(),
@@ -648,7 +648,7 @@ public class ClaimCommand {
         BlockState block = hide ? null : Blocks.LAPIS_BLOCK.getDefaultState();
         int showRange = 5;
         int closeShowRange = 8;
-        BlockPos pos = hide ? ((ClaimShower)player).getLastShowPos() : player.getBlockPos();
+        BlockPos pos = hide ? ((ClaimShower)player).getLastShowPos() : player.getSenseCenterPos();
         ((ClaimShower)player).setLastShowPos(pos);
         for (int x = claim.min.getX(); x <= claim.min.getX() + showRange; x++) {
             sendBlockPacket(player, new BlockPos(x, claim.min.getY(), claim.min.getZ()), block);

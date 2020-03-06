@@ -5,12 +5,16 @@ import io.github.indicode.fabric.itsmine.ClaimManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.Projectile;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
+
+import java.util.UUID;
 
 /**
  * @author Indigo Amann
@@ -21,9 +25,10 @@ public class ProjectileEntityMixin {
     public boolean imInvincible(Entity entity, DamageSource damageSource_1, float float_1) {
         if (entity.world.isClient()) return entity.damage(damageSource_1, float_1);
         ProjectileEntity projectile = (ProjectileEntity)(Object)this;
-        if (projectile.getOwner() instanceof PlayerEntity) {
-            PlayerEntity playerEntity_1 = (PlayerEntity)projectile.getOwner();
-            Claim claim = ClaimManager.INSTANCE.getClaimAt(entity.getBlockPos(), entity.world.getDimension().getType());
+
+        if (((ProjectileEntity)(Object)this).getServer().getPlayerManager().getPlayer(((OwnedProjectile)projectile).getOwner()) != null) {
+            PlayerEntity playerEntity_1 = ((ProjectileEntity)(Object)this).getServer().getPlayerManager().getPlayer(((OwnedProjectile)projectile).getOwner());
+            Claim claim = ClaimManager.INSTANCE.getClaimAt(entity.getSenseCenterPos(), entity.world.getDimension().getType());
             if (claim != null && entity != playerEntity_1) {
                 if (!claim.hasPermission(playerEntity_1.getGameProfile().getId(), Claim.Permission.ENTITY_DAMAGE)) {
                     playerEntity_1.sendMessage(new LiteralText("").append(new LiteralText("You are in a claim that does not allow you to hurt entities").formatted(Formatting.RED)).append(new LiteralText("(Use /claim show to see an outline)").formatted(Formatting.YELLOW)));

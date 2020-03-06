@@ -27,7 +27,7 @@ public class ExplosionMixin {
     }
     @Redirect(method = "collectBlocksAndDamageEntities", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;isImmuneToExplosion()Z"))
     private boolean claimDeniesExplosion(Entity entity) {
-        BlockPos blockPos_1 = entity.getBlockPos();
+        BlockPos blockPos_1 = entity.getSenseCenterPos();
         Claim claim = ClaimManager.INSTANCE.getClaimAt(blockPos_1, entity.world.getDimension().getType());
         if (claim != null) {
             if (!(Boolean) claim.settings.getSetting(Claim.ClaimSettings.Setting.EXPLOSIONS)) return true;
