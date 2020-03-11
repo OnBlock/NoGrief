@@ -1566,7 +1566,7 @@ public class ClaimCommand {
     }
     private static int querySetting(ServerCommandSource source, Claim claim, Claim.ClaimSettings.Setting setting) {
         boolean enabled = claim.settings.settings.get(setting);
-        source.sendFeedback(new LiteralText(ChatColor.translate("&eSetting &6" + setting.name + " is set to " + (enabled ? "&a" : "&c") + enabled + "&e for &6" + claim.name)), false);
+        source.sendFeedback(new LiteralText(ChatColor.translate("&eSetting &6" + setting.name + " &e is set to " + (enabled ? "&a" : "&c") + enabled + "&e for &6" + claim.name)), false);
         return 1;
     }
     private static int setSetting(ServerCommandSource source, Claim claim, Claim.ClaimSettings.Setting setting, boolean set) {
@@ -1576,7 +1576,7 @@ public class ClaimCommand {
     }
     private static int queryPermission(ServerCommandSource source, Claim claim, Claim.Permission permission) {
         boolean defaultPerm = claim.permissionManager.defaults.hasPermission(permission);
-        source.sendFeedback(new LiteralText(ChatColor.translate("&ePermission &6" + permission.id + " is set to " + (defaultPerm ? "&a" : "&c") + defaultPerm + "&e for &6" + claim.name)), false);
+        source.sendFeedback(new LiteralText(ChatColor.translate("&ePermission &6" + permission.id + "&e is set to " + (defaultPerm ? "&a" : "&c") + defaultPerm + "&e for &6" + claim.name)), false);
         return 1;
     }
     private static int setPermission(ServerCommandSource source, Claim claim, Claim.Permission permission, boolean set) {
