@@ -3,6 +3,7 @@ package io.github.indicode.fabric.itsmine.mixin;
 import io.github.indicode.fabric.itsmine.Claim;
 import io.github.indicode.fabric.itsmine.ClaimManager;
 import io.github.indicode.fabric.itsmine.Functions;
+import io.github.indicode.fabric.itsmine.Messages;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
@@ -27,8 +28,8 @@ public class ServerPlayNetworkHandlerMixin {
     public ActionResult iSaidDontTouchMe(Entity entity, PlayerEntity playerEntity_1, Vec3d vec3d_1, Hand hand_1) {
         Claim claim = ClaimManager.INSTANCE.getClaimAt(entity.getSenseCenterPos(), entity.world.getDimension().getType());
         if (claim != null) {
-            if (!claim.hasPermission(playerEntity_1.getGameProfile().getId(), Claim.Permission.ENTITY_INTERACT)) {
-                playerEntity_1.sendMessage(new LiteralText("").append(new LiteralText("You are in a claim that does not allow you to interact with entities").formatted(Formatting.RED)).append(new LiteralText("(Use /claim show to see an outline)").formatted(Formatting.YELLOW)));
+            if (!claim.hasPermission(playerEntity_1.getGameProfile().getId(), Claim.Permission.INTERACT_ENTITY)) {
+                playerEntity_1.sendMessage(Messages.MSG_INTERACT_ENTITY);
                 return ActionResult.FAIL;
             }
         }

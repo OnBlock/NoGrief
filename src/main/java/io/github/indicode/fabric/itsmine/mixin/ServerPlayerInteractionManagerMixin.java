@@ -1,9 +1,6 @@
 package io.github.indicode.fabric.itsmine.mixin;
 
-import io.github.indicode.fabric.itsmine.Claim;
-import io.github.indicode.fabric.itsmine.ClaimManager;
-import io.github.indicode.fabric.itsmine.Config;
-import io.github.indicode.fabric.itsmine.Functions;
+import io.github.indicode.fabric.itsmine.*;
 import net.minecraft.block.AbstractButtonBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.DoorBlock;
@@ -27,6 +24,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
@@ -37,6 +35,8 @@ import java.util.UUID;
  */
 @Mixin(ServerPlayerInteractionManager.class)
 public class ServerPlayerInteractionManagerMixin {
+    @Shadow public ServerPlayerEntity player;
+
     @Redirect(method = "interactBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;onUse(Lnet/minecraft/world/World;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/Hand;Lnet/minecraft/util/hit/BlockHitResult;)Lnet/minecraft/util/ActionResult;"))
     public ActionResult activateIfPossible(BlockState state, World world, PlayerEntity playerEntity_1, Hand hand_1, BlockHitResult blockHitResult_1) {
         BlockPos pos = blockHitResult_1.getBlockPos();
@@ -44,10 +44,10 @@ public class ServerPlayerInteractionManagerMixin {
         if (claim != null) {
             UUID uuid = playerEntity_1.getGameProfile().getId();
             if (
-                    claim.hasPermission(uuid, Claim.Permission.ACTIVATE_BLOCKS) ||
+                    claim.hasPermission(uuid, Claim.Permission.INTERACT_BLOCKS) ||
                             (state.getBlock() instanceof AbstractButtonBlock && claim.hasPermission(uuid, Claim.Permission.PRESS_BUTTONS)) ||
                             (state.getBlock() instanceof LeverBlock && claim.hasPermission(uuid, Claim.Permission.USE_LEVERS)) ||
-                            (state.getBlock() instanceof DoorBlock && claim.hasPermission(uuid, Claim.Permission.OPEN_DOORS))
+                            (state.getBlock() instanceof DoorBlock && claim.hasPermission(uuid, Claim.Permission.INTERACT_DOORS))
             ) return state.onUse(world, playerEntity_1, hand_1, blockHitResult_1);
             else {
                 if (state.getBlock() instanceof DoorBlock && playerEntity_1 instanceof ServerPlayerEntity) {
@@ -69,19 +69,10 @@ public class ServerPlayerInteractionManagerMixin {
             UUID uuid = playerEntity_1.getGameProfile().getId();
             if (
                     claim.hasPermission(uuid, Claim.Permission.USE_ITEMS_ON_BLOCKS) ||
-                            (stack.getItem() instanceof BlockItem && claim.hasPermission(uuid, Claim.Permission.PLACE_BREAK)) ||
-                            (stack.getItem() instanceof BucketItem && claim.hasPermission(uuid, Claim.Permission.PLACE_BREAK))
+                            (stack.getItem() instanceof BlockItem && claim.hasPermission(uuid, Claim.Permission.BUILD)) ||
+                            (stack.getItem() instanceof BucketItem && claim.hasPermission(uuid, Claim.Permission.BUILD))
             ) return false;
-            if (stack.getItem() instanceof BlockItem) {
-                playerEntity_1.sendMessage(new LiteralText("").append(new LiteralText("You cannot place blocks in this claim").formatted(Formatting.RED)).append(new LiteralText("(Use /claim show to see an outline)").formatted(Formatting.YELLOW)));
-            }
-            if (stack.getItem() instanceof BucketItem) {
-                if (!Functions.isBucketEmpty((BucketItem) stack.getItem())) {
-                    playerEntity_1.sendMessage(new LiteralText("").append(new LiteralText("You cannot pick up fluids in this claim").formatted(Formatting.RED)).append(new LiteralText("(Use /claim show to see an outline)").formatted(Formatting.YELLOW)));
-                } else {
-                    playerEntity_1.sendMessage(new LiteralText("").append(new LiteralText("You cannot place fluids in this claim").formatted(Formatting.RED)).append(new LiteralText("(Use /claim show to see an outline)").formatted(Formatting.YELLOW)));
-                }
-            }
+            playerEntity_1.sendMessage(Messages.MSG_PLACE_BLOCK);
             return true;
         }
         return stack.isEmpty();
@@ -109,9 +100,9 @@ public class ServerPlayerInteractionManagerMixin {
         if (claim != null) {
             UUID uuid = player.getGameProfile().getId();
             if (
-                    claim.hasPermission(uuid, Claim.Permission.PLACE_BREAK)
+                    claim.hasPermission(uuid, Claim.Permission.BUILD)
             ) return Functions.canPlayerActuallyModifyAt(world, player, pos);
-            player.sendMessage(new LiteralText("").append(new LiteralText("You cannot break blocks in this claim").formatted(Formatting.RED)).append(new LiteralText("(Use /claim show to see an outline)").formatted(Formatting.YELLOW)));
+            player.sendMessage(Messages.MSG_BREAK_BLOCK);
             return false;
         }
         return world.canPlayerModifyAt(player, pos);

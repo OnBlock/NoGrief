@@ -3,6 +3,7 @@ package io.github.indicode.fabric.itsmine.mixin;
 import io.github.indicode.fabric.itsmine.Claim;
 import io.github.indicode.fabric.itsmine.ClaimManager;
 import io.github.indicode.fabric.itsmine.ClaimShower;
+import io.github.indicode.fabric.itsmine.Messages;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -39,8 +40,8 @@ public abstract class PlayerEntityMixin extends LivingEntity implements ClaimSho
         if (entity.world.isClient()) return entity.interact(playerEntity_1, hand_1);
         Claim claim = ClaimManager.INSTANCE.getClaimAt(entity.getSenseCenterPos(), entity.world.getDimension().getType());
         if (claim != null) {
-            if (!claim.hasPermission(playerEntity_1.getGameProfile().getId(), Claim.Permission.ENTITY_INTERACT)) {
-                playerEntity_1.sendMessage(new LiteralText("").append(new LiteralText("You are in a claim that does not allow you to interact with entities").formatted(Formatting.RED)).append(new LiteralText("(Use /claim show to see an outline)").formatted(Formatting.YELLOW)));
+            if (!claim.hasPermission(playerEntity_1.getGameProfile().getId(), Claim.Permission.INTERACT_ENTITY)) {
+                playerEntity_1.sendMessage(Messages.MSG_INTERACT_ENTITY);
                 return false;
             }
         }
@@ -52,8 +53,8 @@ public abstract class PlayerEntityMixin extends LivingEntity implements ClaimSho
         PlayerEntity playerEntity_1 = (PlayerEntity)(Object)this;
         Claim claim = ClaimManager.INSTANCE.getClaimAt(entity.getSenseCenterPos(), entity.world.getDimension().getType());
         if (claim != null) {
-            if (!claim.hasPermission(playerEntity_1.getGameProfile().getId(), Claim.Permission.ENTITY_DAMAGE)) {
-                playerEntity_1.sendMessage(new LiteralText("").append(new LiteralText("You are in a claim that does not allow you to hurt entities").formatted(Formatting.RED)).append(new LiteralText("(Use /claim show to see an outline)").formatted(Formatting.YELLOW)));
+            if (!claim.hasPermission(playerEntity_1.getGameProfile().getId(), Claim.Permission.DAMAGE_ENTITY)) {
+                playerEntity_1.sendMessage(Messages.MSG_INTERACT_ENTITY);
                 ci.cancel();
             }
         }
