@@ -5,7 +5,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 public class Messages {
-    public static final Text INVALID_CLAIM = new LiteralText("Can not find a claim with that name").formatted(Formatting.RED);
+    public static final Text INVALID_CLAIM = new LiteralText("Can not find a claim with that name or a claim at your position").formatted(Formatting.RED);
 
     public static final Text INVALID_SETTING = new LiteralText("Invalid Claim Setting!").formatted(Formatting.RED);
 

@@ -731,7 +731,7 @@ public class ClaimCommand {
                 .styled((style) -> {
                     style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText((prevPage >= 0) ? "<<<" : "|<").formatted(Formatting.GRAY)));
                     if (prevPage >= 0)
-                        style.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command.replace("%page%",  String.valueOf(prevPage))));
+                        style.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command.replace("%page%",  String.valueOf(page - 1))));
                 });
 
         Text button_next = new LiteralText("")
@@ -739,7 +739,7 @@ public class ClaimCommand {
                 .append(" ").append(new LiteralText("->").formatted(Formatting.WHITE, Formatting.BOLD)).append(" ")
                 .styled((style) -> {
                     style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText((nextPage <= text.length) ? ">>>" : ">|").formatted(Formatting.GRAY)));
-                    if (nextPage < text.length)
+                    if (nextPage <= text.length)
                         style.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command.replace("%page%",  String.valueOf(nextPage))));
                 });
 
@@ -794,9 +794,8 @@ public class ClaimCommand {
             RequiredArgumentBuilder<ServerCommandSource, String> id = CommandManager.argument("setting", StringArgumentType.word()).suggests(SETTINGS_PROVIDER);
             RequiredArgumentBuilder<ServerCommandSource, Boolean> set = CommandManager.argument("set", BoolArgumentType.bool());
 
-            id.executes((context) -> executeSetting(context.getSource(), StringArgumentType.getString(context, "setting"), null, true, false, admin));
+            id.executes((context) -> executeSetting(context.getSource(), StringArgumentType.getString(context, "setting"), StringArgumentType.getString(context, "claim"), true, false, admin));
             set.executes((context) -> executeSetting(context.getSource(), StringArgumentType.getString(context, "setting"), null, false, BoolArgumentType.getBool(context, "set"), admin));
-            claim.executes((context) -> executeSetting(context.getSource(), null, null, false, BoolArgumentType.getBool(context, "set"), admin));
 
             id.then(set);
             claim.then(id);
@@ -1577,7 +1576,7 @@ public class ClaimCommand {
         return 1;
     }
     private static int querySettings(ServerCommandSource source, Claim claim) {
-        source.sendFeedback(new LiteralText("\n").append(new LiteralText("Settings: " + claim.name).formatted(Formatting.YELLOW))
+        source.sendFeedback(new LiteralText("\n").append(new LiteralText("Settings: " + claim.name).formatted(Formatting.YELLOW)).append("\n")
                 .append(Messages.Command.getSettings(claim)).append("\n"), false);
         return 1;
     }
