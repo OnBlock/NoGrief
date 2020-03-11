@@ -54,6 +54,10 @@ public class ClaimCommand {
         }
     }
 
+    private static void validateClaim(Claim claim) throws CommandSyntaxException {
+        if (claim == null) throw new SimpleCommandExceptionType(Messages.INVALID_CLAIM).create();
+    }
+
     private static RequiredArgumentBuilder<ServerCommandSource, String> getClaimArgument() {
         return CommandManager.argument("claim", StringArgumentType.word()).suggests(CLAIM_PROVIDER);
     }
@@ -432,6 +436,9 @@ public class ClaimCommand {
             RequiredArgumentBuilder<ServerCommandSource, EntitySelector> playerArgument = CommandManager.argument("player", EntityArgumentType.player());
             RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = getClaimArgument();
 
+            playerArgument.executes((context -> executeTrust(context, EntityArgumentType.getPlayer(context, "player"), true, null)));
+            claimArgument.executes((context -> executeTrust(context, EntityArgumentType.getPlayer(context, "player"), true, StringArgumentType.getString(context, "claim"))));
+
             playerArgument.then(claimArgument);
             trust.then(playerArgument);
             command.then(trust);
@@ -440,6 +447,9 @@ public class ClaimCommand {
             LiteralArgumentBuilder<ServerCommandSource> distrust = CommandManager.literal("distrust");
             RequiredArgumentBuilder<ServerCommandSource, EntitySelector> playerArgument = CommandManager.argument("player", EntityArgumentType.player());
             RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = getClaimArgument();
+
+            playerArgument.executes((context -> executeTrust(context, EntityArgumentType.getPlayer(context, "player"), false, null)));
+            claimArgument.executes((context -> executeTrust(context, EntityArgumentType.getPlayer(context, "player"), false, StringArgumentType.getString(context, "claim"))));
 
             playerArgument.then(claimArgument);
             distrust.then(playerArgument);
@@ -856,13 +866,9 @@ public class ClaimCommand {
             RequiredArgumentBuilder<ServerCommandSource, Boolean> allstate = CommandManager.argument("allow", BoolArgumentType.bool());
             allstate.executes(context -> {
                 Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
-                if (verifyPermission(claim1, Claim.Permission.MODIFY_PERMISSIONS, context, admin)) {
-                    ServerPlayerEntity player1 = EntityArgumentType.getPlayer(context, "player");
-                    boolean permission = BoolArgumentType.getBool(context, "allow");
-                    claim1.permissionManager.playerPermissions.put(player1.getGameProfile().getId(), permission ? new Claim.InvertedPermissionMap() : new Claim.DefaultPermissionMap());
-                    context.getSource().sendFeedback(new LiteralText(player1.getGameProfile().getName() + (permission ? " now" : " no longer") + " has all the permissions").formatted(Formatting.YELLOW), false);
-                }
-                return 0;
+                ServerPlayerEntity player1 = EntityArgumentType.getPlayer(context, "player");
+                validateClaim(claim1);
+                return setTrust(context, claim1, player1, BoolArgumentType.getBool(context, "allow"), admin);
             });
             all.then(allstate);
             player.then(all);
@@ -1578,6 +1584,25 @@ public class ClaimCommand {
     private static int querySettings(ServerCommandSource source, Claim claim) {
         source.sendFeedback(new LiteralText("\n").append(new LiteralText("Settings: " + claim.name).formatted(Formatting.YELLOW)).append("\n")
                 .append(Messages.Command.getSettings(claim)).append("\n"), false);
+        return 1;
+    }
+    private static int executeTrust(CommandContext<ServerCommandSource> context, ServerPlayerEntity target, boolean set, @Nullable String claimName) throws CommandSyntaxException {
+        ServerPlayerEntity p = context.getSource().getPlayer();
+        Claim claim1 = claimName == null ? ClaimManager.INSTANCE.getClaimAt(p.getSenseCenterPos(), p.dimension) : ClaimManager.INSTANCE.claimsByName.get(claimName);
+        validateClaim(claim1);
+
+        return setTrust(context, claim1, target, set, false);
+    }
+    private static int setTrust(CommandContext<ServerCommandSource> context, Claim claim, ServerPlayerEntity target, boolean set, boolean admin) throws CommandSyntaxException {
+        if (verifyPermission(claim, Claim.Permission.MODIFY_PERMISSIONS, context, admin)) {
+            claim.permissionManager.playerPermissions.put(target.getGameProfile().getId(), set ? new Claim.InvertedPermissionMap() : new Claim.DefaultPermissionMap());
+            context.getSource().sendFeedback(new LiteralText(target.getGameProfile().getName() + (set ? " now" : " no longer") + " has all the permissions").formatted(Formatting.YELLOW), false);
+
+            String message;
+            if (set) message = "&aTrusted player &6" + target.getEntityName() + "&a in &6" + claim.name + "\n&aThey now have all the default permissions";
+            else message = "&cDistrusted player &6" + target.getEntityName() + "&c in &6" + claim.name + "\n&cThey don't have any permissions now";
+            context.getSource().sendFeedback(new LiteralText(ChatColor.translate(message)), false);
+        }
         return 1;
     }
 }

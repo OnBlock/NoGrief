@@ -473,8 +473,8 @@ public class Claim {
             PISTON_FROM_INSIDE("pistons_inside_border", "Pistons Cross border from Inside", true),
             PISTON_FROM_OUTSIDE("pistons_outside_border", "Pistons Cross border from Outside", false),
             MOB_SPAWNING("mob_spawn", "Natural mob spawning", true),
-            KEEP_INVENTORY("keep_inventory", "Keep Inventory", true),
-            TELEPORT("teleport", "Global Teleport Access", true),
+//            KEEP_INVENTORY("keep_inventory", "Keep Inventory", true),
+//            TELEPORT("teleport", "Global Teleport Access", true),
             ENTER_SOUND("enter_sound", "Enter Sound", true);
 
             String id, name;
