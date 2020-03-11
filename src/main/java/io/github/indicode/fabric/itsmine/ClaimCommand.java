@@ -147,9 +147,9 @@ public class ClaimCommand {
 
     private static void registerHelp(LiteralArgumentBuilder<ServerCommandSource> builder, String id, Text[] texts, String title) {
         LiteralArgumentBuilder<ServerCommandSource> argumentBuilder = CommandManager.literal(id)
-                .executes((context) -> sendPage(context.getSource(), Messages.GET_STARTED, 1, title, "/claim help " + id + " %page%"));
+                .executes((context) -> sendPage(context.getSource(), texts, 1, title, "/claim help " + id + " %page%"));
         RequiredArgumentBuilder<ServerCommandSource, Integer> pageArgument = CommandManager.argument("page", IntegerArgumentType.integer(1, texts.length))
-                .executes((context) -> sendPage(context.getSource(), Messages.GET_STARTED, IntegerArgumentType.getInteger(context, "page"), title, "/claim help " + id + " %page%"));
+                .executes((context) -> sendPage(context.getSource(), texts, IntegerArgumentType.getInteger(context, "page"), title, "/claim help " + id + " %page%"));
 
         argumentBuilder.then(pageArgument);
         builder.then(argumentBuilder);
@@ -162,8 +162,8 @@ public class ClaimCommand {
             LiteralArgumentBuilder<ServerCommandSource> help = CommandManager.literal("help");
             help.executes((context) -> sendPage(context.getSource(), Messages.HELP, 1, "Its Mine!", "/claim help commands %page%"));
 
-            registerHelp(help, "commands", Messages.HELP, "Its Mine!");
             registerHelp(help, "get_started", Messages.GET_STARTED, "Get Started");
+            registerHelp(help, "commands", Messages.HELP, "Its Mine!");
             command.then(help);
         }
         {
@@ -212,33 +212,6 @@ public class ClaimCommand {
             claimArgument.then(nameArgument);
             rename.then(claimArgument);
             command.then(rename);
-        }
-        {
-            LiteralArgumentBuilder<ServerCommandSource> message = CommandManager.literal("message");
-            RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = getClaimArgument();
-            RequiredArgumentBuilder<ServerCommandSource, String> messageEvent = CommandManager.argument("messageEvent", StringArgumentType.word())
-                    .suggests(MESSAGE_EVENTS_PROVIDER);
-            RequiredArgumentBuilder<ServerCommandSource, String> messageArgument = CommandManager.argument("message", StringArgumentType.greedyString())
-                    .suggests(EVENT_MESSAGE_PROVIDER);
-
-            messageArgument.executes(context -> {
-                ServerPlayerEntity player = context.getSource().getPlayer();
-                Claim claim = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
-                validateCanAccess(player, claim, PERMISSION_CHECK_ADMIN.test(context.getSource()));
-                Claim.Event event = Claim.Event.getById(StringArgumentType.getString(context, "messageEvent"));
-
-                if (event == null) {
-                    context.getSource().sendError(Messages.INVALID_MESSAGE_EVENT);
-                    return -1;
-                }
-
-                return setEventMessage(context.getSource(), claim, event, StringArgumentType.getString(context, "message"));
-            });
-
-            messageEvent.then(messageArgument);
-            claimArgument.then(messageEvent);
-            message.then(claimArgument);
-            command.then(message);
         }
         {
             LiteralArgumentBuilder<ServerCommandSource> trusted = CommandManager.literal("trusted");
@@ -945,6 +918,36 @@ public class ClaimCommand {
             }
             groupLiteral.then(group);
         }
+        {
+            LiteralArgumentBuilder<ServerCommandSource> message = CommandManager.literal("message");
+            RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = getClaimArgument();
+            RequiredArgumentBuilder<ServerCommandSource, String> messageEvent = CommandManager.argument("messageEvent", StringArgumentType.word())
+                    .suggests(MESSAGE_EVENTS_PROVIDER);
+            RequiredArgumentBuilder<ServerCommandSource, String> messageArgument = CommandManager.argument("message", StringArgumentType.greedyString())
+                    .suggests(EVENT_MESSAGE_PROVIDER);
+
+            messageArgument.executes(context -> {
+                Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
+                if (verifyPermission(claim1, Claim.Permission.MODIFY_PROPERTIES, context, admin)) {
+                    Claim.Event event = Claim.Event.getById(StringArgumentType.getString(context, "messageEvent"));
+
+                    if (event == null) {
+                        context.getSource().sendError(Messages.INVALID_MESSAGE_EVENT);
+                        return -1;
+                    }
+
+                    return setEventMessage(context.getSource(), claim1, event, StringArgumentType.getString(context, "message"));
+                }
+
+                return -1;
+            });
+
+            messageEvent.then(messageArgument);
+            claimArgument.then(messageEvent);
+            message.then(claimArgument);
+            command.then(message);
+        }
+
         claim.then(playerLiteral);
         claim.then(groupLiteral);
         exceptions.then(claim);
