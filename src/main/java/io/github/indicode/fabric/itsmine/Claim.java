@@ -186,7 +186,7 @@ public class Claim {
         {
             tag.put("settings", settings.toTag());
             tag.put("permissions", permissionManager.toNBT());
-            if (claimBlockOwner != null) tag.putUuid("top_owner", claimBlockOwner);
+            if (claimBlockOwner != null) tag.putUuidNew("top_owner", claimBlockOwner);
         }
         {
             CompoundTag meta = new CompoundTag();
@@ -226,7 +226,7 @@ public class Claim {
             this.settings = new ClaimSettings(tag.getCompound("settings"));
             permissionManager = new PermissionManager();
             permissionManager.fromNBT(tag.getCompound("permissions"));
-            if (tag.containsUuid("top_owner")) claimBlockOwner = tag.getUuid("top_owner");
+            if (tag.containsUuidNew("top_owner")) claimBlockOwner = tag.getUuidNew("top_owner");
         }
         {
             CompoundTag meta = tag.getCompound("meta");

@@ -3,6 +3,7 @@ package io.github.indicode.fabric.itsmine.mixin;
 import com.google.gson.JsonElement;
 import io.github.indicode.fabric.itsmine.Claim;
 import io.github.indicode.fabric.itsmine.ClaimManager;
+import net.minecraft.class_4952;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.server.MinecraftServer;
@@ -24,10 +25,10 @@ import java.io.IOException;
 @Mixin(MinecraftServer.class)
 public abstract class MinecraftServerMixin {
     @Inject(method = "loadWorld", at = @At("RETURN"))
-    private void loadClaims(String string_1, String string_2, long long_1, LevelGeneratorType levelGeneratorType_1, JsonElement jsonElement_1, CallbackInfo ci) {
+    private void loadClaims(String name, String serverName, long seed, class_4952 arg, CallbackInfo ci) {
         ClaimManager.INSTANCE = new ClaimManager();
-        File claims = new File(gameDir.getPath() + "/" + string_1 + "/claims.dat");
-        File claims_old = new File(gameDir.getPath() + "/" + string_1 + "/claims.dat_old");
+        File claims = new File(gameDir.getPath() + "/" + name + "/claims.dat");
+        File claims_old = new File(gameDir.getPath() + "/" + name + "/claims.dat_old");
         if (!claims.exists()) {
             if (claims_old.exists()) {}
             else return;
