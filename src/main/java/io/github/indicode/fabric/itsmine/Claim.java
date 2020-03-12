@@ -1,22 +1,15 @@
 package io.github.indicode.fabric.itsmine;
 
 import blue.endless.jankson.annotation.Nullable;
-import com.mojang.brigadier.arguments.ArgumentType;
-import com.mojang.brigadier.arguments.BoolArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.context.CommandContext;
 import io.github.indicode.fabric.permissions.Thimble;
 import net.minecraft.nbt.*;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.dimension.DimensionType;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 /**
  * @author Indigo Amann
@@ -467,7 +460,8 @@ public class Claim {
     public static class ClaimSettings{
         public enum Setting {
             FLIGHT_ALLOWED("flight_allowed", "Flying Enabled", true),
-            EXPLOSIONS("explosion_destruction", "Explosions Destroy Blocks", false),
+            EXPLOSION_DESTRUCTION("explosion_destruction", "Explosions Destroy Blocks", false),
+            EXPLOSION_DAMAGE("explosion_damage", "Expolsions Damage Entities", false),
             FLUID_CROSSES_BORDERS("fluid_crosses_borders", "Fluid Crosses Borders", false),
             FIRE_CROSSES_BORDERS("fire_crosses_borders", "Fire Crosses Borders", false),
             PISTON_FROM_INSIDE("pistons_inside_border", "Pistons Cross border from Inside", true),
@@ -530,6 +524,35 @@ public class Claim {
         @Nullable
         public static Event getById(String id) {
             for (Event value : values()) {
+                if (value.id.equalsIgnoreCase(id)) {
+                    return value;
+                }
+            }
+
+            return null;
+        }
+    }
+
+    public enum HelpBook {
+        GET_STARTED("getStarted", Messages.GET_STARTED, "Get Started"),
+        COMMAND("commands", Messages.HELP, "Claim Commands");
+
+        String id;
+        String title;
+        Text[] texts;
+        HelpBook(String id, Text[] texts, String title) {
+            this.id = id;
+            this.title = title;
+            this.texts = texts;
+        }
+
+        public String getCommand() {
+            return "/claim help " + this.id + " %page%";
+        }
+
+        @Nullable
+        public static HelpBook getById(String id) {
+            for (HelpBook value : values()) {
                 if (value.id.equalsIgnoreCase(id)) {
                     return value;
                 }

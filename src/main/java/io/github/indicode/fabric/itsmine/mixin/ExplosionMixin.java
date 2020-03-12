@@ -21,7 +21,7 @@ public class ExplosionMixin {
     private BlockState theyCallMeBedrock(World world, BlockPos blockPos_1) {
         Claim claim = ClaimManager.INSTANCE.getClaimAt(blockPos_1, world.getDimension().getType());
         if (claim != null && !world.isAir(blockPos_1)) {
-            if (claim.settings.getSetting(Claim.ClaimSettings.Setting.EXPLOSIONS))
+            if (!claim.settings.getSetting(Claim.ClaimSettings.Setting.EXPLOSION_DESTRUCTION))
                 return Blocks.BEDROCK.getDefaultState();
         }
         return world.getBlockState(blockPos_1);
@@ -31,8 +31,8 @@ public class ExplosionMixin {
         BlockPos blockPos_1 = entity.getSenseCenterPos();
         Claim claim = ClaimManager.INSTANCE.getClaimAt(blockPos_1, entity.world.getDimension().getType());
         if (claim != null) {
-            if (claim.settings.getSetting(Claim.ClaimSettings.Setting.EXPLOSIONS))
-                return false;
+            if (claim.settings.getSetting(Claim.ClaimSettings.Setting.EXPLOSION_DAMAGE))
+                return true;
         }
         return entity.isImmuneToExplosion();
     }

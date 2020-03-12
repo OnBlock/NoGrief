@@ -25,7 +25,6 @@ import net.minecraft.command.arguments.EntityArgumentType;
 import net.minecraft.command.arguments.GameProfileArgumentType;
 import net.minecraft.command.arguments.PosArgument;
 import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
-import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.CommandSource;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -39,6 +38,8 @@ import net.minecraft.util.registry.Registry;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
+
+import static net.minecraft.server.command.CommandManager.*;
 
 /**
  * @author Indigo Amann
@@ -59,7 +60,7 @@ public class ClaimCommand {
     }
 
     private static RequiredArgumentBuilder<ServerCommandSource, String> getClaimArgument() {
-        return CommandManager.argument("claim", StringArgumentType.word()).suggests(CLAIM_PROVIDER);
+        return argument("claim", StringArgumentType.word()).suggests(CLAIM_PROVIDER);
     }
 
     private static Predicate<ServerCommandSource> perm(String str) {
@@ -146,9 +147,9 @@ public class ClaimCommand {
     };
 
     private static void registerHelp(LiteralArgumentBuilder<ServerCommandSource> builder, String id, Text[] texts, String title) {
-        LiteralArgumentBuilder<ServerCommandSource> argumentBuilder = CommandManager.literal(id)
+        LiteralArgumentBuilder<ServerCommandSource> argumentBuilder = literal(id)
                 .executes((context) -> sendPage(context.getSource(), texts, 1, title, "/claim help " + id + " %page%"));
-        RequiredArgumentBuilder<ServerCommandSource, Integer> pageArgument = CommandManager.argument("page", IntegerArgumentType.integer(1, texts.length))
+        RequiredArgumentBuilder<ServerCommandSource, Integer> pageArgument = argument("page", IntegerArgumentType.integer(1, texts.length))
                 .executes((context) -> sendPage(context.getSource(), texts, IntegerArgumentType.getInteger(context, "page"), title, "/claim help " + id + " %page%"));
 
         argumentBuilder.then(pageArgument);
@@ -156,17 +157,35 @@ public class ClaimCommand {
     }
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        LiteralArgumentBuilder<ServerCommandSource> command = CommandManager.literal("claim")
-                .executes((context) -> sendPage(context.getSource(), Messages.GET_STARTED, 1, "Get Started", "/claim help get_started %page%"));
-        LiteralArgumentBuilder<ServerCommandSource> help = CommandManager.literal("help");
-        help.executes((context) -> sendPage(context.getSource(), Messages.HELP, 1, "Its Mine!", "/claim help commands %page%"));
+        LiteralArgumentBuilder<ServerCommandSource> command = literal("claim")
+                .executes((context) -> sendPage(context.getSource(), Messages.GET_STARTED, 1, "Get Started", "/claim help getStarted %page%"));
 
-        registerHelp(help, "get_started", Messages.GET_STARTED, "Get Started");
-        registerHelp(help, "commands", Messages.HELP, "Its Mine!");
-        command.then(help);
         {
-            LiteralArgumentBuilder<ServerCommandSource> create = CommandManager.literal("create");
-            RequiredArgumentBuilder<ServerCommandSource, String> name = CommandManager.argument("name", StringArgumentType.word());
+            LiteralArgumentBuilder<ServerCommandSource> help = literal("help");
+            help.executes((context) -> sendPage(context.getSource(), Messages.HELP, 1, "Its Mine!", "/claim help commands %page%"));
+
+            RequiredArgumentBuilder<ServerCommandSource, String> id = argument("id", StringArgumentType.word());
+            RequiredArgumentBuilder<ServerCommandSource, Integer> page = argument("page", IntegerArgumentType.integer(1));
+
+            page.executes((context) -> {
+                Claim.HelpBook book = Claim.HelpBook.getById(StringArgumentType.getString(context, "id"));
+                if (book == null) {
+                    context.getSource().sendError(new LiteralText("Invalid Book!"));
+                    return -1;
+                }
+                int p = IntegerArgumentType.getInteger(context, "page");
+
+                if (p > book.texts.length) p = 1;
+                return sendPage(context.getSource(), book.texts, p, book.title, book.getCommand());
+            });
+
+            id.then(page);
+            help.then(id);
+            command.then(help);
+        }
+        {
+            LiteralArgumentBuilder<ServerCommandSource> create = literal("create");
+            RequiredArgumentBuilder<ServerCommandSource, String> name = argument("name", StringArgumentType.word());
 
             name.executes(context -> {
             ServerPlayerEntity player = context.getSource().getPlayer();
@@ -186,8 +205,8 @@ public class ClaimCommand {
                 return 0;
             });
 
-            ArgumentBuilder<ServerCommandSource, ?> min = CommandManager.argument("min", BlockPosArgumentType.blockPos());
-            RequiredArgumentBuilder<ServerCommandSource, PosArgument> max = CommandManager.argument("max", BlockPosArgumentType.blockPos());
+            ArgumentBuilder<ServerCommandSource, ?> min = argument("min", BlockPosArgumentType.blockPos());
+            RequiredArgumentBuilder<ServerCommandSource, PosArgument> max = argument("max", BlockPosArgumentType.blockPos());
             max.executes(context -> createClaim(
                     StringArgumentType.getString(context, "name"),
                     context.getSource(),
@@ -202,17 +221,17 @@ public class ClaimCommand {
             command.then(create);
         }
         {
-            LiteralArgumentBuilder<ServerCommandSource> rename = CommandManager.literal("rename");
-            RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = CommandManager.argument("claim", StringArgumentType.word())
+            LiteralArgumentBuilder<ServerCommandSource> rename = literal("rename");
+            RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = argument("claim", StringArgumentType.word())
                     .suggests(CLAIM_PROVIDER);
-            RequiredArgumentBuilder<ServerCommandSource, String> nameArgument = CommandManager.argument("name", StringArgumentType.word());
+            RequiredArgumentBuilder<ServerCommandSource, String> nameArgument = argument("name", StringArgumentType.word());
             nameArgument.executes((context) -> rename(context, false));
             claimArgument.then(nameArgument);
             rename.then(claimArgument);
             command.then(rename);
         }
         {
-            LiteralArgumentBuilder<ServerCommandSource> trusted = CommandManager.literal("trusted");
+            LiteralArgumentBuilder<ServerCommandSource> trusted = literal("trusted");
             RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = getClaimArgument();
             trusted.executes((context)-> {
                 ServerPlayerEntity player = context.getSource().getPlayer();
@@ -236,7 +255,7 @@ public class ClaimCommand {
             command.then(trusted);
         }
         {
-            LiteralArgumentBuilder<ServerCommandSource> stick = CommandManager.literal("stick");
+            LiteralArgumentBuilder<ServerCommandSource> stick = literal("stick");
             stick.executes(context -> {
                 Pair<BlockPos, BlockPos> posPair = ClaimManager.INSTANCE.stickPositions.get(context.getSource().getPlayer());
                 context.getSource().sendFeedback(new LiteralText(posPair == null ? "You can now use a stick to create claims. Run this command again to disable" : "Claim stick disabled. Run this command again to enable").formatted(Formatting.DARK_PURPLE), false);
@@ -250,22 +269,22 @@ public class ClaimCommand {
             command.then(stick);
         }
         {
-            LiteralArgumentBuilder<ServerCommandSource> show = CommandManager.literal("show");
+            LiteralArgumentBuilder<ServerCommandSource> show = literal("show");
             show.executes(context -> showClaim(context.getSource(), ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getSenseCenterPos(), context.getSource().getWorld().dimension.getType()), false));
-            RequiredArgumentBuilder<ServerCommandSource, String> name = CommandManager.argument("name", StringArgumentType.word());
+            RequiredArgumentBuilder<ServerCommandSource, String> name = argument("name", StringArgumentType.word());
             name.suggests(CLAIM_PROVIDER);
             name.executes(context -> showClaim(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "name")), false));
             show.then(name);
             command.then(show);
         }
         {
-            LiteralArgumentBuilder<ServerCommandSource> hide = CommandManager.literal("hide");
+            LiteralArgumentBuilder<ServerCommandSource> hide = literal("hide");
             hide.executes(context -> showClaim(context.getSource(), null, true));
             command.then(hide);
         }
         {
-            LiteralArgumentBuilder<ServerCommandSource> check = CommandManager.literal("blocks");
-            RequiredArgumentBuilder<ServerCommandSource, EntitySelector> other = CommandManager.argument("player", EntityArgumentType.player());
+            LiteralArgumentBuilder<ServerCommandSource> check = literal("blocks");
+            RequiredArgumentBuilder<ServerCommandSource, EntitySelector> other = argument("player", EntityArgumentType.player());
             other.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.checkothers", 2));
             other.executes(ctx -> checkPlayer(ctx.getSource(), EntityArgumentType.getPlayer(ctx, "player").getGameProfile().getId()));
             check.then(other);
@@ -273,10 +292,10 @@ public class ClaimCommand {
             command.then(check);
         }
         {
-            LiteralArgumentBuilder<ServerCommandSource> delete = CommandManager.literal("remove");
+            LiteralArgumentBuilder<ServerCommandSource> delete = literal("remove");
             RequiredArgumentBuilder<ServerCommandSource, String> claim = getClaimArgument();
             claim.suggests(CLAIM_PROVIDER);
-            LiteralArgumentBuilder<ServerCommandSource> confirm = CommandManager.literal("confirm");
+            LiteralArgumentBuilder<ServerCommandSource> confirm = literal("confirm");
             confirm.executes(context -> delete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")), false));
             claim.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")), false));
             claim.then(confirm);
@@ -286,9 +305,9 @@ public class ClaimCommand {
         }
         {
             {
-                LiteralArgumentBuilder<ServerCommandSource> expand = CommandManager.literal("expand");
-                RequiredArgumentBuilder<ServerCommandSource, Integer> amount = CommandManager.argument("distance", IntegerArgumentType.integer(1, Integer.MAX_VALUE));
-                RequiredArgumentBuilder<ServerCommandSource, String> direction = CommandManager.argument("direction", StringArgumentType.word());
+                LiteralArgumentBuilder<ServerCommandSource> expand = literal("expand");
+                RequiredArgumentBuilder<ServerCommandSource, Integer> amount = argument("distance", IntegerArgumentType.integer(1, Integer.MAX_VALUE));
+                RequiredArgumentBuilder<ServerCommandSource, String> direction = argument("direction", StringArgumentType.word());
                 direction.suggests(DIRECTION_SUGGESTION_BUILDER);
 
                 direction.executes(context -> expand(
@@ -312,9 +331,9 @@ public class ClaimCommand {
                 command.then(expand);
             }
             {
-                LiteralArgumentBuilder<ServerCommandSource> shrink = CommandManager.literal("shrink");
-                RequiredArgumentBuilder<ServerCommandSource, Integer> amount = CommandManager.argument("distance", IntegerArgumentType.integer(1, Integer.MAX_VALUE));
-                RequiredArgumentBuilder<ServerCommandSource, String> direction = CommandManager.argument("direction", StringArgumentType.word());
+                LiteralArgumentBuilder<ServerCommandSource> shrink = literal("shrink");
+                RequiredArgumentBuilder<ServerCommandSource, Integer> amount = argument("distance", IntegerArgumentType.integer(1, Integer.MAX_VALUE));
+                RequiredArgumentBuilder<ServerCommandSource, String> direction = argument("direction", StringArgumentType.word());
                 direction.suggests(DIRECTION_SUGGESTION_BUILDER);
 
                 direction.executes(context -> expand(
@@ -339,9 +358,9 @@ public class ClaimCommand {
             }
         }
         {
-            LiteralArgumentBuilder<ServerCommandSource> delete = CommandManager.literal("remove");
+            LiteralArgumentBuilder<ServerCommandSource> delete = literal("remove");
             RequiredArgumentBuilder<ServerCommandSource, String> claim = getClaimArgument();
-            LiteralArgumentBuilder<ServerCommandSource> confirm = CommandManager.literal("confirm");
+            LiteralArgumentBuilder<ServerCommandSource> confirm = literal("confirm");
             confirm.executes(context -> delete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")), false));
             claim.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")), false));
             claim.then(confirm);
@@ -350,10 +369,10 @@ public class ClaimCommand {
             command.then(delete);
         }
         {
-            LiteralArgumentBuilder<ServerCommandSource> transfer = CommandManager.literal("transfer");
-            RequiredArgumentBuilder<ServerCommandSource, String> claim = CommandManager.argument("claim", StringArgumentType.word()).suggests(CLAIM_PROVIDER);
-            RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = CommandManager.argument("player", EntityArgumentType.player());
-            LiteralArgumentBuilder<ServerCommandSource> confirm = CommandManager.literal("confirm");
+            LiteralArgumentBuilder<ServerCommandSource> transfer = literal("transfer");
+            RequiredArgumentBuilder<ServerCommandSource, String> claim = argument("claim", StringArgumentType.word()).suggests(CLAIM_PROVIDER);
+            RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = argument("player", EntityArgumentType.player());
+            LiteralArgumentBuilder<ServerCommandSource> confirm = literal("confirm");
             confirm.executes(context -> {
                 final String string = "-accept-";
                 ServerPlayerEntity p = EntityArgumentType.getPlayer(context, "player");
@@ -379,7 +398,7 @@ public class ClaimCommand {
             command.then(transfer);
         }
         {
-            LiteralArgumentBuilder<ServerCommandSource> info = CommandManager.literal("info");
+            LiteralArgumentBuilder<ServerCommandSource> info = literal("info");
             RequiredArgumentBuilder<ServerCommandSource, String> claim = getClaimArgument();
             info.executes(context -> info(
                     context.getSource(),
@@ -393,8 +412,8 @@ public class ClaimCommand {
             command.then(info);
         }
         {
-            LiteralArgumentBuilder<ServerCommandSource> list = CommandManager.literal("list");
-            RequiredArgumentBuilder<ServerCommandSource, String> player = CommandManager.argument("player", StringArgumentType.word());
+            LiteralArgumentBuilder<ServerCommandSource> list = literal("list");
+            RequiredArgumentBuilder<ServerCommandSource, String> player = argument("player", StringArgumentType.word());
             player.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.check_others", 2));
             player.suggests(PLAYERS_PROVIDER);
             list.executes(context -> list(context.getSource(), null));
@@ -403,8 +422,8 @@ public class ClaimCommand {
             command.then(list);
         }
         {
-            LiteralArgumentBuilder<ServerCommandSource> trust = CommandManager.literal("trust");
-            RequiredArgumentBuilder<ServerCommandSource, EntitySelector> playerArgument = CommandManager.argument("player", EntityArgumentType.player());
+            LiteralArgumentBuilder<ServerCommandSource> trust = literal("trust");
+            RequiredArgumentBuilder<ServerCommandSource, EntitySelector> playerArgument = argument("player", EntityArgumentType.player());
             RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = getClaimArgument();
 
             playerArgument.executes((context -> executeTrust(context, EntityArgumentType.getPlayer(context, "player"), true, null)));
@@ -415,8 +434,8 @@ public class ClaimCommand {
             command.then(trust);
         }
         {
-            LiteralArgumentBuilder<ServerCommandSource> distrust = CommandManager.literal("distrust");
-            RequiredArgumentBuilder<ServerCommandSource, EntitySelector> playerArgument = CommandManager.argument("player", EntityArgumentType.player());
+            LiteralArgumentBuilder<ServerCommandSource> distrust = literal("distrust");
+            RequiredArgumentBuilder<ServerCommandSource, EntitySelector> playerArgument = argument("player", EntityArgumentType.player());
             RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = getClaimArgument();
 
             playerArgument.executes((context -> executeTrust(context, EntityArgumentType.getPlayer(context, "player"), false, null)));
@@ -430,13 +449,13 @@ public class ClaimCommand {
         createExceptionCommand(command, false);
 
         {
-            LiteralArgumentBuilder<ServerCommandSource> admin = CommandManager.literal("admin");
+            LiteralArgumentBuilder<ServerCommandSource> admin = literal("admin");
             admin.requires(PERMISSION_CHECK_ADMIN);
             {
-                LiteralArgumentBuilder<ServerCommandSource> add = CommandManager.literal("addBlocks");
+                LiteralArgumentBuilder<ServerCommandSource> add = literal("addBlocks");
                 add.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.modify_balance", 2));
-                RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = CommandManager.argument("player", EntityArgumentType.players());
-                RequiredArgumentBuilder<ServerCommandSource, Integer> amount = CommandManager.argument("amount", IntegerArgumentType.integer());
+                RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = argument("player", EntityArgumentType.players());
+                RequiredArgumentBuilder<ServerCommandSource, Integer> amount = argument("amount", IntegerArgumentType.integer());
                 amount.executes(context -> {
                     ClaimManager.INSTANCE.addClaimBlocks(EntityArgumentType.getPlayers(context, "player"), IntegerArgumentType.getInteger(context, "amount"));
                     context.getSource().sendFeedback(new LiteralText("Gave " + IntegerArgumentType.getInteger(context, "amount") + " claim blocks").formatted(Formatting.GREEN), true);
@@ -447,8 +466,8 @@ public class ClaimCommand {
                 admin.then(add);
             }
             {
-                LiteralArgumentBuilder<ServerCommandSource> set = CommandManager.literal("setOwner");
-                RequiredArgumentBuilder<ServerCommandSource, GameProfileArgumentType.GameProfileArgument> newOwner = CommandManager.argument("newOwner", GameProfileArgumentType.gameProfile());
+                LiteralArgumentBuilder<ServerCommandSource> set = literal("setOwner");
+                RequiredArgumentBuilder<ServerCommandSource, GameProfileArgumentType.GameProfileArgument> newOwner = argument("newOwner", GameProfileArgumentType.gameProfile());
                 RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = getClaimArgument();
 
                 newOwner.executes((context) -> {
@@ -488,8 +507,8 @@ public class ClaimCommand {
                 admin.then(set);
             }
             {
-                LiteralArgumentBuilder<ServerCommandSource> set = CommandManager.literal("setOwnerName");
-                RequiredArgumentBuilder<ServerCommandSource, String> nameArgument = CommandManager.argument("newName", StringArgumentType.word());
+                LiteralArgumentBuilder<ServerCommandSource> set = literal("setOwnerName");
+                RequiredArgumentBuilder<ServerCommandSource, String> nameArgument = argument("newName", StringArgumentType.word());
                 RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = getClaimArgument();
 
                 nameArgument.executes((context) -> {
@@ -515,20 +534,20 @@ public class ClaimCommand {
                 admin.then(set);
             }
             {
-                LiteralArgumentBuilder<ServerCommandSource> rename = CommandManager.literal("rename");
-                RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = CommandManager.argument("claim", StringArgumentType.word())
+                LiteralArgumentBuilder<ServerCommandSource> rename = literal("rename");
+                RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = argument("claim", StringArgumentType.word())
                         .suggests(CLAIM_PROVIDER);
-                RequiredArgumentBuilder<ServerCommandSource, String> nameArgument = CommandManager.argument("name", StringArgumentType.word());
+                RequiredArgumentBuilder<ServerCommandSource, String> nameArgument = argument("name", StringArgumentType.word());
                 nameArgument.executes((context) -> rename(context, true));
                 claimArgument.then(nameArgument);
                 rename.then(claimArgument);
                 admin.then(rename);
             }
             {
-                LiteralArgumentBuilder<ServerCommandSource> remove = CommandManager.literal("removeBlocks");
+                LiteralArgumentBuilder<ServerCommandSource> remove = literal("removeBlocks");
                 remove.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.modify_balance", 2));
-                RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = CommandManager.argument("player", EntityArgumentType.players());
-                RequiredArgumentBuilder<ServerCommandSource, Integer> amount = CommandManager.argument("amount", IntegerArgumentType.integer());
+                RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = argument("player", EntityArgumentType.players());
+                RequiredArgumentBuilder<ServerCommandSource, Integer> amount = argument("amount", IntegerArgumentType.integer());
                 amount.executes(context -> {
                     ClaimManager.INSTANCE.addClaimBlocks(EntityArgumentType.getPlayers(context, "player"), -IntegerArgumentType.getInteger(context, "amount"));
                     context.getSource().sendFeedback(new LiteralText("Took " + IntegerArgumentType.getInteger(context, "amount") + " claim blocks").formatted(Formatting.GREEN), true);
@@ -539,10 +558,10 @@ public class ClaimCommand {
                 admin.then(remove);
             }
             {
-                LiteralArgumentBuilder<ServerCommandSource> set = CommandManager.literal("setBlocks");
+                LiteralArgumentBuilder<ServerCommandSource> set = literal("setBlocks");
                 set.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.modify_balance", 2));
-                RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = CommandManager.argument("player", EntityArgumentType.players());
-                RequiredArgumentBuilder<ServerCommandSource, Integer> amount = CommandManager.argument("amount", IntegerArgumentType.integer());
+                RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = argument("player", EntityArgumentType.players());
+                RequiredArgumentBuilder<ServerCommandSource, Integer> amount = argument("amount", IntegerArgumentType.integer());
                 amount.executes(context -> {
                     ClaimManager.INSTANCE.setClaimBlocks(EntityArgumentType.getPlayers(context, "player"), IntegerArgumentType.getInteger(context, "amount"));
                     context.getSource().sendFeedback(new LiteralText("Set claim block amount to " + IntegerArgumentType.getInteger(context, "amount")).formatted(Formatting.GREEN), true);
@@ -553,10 +572,10 @@ public class ClaimCommand {
                 admin.then(set);
             }
             {
-                LiteralArgumentBuilder<ServerCommandSource> delete = CommandManager.literal("remove");
+                LiteralArgumentBuilder<ServerCommandSource> delete = literal("remove");
                 delete.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.modify", 4));
                 RequiredArgumentBuilder<ServerCommandSource, String> claim = getClaimArgument();
-                LiteralArgumentBuilder<ServerCommandSource> confirm = CommandManager.literal("confirm");
+                LiteralArgumentBuilder<ServerCommandSource> confirm = literal("confirm");
                 confirm.executes(context -> delete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")), true));
                 claim.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")), true));
                 claim.then(confirm);
@@ -565,12 +584,12 @@ public class ClaimCommand {
                 admin.then(delete);
             }
             {
-                LiteralArgumentBuilder<ServerCommandSource> create = CommandManager.literal("create");
+                LiteralArgumentBuilder<ServerCommandSource> create = literal("create");
                 create.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.infinite_claim", 4));
-                ArgumentBuilder<ServerCommandSource, ?> name = CommandManager.argument("name", StringArgumentType.word());
-                ArgumentBuilder<ServerCommandSource, ?> customOwner = CommandManager.argument("customOwnerName", StringArgumentType.word());
-                ArgumentBuilder<ServerCommandSource, ?> min = CommandManager.argument("min", BlockPosArgumentType.blockPos());
-                RequiredArgumentBuilder<ServerCommandSource, PosArgument> max = CommandManager.argument("max", BlockPosArgumentType.blockPos());
+                ArgumentBuilder<ServerCommandSource, ?> name = argument("name", StringArgumentType.word());
+                ArgumentBuilder<ServerCommandSource, ?> customOwner = argument("customOwnerName", StringArgumentType.word());
+                ArgumentBuilder<ServerCommandSource, ?> min = argument("min", BlockPosArgumentType.blockPos());
+                RequiredArgumentBuilder<ServerCommandSource, PosArgument> max = argument("max", BlockPosArgumentType.blockPos());
                 max.executes(context -> createClaim(
                         StringArgumentType.getString(context, "name"),
                         context.getSource(),
@@ -620,7 +639,7 @@ public class ClaimCommand {
                 admin.then(create);
             }
             {
-                LiteralArgumentBuilder<ServerCommandSource> ignore = CommandManager.literal("ignoreClaims");
+                LiteralArgumentBuilder<ServerCommandSource> ignore = literal("ignoreClaims");
                 ignore.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.ignore_claims", 4));
                 ignore.executes(context -> {
                     UUID id = context.getSource().getPlayer().getGameProfile().getId();
@@ -634,10 +653,10 @@ public class ClaimCommand {
             }
             {
                 {
-                    LiteralArgumentBuilder<ServerCommandSource> expand = CommandManager.literal("expand");
+                    LiteralArgumentBuilder<ServerCommandSource> expand = literal("expand");
                     expand.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.infinite_claim", 4) && Thimble.hasPermissionOrOp(source, "itsmine.admin.modify", 4));
-                    RequiredArgumentBuilder<ServerCommandSource, Integer> amount = CommandManager.argument("distance", IntegerArgumentType.integer(1, Integer.MAX_VALUE));
-                    RequiredArgumentBuilder<ServerCommandSource, String> direction = CommandManager.argument("direction", StringArgumentType.word());
+                    RequiredArgumentBuilder<ServerCommandSource, Integer> amount = argument("distance", IntegerArgumentType.integer(1, Integer.MAX_VALUE));
+                    RequiredArgumentBuilder<ServerCommandSource, String> direction = argument("direction", StringArgumentType.word());
                     direction.suggests(DIRECTION_SUGGESTION_BUILDER);
 
                     direction.executes(context -> expand(
@@ -661,10 +680,10 @@ public class ClaimCommand {
                     admin.then(expand);
                 }
                 {
-                    LiteralArgumentBuilder<ServerCommandSource> shrink = CommandManager.literal("shrink");
+                    LiteralArgumentBuilder<ServerCommandSource> shrink = literal("shrink");
                     shrink.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.infinite_claim", 4) && Thimble.hasPermissionOrOp(source, "itsmine.admin.modify", 4));
-                    RequiredArgumentBuilder<ServerCommandSource, Integer> amount = CommandManager.argument("distance", IntegerArgumentType.integer(1, Integer.MAX_VALUE));
-                    RequiredArgumentBuilder<ServerCommandSource, String> direction = CommandManager.argument("direction", StringArgumentType.word());
+                    RequiredArgumentBuilder<ServerCommandSource, Integer> amount = argument("distance", IntegerArgumentType.integer(1, Integer.MAX_VALUE));
+                    RequiredArgumentBuilder<ServerCommandSource, String> direction = argument("direction", StringArgumentType.word());
                     direction.suggests(DIRECTION_SUGGESTION_BUILDER);
 
                     direction.executes(context -> expand(
@@ -748,14 +767,14 @@ public class ClaimCommand {
 
     private static void createExceptionCommand(LiteralArgumentBuilder<ServerCommandSource> command, boolean admin) {
         {
-            LiteralArgumentBuilder<ServerCommandSource> settings = CommandManager.literal("settings");
+            LiteralArgumentBuilder<ServerCommandSource> settings = literal("settings");
             RequiredArgumentBuilder<ServerCommandSource, String> claim = getClaimArgument();
 
             if (!admin) {
                 settings.executes((context) -> {
                     ServerPlayerEntity player = context.getSource().getPlayer();
                     Claim claim1 = ClaimManager.INSTANCE.getClaimAt(player.getSenseCenterPos(), player.dimension);
-                    if (claim == null) {
+                    if (claim1 == null) {
                         context.getSource().sendError(Messages.INVALID_CLAIM);
                         return -1;
                     }
@@ -772,8 +791,8 @@ public class ClaimCommand {
                 });
             }
 
-            RequiredArgumentBuilder<ServerCommandSource, String> id = CommandManager.argument("setting", StringArgumentType.word()).suggests(SETTINGS_PROVIDER);
-            RequiredArgumentBuilder<ServerCommandSource, Boolean> set = CommandManager.argument("set", BoolArgumentType.bool());
+            RequiredArgumentBuilder<ServerCommandSource, String> id = argument("setting", StringArgumentType.word()).suggests(SETTINGS_PROVIDER);
+            RequiredArgumentBuilder<ServerCommandSource, Boolean> set = argument("set", BoolArgumentType.bool());
 
             id.executes((context) -> executeSetting(context.getSource(), StringArgumentType.getString(context, "setting"), StringArgumentType.getString(context, "claim"), true, false, admin));
             set.executes((context) -> executeSetting(context.getSource(), StringArgumentType.getString(context, "setting"), null, false, BoolArgumentType.getBool(context, "set"), admin));
@@ -784,7 +803,7 @@ public class ClaimCommand {
             command.then(settings);
         }
 
-        LiteralArgumentBuilder<ServerCommandSource> exceptions = CommandManager.literal("permissions");
+        LiteralArgumentBuilder<ServerCommandSource> exceptions = literal("permissions");
         if (admin) exceptions.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.modify_permissions", 2));
         RequiredArgumentBuilder<ServerCommandSource, String> claim = getClaimArgument();
         if (!admin) {
@@ -819,10 +838,10 @@ public class ClaimCommand {
             });
         }
 
-        LiteralArgumentBuilder<ServerCommandSource> playerLiteral = CommandManager.literal("player");
+        LiteralArgumentBuilder<ServerCommandSource> playerLiteral = literal("player");
         {
-            RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = CommandManager.argument("player", EntityArgumentType.player());
-            LiteralArgumentBuilder<ServerCommandSource> remove = CommandManager.literal("remove");
+            RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = argument("player", EntityArgumentType.player());
+            LiteralArgumentBuilder<ServerCommandSource> remove = literal("remove");
             remove.executes(context -> {
                 Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
                 if (verifyPermission(claim1, Claim.Permission.MODIFY_PERMISSIONS, context, admin)) {
@@ -833,8 +852,8 @@ public class ClaimCommand {
                 return 0;
             });
             player.then(remove);
-            LiteralArgumentBuilder<ServerCommandSource> all = CommandManager.literal("*");
-            RequiredArgumentBuilder<ServerCommandSource, Boolean> allstate = CommandManager.argument("allow", BoolArgumentType.bool());
+            LiteralArgumentBuilder<ServerCommandSource> all = literal("*");
+            RequiredArgumentBuilder<ServerCommandSource, Boolean> allstate = argument("allow", BoolArgumentType.bool());
             allstate.executes(context -> {
                 Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
                 ServerPlayerEntity player1 = EntityArgumentType.getPlayer(context, "player");
@@ -844,8 +863,8 @@ public class ClaimCommand {
             all.then(allstate);
             player.then(all);
             for (Claim.Permission value : Claim.Permission.values()) {
-                LiteralArgumentBuilder<ServerCommandSource> permNode = CommandManager.literal(value.id);
-                RequiredArgumentBuilder<ServerCommandSource, Boolean> allow = CommandManager.argument("allow", BoolArgumentType.bool());
+                LiteralArgumentBuilder<ServerCommandSource> permNode = literal(value.id);
+                RequiredArgumentBuilder<ServerCommandSource, Boolean> allow = argument("allow", BoolArgumentType.bool());
                 allow.executes(context -> {
                     Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
                     if (verifyPermission(claim1, Claim.Permission.MODIFY_PERMISSIONS, context, admin)) {
@@ -870,12 +889,12 @@ public class ClaimCommand {
             }
             playerLiteral.then(player);
         }
-        LiteralArgumentBuilder<ServerCommandSource> groupLiteral = CommandManager.literal("group");
+        LiteralArgumentBuilder<ServerCommandSource> groupLiteral = literal("group");
         groupLiteral.requires(sender -> Thimble.hasPermissionOrOp(sender, "itsmine.specify_groups", 2));
         {
-            RequiredArgumentBuilder<ServerCommandSource, String> group = CommandManager.argument("group", StringArgumentType.word());
+            RequiredArgumentBuilder<ServerCommandSource, String> group = argument("group", StringArgumentType.word());
             group.suggests(PermissionCommand.SUGGESTIONS_BUILDER);
-            LiteralArgumentBuilder<ServerCommandSource> remove = CommandManager.literal("remove");
+            LiteralArgumentBuilder<ServerCommandSource> remove = literal("remove");
             remove.executes(context -> {
                 Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
                 if (verifyPermission(claim1, Claim.Permission.MODIFY_PERMISSIONS, context, admin)) {
@@ -888,8 +907,8 @@ public class ClaimCommand {
             });
             group.then(remove);
             for (Claim.Permission value : Claim.Permission.values()) {
-                LiteralArgumentBuilder<ServerCommandSource> permNode = CommandManager.literal(value.id);
-                RequiredArgumentBuilder<ServerCommandSource, Boolean> allow = CommandManager.argument("allow", BoolArgumentType.bool());
+                LiteralArgumentBuilder<ServerCommandSource> permNode = literal(value.id);
+                RequiredArgumentBuilder<ServerCommandSource, Boolean> allow = argument("allow", BoolArgumentType.bool());
                 allow.executes(context -> {
                     Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
                     if (verifyPermission(claim1, Claim.Permission.MODIFY_PERMISSIONS, context, admin)) {
@@ -917,11 +936,11 @@ public class ClaimCommand {
             groupLiteral.then(group);
         }
         {
-            LiteralArgumentBuilder<ServerCommandSource> message = CommandManager.literal("message");
+            LiteralArgumentBuilder<ServerCommandSource> message = literal("message");
             RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = getClaimArgument();
-            RequiredArgumentBuilder<ServerCommandSource, String> messageEvent = CommandManager.argument("messageEvent", StringArgumentType.word())
+            RequiredArgumentBuilder<ServerCommandSource, String> messageEvent = argument("messageEvent", StringArgumentType.word())
                     .suggests(MESSAGE_EVENTS_PROVIDER);
-            RequiredArgumentBuilder<ServerCommandSource, String> messageArgument = CommandManager.argument("message", StringArgumentType.greedyString())
+            RequiredArgumentBuilder<ServerCommandSource, String> messageArgument = argument("message", StringArgumentType.greedyString())
                     .suggests(EVENT_MESSAGE_PROVIDER);
 
             messageArgument.executes(context -> {
@@ -1532,9 +1551,9 @@ public class ClaimCommand {
         Claim.ClaimSettings.Setting setting = Claim.ClaimSettings.Setting.byId(input);
         Claim.Permission permission = Claim.Permission.byId(input);
 
-        System.out.println(claim1);
+        System.out.println(setting);
         System.out.println(permission);
-        System.out.println(claimName);
+        System.out.println(claim1);
 
         if (setting != null && permission == null)
             return !isQuery ? setSetting(source, claim1, setting, value) : querySetting(source, claim1, setting);
