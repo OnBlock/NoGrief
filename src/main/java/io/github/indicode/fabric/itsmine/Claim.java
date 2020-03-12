@@ -475,7 +475,7 @@ public class Claim {
             MOB_SPAWNING("mob_spawn", "Natural mob spawning", true),
 //            KEEP_INVENTORY("keep_inventory", "Keep Inventory", true),
 //            TELEPORT("teleport", "Global Teleport Access", true),
-            ENTER_SOUND("enter_sound", "Enter Sound", true);
+            ENTER_SOUND("enter_sound", "Enter Sound", false);
 
             String id, name;
             boolean defaultValue;

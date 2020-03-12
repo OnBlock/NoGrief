@@ -74,15 +74,16 @@ public abstract class EntityMixin {
     public void doTickActions(CallbackInfo ci) {
         if (!world.isClient && (Object)this instanceof PlayerEntity) {
             PlayerEntity player = (PlayerEntity) (Object)this;
-            if (player.getSenseCenterPos() == null) return;
+            if (player.getSenseCenterPos() == null)
+                return;
             boolean old = player.abilities.allowFlying;
             Claim claim = ClaimManager.INSTANCE.getClaimAt(player.getSenseCenterPos(), player.world.dimension.getType());
             if (player instanceof ServerPlayerEntity) {
-                if (player.abilities.allowFlying && ((claim == null || !claim.settings.getSetting(Claim.ClaimSettings.Setting.FLIGHT_ALLOWED) || !claim.hasPermission(player.getGameProfile().getId(), Claim.Permission.FLIGHT)) && Functions.isClaimFlying(player.getGameProfile().getId()))) {
+                if (player.abilities.allowFlying && !player.isSpectator() && ((claim == null || !claim.settings.getSetting(Claim.ClaimSettings.Setting.FLIGHT_ALLOWED) || !claim.hasPermission(player.getGameProfile().getId(), Claim.Permission.FLIGHT)) && Functions.isClaimFlying(player.getGameProfile().getId()))) {
                     player.abilities.allowFlying = false;
                     player.abilities.flying = false;
                     Functions.setClaimFlying(player.getGameProfile().getId(), false);
-                } else if (!player.abilities.allowFlying && claim != null && claim.settings.getSetting(Claim.ClaimSettings.Setting.FLIGHT_ALLOWED) && claim.hasPermission(player.getGameProfile().getId(), Claim.Permission.FLIGHT) && Functions.canClaimFly((ServerPlayerEntity) player)) {
+                } else if (!player.abilities.allowFlying && !player.isSpectator() && claim != null && claim.settings.getSetting(Claim.ClaimSettings.Setting.FLIGHT_ALLOWED) && claim.hasPermission(player.getGameProfile().getId(), Claim.Permission.FLIGHT) && Functions.canClaimFly((ServerPlayerEntity) player)) {
                     player.abilities.allowFlying = true;
                     Functions.setClaimFlying(player.getGameProfile().getId(), true);
                 }

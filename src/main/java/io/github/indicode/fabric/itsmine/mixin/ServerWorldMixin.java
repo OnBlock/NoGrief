@@ -1,8 +1,10 @@
 package io.github.indicode.fabric.itsmine.mixin;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.github.indicode.fabric.itsmine.Claim;
 import io.github.indicode.fabric.itsmine.ClaimManager;
 import io.github.indicode.fabric.itsmine.Functions;
+import io.github.indicode.fabric.itsmine.Messages;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.Packet;
 import net.minecraft.server.PlayerManager;
@@ -23,12 +25,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ServerWorld.class)
 public abstract class ServerWorldMixin {
     @Inject(method = "canPlayerModifyAt", at = @At("HEAD"), cancellable = true)
-    private void canMine(PlayerEntity player, BlockPos blockPos_1, CallbackInfoReturnable ci) {
+    private void canMine(PlayerEntity player, BlockPos blockPos_1, CallbackInfoReturnable<Boolean> ci) {
         if (player.world.isClient()) return;
         Claim claim = ClaimManager.INSTANCE.getClaimAt(blockPos_1, player.getEntityWorld().getDimension().getType());
         if (claim != null) {
             if (!claim.hasPermission(player.getGameProfile().getId(), Claim.Permission.SPAWN_PROTECT)) {
-                player.sendMessage(new LiteralText("").append(new LiteralText("You can't use that here. This claim is spawn-protected").formatted(Formatting.RED)).append(new LiteralText("(Use /claim show to see an outline)").formatted(Formatting.YELLOW)));
+                player.sendMessage(Messages.NO_PERMISSION);
                 ci.setReturnValue(false);
             }
         }
