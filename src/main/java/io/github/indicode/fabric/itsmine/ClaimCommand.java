@@ -1551,15 +1551,11 @@ public class ClaimCommand {
         Claim.ClaimSettings.Setting setting = Claim.ClaimSettings.Setting.byId(input);
         Claim.Permission permission = Claim.Permission.byId(input);
 
-        System.out.println(setting);
-        System.out.println(permission);
-        System.out.println(claim1);
-
         if (setting != null && permission == null)
-            return !isQuery ? setSetting(source, claim1, setting, value) : querySetting(source, claim1, setting);
+            return isQuery ? querySetting(source, claim1, setting) : setSetting(source, claim1, setting, value);
 
         if (setting == null && permission != null)
-            return !isQuery ? setPermission(source, claim1, permission, value) : queryPermission(source, claim1, permission);
+            return isQuery ? queryPermission(source, claim1, permission) : setPermission(source, claim1, permission, value);
 
         source.sendError(Messages.INVALID_SETTING);
         return -1;
