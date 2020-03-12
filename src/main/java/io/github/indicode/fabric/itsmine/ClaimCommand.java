@@ -158,14 +158,12 @@ public class ClaimCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         LiteralArgumentBuilder<ServerCommandSource> command = CommandManager.literal("claim")
                 .executes((context) -> sendPage(context.getSource(), Messages.GET_STARTED, 1, "Get Started", "/claim help get_started %page%"));
-        {
-            LiteralArgumentBuilder<ServerCommandSource> help = CommandManager.literal("help");
-            help.executes((context) -> sendPage(context.getSource(), Messages.HELP, 1, "Its Mine!", "/claim help commands %page%"));
+        LiteralArgumentBuilder<ServerCommandSource> help = CommandManager.literal("help");
+        help.executes((context) -> sendPage(context.getSource(), Messages.HELP, 1, "Its Mine!", "/claim help commands %page%"));
 
-            registerHelp(help, "get_started", Messages.GET_STARTED, "Get Started");
-            registerHelp(help, "commands", Messages.HELP, "Its Mine!");
-            command.then(help);
-        }
+        registerHelp(help, "get_started", Messages.GET_STARTED, "Get Started");
+        registerHelp(help, "commands", Messages.HELP, "Its Mine!");
+        command.then(help);
         {
             LiteralArgumentBuilder<ServerCommandSource> create = CommandManager.literal("create");
             RequiredArgumentBuilder<ServerCommandSource, String> name = CommandManager.argument("name", StringArgumentType.word());
