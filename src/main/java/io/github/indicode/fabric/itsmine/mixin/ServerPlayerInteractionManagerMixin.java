@@ -51,12 +51,15 @@ public class ServerPlayerInteractionManagerMixin {
                             (BlockUtils.isChest(state.getBlock()) && claim.hasPermission(uuid, Claim.Permission.CONTAINER_CHEST)) ||
                             (BlockUtils.isEnderchest(state.getBlock()) && claim.hasPermission(uuid, Claim.Permission.CONTAINER_ENDERCHEST)) ||
                             (BlockUtils.isShulkerBox(state.getBlock()) && claim.hasPermission(uuid, Claim.Permission.CONTAINER_SHULKERBOX))
-            ) return state.onUse(world, playerEntity_1, hand_1, blockHitResult_1);
+            ) {
+                return state.onUse(world, playerEntity_1, hand_1, blockHitResult_1);
+            }
             else {
                 if (state.getBlock() instanceof DoorBlock && playerEntity_1 instanceof ServerPlayerEntity) {
                     DoubleBlockHalf half = state.get(DoorBlock.HALF);
                     ((ServerPlayerEntity) playerEntity_1).networkHandler.sendPacket(new BlockUpdateS2CPacket(world, half == DoubleBlockHalf.LOWER ? pos.up() : pos.down(1)));
                 }
+                playerEntity_1.sendMessage(Messages.MSG_INTERACT_BLOCK);
                 return ActionResult.FAIL;
             }
         }

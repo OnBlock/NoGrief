@@ -1522,13 +1522,9 @@ public class ClaimCommand {
             );
 
             pText.styled((style) -> style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover)));
-            text.append(pText);
-            if (atomicInteger.get() + 1 != mapSize) {
-                text.append("\n");
-            }
+            text.append(pText).append("\n");
         });
 
-        text.append("\n");
         source.sendFeedback(text, false);
         return 1;
     }
