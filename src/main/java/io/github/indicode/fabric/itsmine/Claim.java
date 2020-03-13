@@ -242,7 +242,6 @@ public class Claim {
         MODIFY_PERMISSIONS("modify_permissions", "Change Permissions"),
         //Normal
         MODIFY_PROPERTIES("modify_properties", "Modify Claim Properties"),
-        SPAWN_PROTECT("spawn_protect", "Spawn Protection Bypass"),
         BUILD("build", "Place/Break Blocks"),
         INTERACT_BLOCKS("interact_blocks", "Interact With Blocks"),
         USE_ITEMS_ON_BLOCKS("use_items_on_blocks", "Use Block Modifying items"),
@@ -251,8 +250,7 @@ public class Claim {
         INTERACT_DOORS("interact_doors", "Use Doors"),
         INTERACT_ENTITY("interact_with_entities", "Entity Interaction"),
         DAMAGE_ENTITY("damage_entities", "Hurt Entities"),
-        FLIGHT("flight", "Flight"),
-        TELEPORT("teleport", "Player Teleport Access");
+        FLIGHT("flight", "Flight");
         String id, name;
         Permission(String id, String name) {
             this.id = id;
@@ -468,9 +466,9 @@ public class Claim {
             PISTON_FROM_INSIDE("pistons_inside_border", "Pistons Cross border from Inside", true),
             PISTON_FROM_OUTSIDE("pistons_outside_border", "Pistons Cross border from Outside", false),
             MOB_SPAWNING("mob_spawn", "Natural mob spawning", true),
-            KEEP_INVENTORY("keep_inventory", "Keep Inventory", true),
-//            TELEPORT("teleport", "Global Teleport Access", true),
-            ENTER_SOUND("enter_sound", "Enter Sound", false);
+//            KEEP_INVENTORY("keep_inventory", "Keep Inventory", true),
+            ENTER_SOUND("enter_sound", "Enter Sound", false),
+            PUBLIC_CLAIM("public_claim", "Players see this claim", true);
 
             String id, name;
             boolean defaultValue;

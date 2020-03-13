@@ -8,10 +8,15 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.screen.PlayerScreenHandler;
+import net.minecraft.text.LiteralText;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -22,6 +27,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(PlayerEntity.class)
 public abstract class PlayerEntityMixin extends LivingEntity implements ClaimShower {
+    @Shadow @Final public PlayerScreenHandler playerScreenHandler;
+
     protected PlayerEntityMixin(EntityType<? extends LivingEntity> entityType_1, World world_1) {
         super(entityType_1, world_1);
     }
@@ -52,6 +59,20 @@ public abstract class PlayerEntityMixin extends LivingEntity implements ClaimSho
             }
         }
     }
+
+//    @Redirect(method = "dropInventory", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/GameRules;getBoolean(Lnet/minecraft/world/GameRules$RuleKey;)Z"))
+//    private boolean dontTakeMyThingies(GameRules gameRules, GameRules.RuleKey<GameRules.BooleanRule> rule) {
+//        PlayerEntity playerEntity_1 = (PlayerEntity)(Object)this;
+//        Claim claim = ClaimManager.INSTANCE.getClaimAt(playerEntity_1.getSenseCenterPos(), playerEntity_1.world.getDimension().getType());
+//        if (claim != null) {
+//            playerEntity_1.sendMessage(new LiteralText("keep_inventory: " + claim.settings.getSetting(Claim.ClaimSettings.Setting.KEEP_INVENTORY) + " server: " + gameRules.getBoolean(rule)));
+//
+//            if (claim.settings.getSetting(Claim.ClaimSettings.Setting.KEEP_INVENTORY))
+//                return true;
+//        }
+//
+//        return gameRules.getBoolean(rule);
+//    }
 
     @Override
     public void setLastShowPos(BlockPos pos) {

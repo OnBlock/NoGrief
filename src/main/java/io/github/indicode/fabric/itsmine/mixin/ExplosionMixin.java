@@ -31,9 +31,10 @@ public class ExplosionMixin {
         BlockPos blockPos_1 = entity.getSenseCenterPos();
         Claim claim = ClaimManager.INSTANCE.getClaimAt(blockPos_1, entity.world.getDimension().getType());
         if (claim != null) {
-            if (claim.settings.getSetting(Claim.ClaimSettings.Setting.EXPLOSION_DAMAGE))
-                return true;
+            if (!claim.settings.getSetting(Claim.ClaimSettings.Setting.EXPLOSION_DAMAGE))
+                return false;
         }
+
         return entity.isImmuneToExplosion();
     }
 }

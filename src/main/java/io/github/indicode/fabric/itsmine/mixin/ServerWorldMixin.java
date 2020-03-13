@@ -1,6 +1,5 @@
 package io.github.indicode.fabric.itsmine.mixin;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.github.indicode.fabric.itsmine.Claim;
 import io.github.indicode.fabric.itsmine.ClaimManager;
 import io.github.indicode.fabric.itsmine.Functions;
@@ -9,8 +8,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.Packet;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.LiteralText;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.dimension.DimensionType;
 import org.spongepowered.asm.mixin.Mixin;
@@ -29,7 +26,7 @@ public abstract class ServerWorldMixin {
         if (player.world.isClient()) return;
         Claim claim = ClaimManager.INSTANCE.getClaimAt(blockPos_1, player.getEntityWorld().getDimension().getType());
         if (claim != null) {
-            if (!claim.hasPermission(player.getGameProfile().getId(), Claim.Permission.SPAWN_PROTECT)) {
+            if (!claim.hasPermission(player.getGameProfile().getId(), Claim.Permission.SPAWN_PROTECTION)) {
                 player.sendMessage(Messages.NO_PERMISSION);
                 ci.setReturnValue(false);
             }

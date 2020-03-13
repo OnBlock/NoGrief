@@ -420,6 +420,20 @@ public class ClaimCommand {
             player.executes(context -> list(context.getSource(), StringArgumentType.getString(context, "player")));
             list.then(player);
             command.then(list);
+
+            LiteralArgumentBuilder<ServerCommandSource> claims = literal("claims")
+                    .executes(context -> list(context.getSource(), null))
+                    .then(player);
+            dispatcher.register(claims);
+        }
+        {
+            LiteralArgumentBuilder<ServerCommandSource> listall = literal("listall");
+            RequiredArgumentBuilder<ServerCommandSource, Integer> page = argument("page", IntegerArgumentType.integer(1));
+
+            listall.executes(context -> listAll(context.getSource(), 1));
+            page.executes(context -> listAll(context.getSource(), IntegerArgumentType.getInteger(context, "page")));
+            listall.then(page);
+            command.then(listall);
         }
         {
             LiteralArgumentBuilder<ServerCommandSource> trust = literal("trust");
@@ -1016,7 +1030,7 @@ public class ClaimCommand {
         return 0;
     }
     private static void silentHideShow(ServerPlayerEntity player, Claim claim, boolean hide, boolean updateStatus) {
-        BlockState block = hide ? null : Blocks.TARGET.getDefaultState();
+        BlockState block = hide ? null : Blocks.SEA_LANTERN.getDefaultState();
         int showRange = 5;
         int closeShowRange = 8;
         BlockPos pos = hide ? ((ClaimShower)player).getLastShowPos() : player.getSenseCenterPos();
@@ -1326,6 +1340,7 @@ public class ClaimCommand {
             source.sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
             return 0;
         }
+
         GameProfile owner = claim.claimBlockOwner == null ? null : source.getMinecraftServer().getUserCache().getByUuid(claim.claimBlockOwner);
         BlockPos size = claim.getSize();
 
@@ -1346,7 +1361,7 @@ public class ClaimCommand {
         Text max = newPosLine(claim.max, Formatting.LIGHT_PURPLE, Formatting.DARK_PURPLE);
 
         if (PERMISSION_CHECK_ADMIN.test(source)) {
-            String format = "/tp " + source.getName() + (Config.claims2d ? " %s ~ %s" : " %s %s %s");
+            String format = "/execute in " + Objects.requireNonNull(Registry.DIMENSION_TYPE.getId(claim.dimension), "Dimension Doesn't Exist!!").toString() + " run tp " + source.getName() + (Config.claims2d ? " %s ~ %s" : " %s %s %s");
             min.styled(style -> style.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND,
                     String.format(format, claim.min.getX(), Config.claims2d ? claim.min.getZ() : claim.min.getY(), claim.min.getZ()))));
             max.styled(style -> style.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND,
@@ -1389,10 +1404,13 @@ public class ClaimCommand {
             return -1;
         }
 
+
         Text text = new LiteralText("\n").append(new LiteralText("Claims: " + source.getName()).formatted(Formatting.GOLD)).append("\n ");
         boolean nextColor = false;
         for (Claim claim : claims) {
             Text cText = new LiteralText(claim.name).formatted(nextColor ? Formatting.YELLOW : Formatting.GOLD).styled((style) -> {
+                if (claim.settings.getSetting(Claim.ClaimSettings.Setting.PUBLIC_CLAIM)) return;
+
                 style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Click for more Info").formatted(Formatting.GREEN)));
                 style.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/claim info " + claim.name));
             });
@@ -1403,6 +1421,37 @@ public class ClaimCommand {
 
         source.sendFeedback(text.append("\n"), false);
         return 1;
+    }
+    private static int listAll(ServerCommandSource source, int page) {
+        List<Claim> claims = new ArrayList<>();
+        ClaimManager.INSTANCE.claimsByName.forEach((name, claim) -> claims.add(claim));
+
+        if (claims.isEmpty()) {
+            source.sendFeedback(new LiteralText("No Claims").formatted(Formatting.RED), false);
+            return -1;
+        }
+
+        List<Text> list = new ArrayList<>();;
+        for (int i = 0; i < claims.size(); i++) {
+            Claim claim = claims.get(i);
+
+            Text cText = new LiteralText("").append(new LiteralText(i + ". ").formatted(Formatting.GOLD))
+                    .append(new LiteralText(claim.name).formatted(Formatting.GOLD)).append(new LiteralText(" in ").formatted(Formatting.GRAY))
+                    .append(new LiteralText(Objects.requireNonNull(Registry.DIMENSION_TYPE.getId(claim.dimension), "Dimension Doesn't Exist!!").getPath()).formatted(Formatting.WHITE));
+
+            if (claim.settings.getSetting(Claim.ClaimSettings.Setting.PUBLIC_CLAIM)) {
+                cText.styled((style) -> {
+                    style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Click for more Info").formatted(Formatting.GREEN)));
+                    style.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/claim info " + claim.name));
+                });
+            }
+
+            list.add(cText.append("\n"));
+        }
+
+        Text[] texts = new Text[]{};
+        texts = list.toArray(texts);
+        return sendPage(source, texts, page, "Claims", "/claim listall %page%");
     }
     private static int rename(CommandContext<ServerCommandSource> context, boolean admin) throws CommandSyntaxException {
         String name = StringArgumentType.getString(context, "claim");
@@ -1578,7 +1627,7 @@ public class ClaimCommand {
         return -1;
     }
     private static int querySetting(ServerCommandSource source, Claim claim, Claim.ClaimSettings.Setting setting) {
-        boolean enabled = claim.settings.settings.get(setting);
+        boolean enabled = claim.settings.getSetting(setting);
         source.sendFeedback(new LiteralText(ChatColor.translate("&eSetting &6" + setting.name + " &e is set to " + (enabled ? "&a" : "&c") + enabled + "&e for &6" + claim.name)), false);
         return 1;
     }
