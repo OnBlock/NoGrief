@@ -1409,8 +1409,6 @@ public class ClaimCommand {
         boolean nextColor = false;
         for (Claim claim : claims) {
             Text cText = new LiteralText(claim.name).formatted(nextColor ? Formatting.YELLOW : Formatting.GOLD).styled((style) -> {
-                if (claim.settings.getSetting(Claim.ClaimSettings.Setting.PUBLIC_CLAIM)) return;
-
                 style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Click for more Info").formatted(Formatting.GREEN)));
                 style.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/claim info " + claim.name));
             });
@@ -1439,12 +1437,10 @@ public class ClaimCommand {
                     .append(new LiteralText(claim.name).formatted(Formatting.GOLD)).append(new LiteralText(" in ").formatted(Formatting.GRAY))
                     .append(new LiteralText(Objects.requireNonNull(Registry.DIMENSION_TYPE.getId(claim.dimension), "Dimension Doesn't Exist!!").getPath()).formatted(Formatting.WHITE));
 
-            if (claim.settings.getSetting(Claim.ClaimSettings.Setting.PUBLIC_CLAIM)) {
-                cText.styled((style) -> {
-                    style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Click for more Info").formatted(Formatting.GREEN)));
-                    style.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/claim info " + claim.name));
-                });
-            }
+            cText.styled((style) -> {
+                style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Click for more Info").formatted(Formatting.GREEN)));
+                style.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/claim info " + claim.name));
+            });
 
             list.add(cText.append("\n"));
         }
@@ -1492,45 +1488,43 @@ public class ClaimCommand {
 
         AtomicInteger atomicInteger = new AtomicInteger();
         claim.permissionManager.playerPermissions.forEach((uuid, perm) -> {
-            if (!uuid.equals(player.getUuid())) {
-                atomicInteger.incrementAndGet();
-                Text pText = new LiteralText("");
-                GameProfile profile = source.getMinecraftServer().getUserCache().getByUuid(uuid);
-                String name = profile != null ? profile.getName() : uuid.toString();
+            atomicInteger.incrementAndGet();
+            Text pText = new LiteralText("");
+            GameProfile profile = source.getMinecraftServer().getUserCache().getByUuid(uuid);
+            String name = profile != null ? profile.getName() : uuid.toString();
 
-                pText.append(new LiteralText(atomicInteger.get() + ". ").formatted(Formatting.GOLD))
-                        .append(new LiteralText(name).formatted(Formatting.YELLOW));
+            pText.append(new LiteralText(atomicInteger.get() + ". ").formatted(Formatting.GOLD))
+                    .append(new LiteralText(name).formatted(Formatting.YELLOW));
 
-                Text hover = new LiteralText("");
-                hover.append(new LiteralText("Permissions:").formatted(Formatting.WHITE)).append("\n");
+            Text hover = new LiteralText("");
+            hover.append(new LiteralText("Permissions:").formatted(Formatting.WHITE)).append("\n");
 
-                int allowed = 0;
-                int i = 0;
-                boolean nextColor = false;
-                for (Claim.Permission value : Claim.Permission.values()) {
-                    if (claim.permissionManager.hasPermission(uuid, value)) {
-                        Formatting formatting = nextColor ? Formatting.GREEN : Formatting.DARK_GREEN;
-                        hover.append(new LiteralText(value.id).formatted(formatting)).append(" ");
-                        if (i == 3) hover.append("\n");
-                        allowed++;
-                        i++;
-                        nextColor = !nextColor;
-                    }
+            int allowed = 0;
+            int i = 0;
+            boolean nextColor = false;
+            for (Claim.Permission value : Claim.Permission.values()) {
+                if (claim.permissionManager.hasPermission(uuid, value)) {
+                    Formatting formatting = nextColor ? Formatting.GREEN : Formatting.DARK_GREEN;
+                    hover.append(new LiteralText(value.id).formatted(formatting)).append(" ");
+                    if (i == 3) hover.append("\n");
+                    allowed++;
+                    i++;
+                    nextColor = !nextColor;
                 }
+            }
 
-                pText.append(new LiteralText(" ")
-                        .append(new LiteralText("(").formatted(Formatting.GOLD))
-                        .append(new LiteralText(String.valueOf(allowed)).formatted(Formatting.GREEN))
-                        .append(new LiteralText("/").formatted(Formatting.GOLD))
-                        .append(new LiteralText(String.valueOf(Claim.Permission.values().length)).formatted(Formatting.YELLOW))
-                        .append(new LiteralText(")").formatted(Formatting.GOLD))
-                );
+            pText.append(new LiteralText(" ")
+                    .append(new LiteralText("(").formatted(Formatting.GOLD))
+                    .append(new LiteralText(String.valueOf(allowed)).formatted(Formatting.GREEN))
+                    .append(new LiteralText("/").formatted(Formatting.GOLD))
+                    .append(new LiteralText(String.valueOf(Claim.Permission.values().length)).formatted(Formatting.YELLOW))
+                    .append(new LiteralText(")").formatted(Formatting.GOLD))
+            );
 
-                pText.styled((style) -> style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover)));
-                text.append(pText);
-                if (atomicInteger.get() + 1 != mapSize) {
-                    text.append("\n");
-                }
+            pText.styled((style) -> style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover)));
+            text.append(pText);
+            if (atomicInteger.get() + 1 != mapSize) {
+                text.append("\n");
             }
         });
 

@@ -1,10 +1,9 @@
 package io.github.indicode.fabric.itsmine.mixin;
 
 import io.github.indicode.fabric.itsmine.*;
-import net.minecraft.block.AbstractButtonBlock;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.DoorBlock;
-import net.minecraft.block.LeverBlock;
+import net.minecraft.block.*;
+import net.minecraft.block.entity.BarrelBlockEntity;
+import net.minecraft.block.entity.LootableContainerBlockEntity;
 import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
@@ -45,9 +44,13 @@ public class ServerPlayerInteractionManagerMixin {
             UUID uuid = playerEntity_1.getGameProfile().getId();
             if (
                     claim.hasPermission(uuid, Claim.Permission.INTERACT_BLOCKS) ||
-                            (state.getBlock() instanceof AbstractButtonBlock && claim.hasPermission(uuid, Claim.Permission.PRESS_BUTTONS)) ||
-                            (state.getBlock() instanceof LeverBlock && claim.hasPermission(uuid, Claim.Permission.USE_LEVERS)) ||
-                            (state.getBlock() instanceof DoorBlock && claim.hasPermission(uuid, Claim.Permission.INTERACT_DOORS))
+                            (BlockUtils.isButton(state.getBlock()) && claim.hasPermission(uuid, Claim.Permission.PRESS_BUTTONS)) ||
+                            (BlockUtils.isLever(state.getBlock()) && claim.hasPermission(uuid, Claim.Permission.USE_LEVERS)) ||
+                            (BlockUtils.isDoor(state.getBlock()) && claim.hasPermission(uuid, Claim.Permission.INTERACT_DOORS)) ||
+                            (BlockUtils.isContainer(state.getBlock()) && claim.hasPermission(uuid, Claim.Permission.CONTAINER)) ||
+                            (BlockUtils.isChest(state.getBlock()) && claim.hasPermission(uuid, Claim.Permission.CONTAINER_CHEST)) ||
+                            (BlockUtils.isEnderchest(state.getBlock()) && claim.hasPermission(uuid, Claim.Permission.CONTAINER_ENDERCHEST)) ||
+                            (BlockUtils.isShulkerBox(state.getBlock()) && claim.hasPermission(uuid, Claim.Permission.CONTAINER_SHULKERBOX))
             ) return state.onUse(world, playerEntity_1, hand_1, blockHitResult_1);
             else {
                 if (state.getBlock() instanceof DoorBlock && playerEntity_1 instanceof ServerPlayerEntity) {
@@ -59,6 +62,8 @@ public class ServerPlayerInteractionManagerMixin {
         }
         return state.onUse(world, playerEntity_1, hand_1, blockHitResult_1);
     }
+
+
 
     @Redirect(method = "interactBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;isEmpty()Z", ordinal = 2))
     public boolean allowItemUse(ItemStack stack, PlayerEntity playerEntity_1, World world_1, ItemStack itemStack_1, Hand hand_1, BlockHitResult blockHitResult_1) {

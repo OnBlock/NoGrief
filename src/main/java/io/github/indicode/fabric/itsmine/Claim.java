@@ -250,7 +250,12 @@ public class Claim {
         INTERACT_DOORS("interact_doors", "Use Doors"),
         INTERACT_ENTITY("interact_with_entities", "Entity Interaction"),
         DAMAGE_ENTITY("damage_entities", "Hurt Entities"),
-        FLIGHT("flight", "Flight");
+        FLIGHT("flight", "Flight"),
+        CONTAINER("container", "Open Containers"),
+        CONTAINER_ENDERCHEST("container.enderchest", "Open Enderchests"),
+        CONTAINER_CHEST("container.chest", "Open Chests"),
+        CONTAINER_SHULKERBOX("container.shulkerbox", "Open Shulker Boxes");
+
         String id, name;
         Permission(String id, String name) {
             this.id = id;
@@ -467,8 +472,7 @@ public class Claim {
             PISTON_FROM_OUTSIDE("pistons_outside_border", "Pistons Cross border from Outside", false),
             MOB_SPAWNING("mob_spawn", "Natural mob spawning", true),
 //            KEEP_INVENTORY("keep_inventory", "Keep Inventory", true),
-            ENTER_SOUND("enter_sound", "Enter Sound", false),
-            PUBLIC_CLAIM("public_claim", "Players see this claim", true);
+            ENTER_SOUND("enter_sound", "Enter Sound", false);
 
             String id, name;
             boolean defaultValue;
