@@ -34,15 +34,14 @@ public class ServerPlayNetworkHandlerMixin {
         if (claim != null) {
             if (!claim.hasPermission(playerEntity_1.getGameProfile().getId(), Claim.Permission.INTERACT_ENTITY)) {
                 playerEntity_1.sendMessage(Messages.MSG_INTERACT_ENTITY);
-                Functions.updateInventory(player);
                 return ActionResult.FAIL;
             }
         }
         return entity.interactAt(playerEntity_1, vec3d_1, hand_1);
     }
-
-    @Redirect(method = "onPlayerInteractBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;canPlayerModifyAt(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/math/BlockPos;)Z"))
-    private boolean canITouchie(ServerWorld world, PlayerEntity playerEntity_1, BlockPos blockPos_1) {
-        return Functions.canPlayerActuallyModifyAt(world, playerEntity_1, blockPos_1);
-    }
+//
+//    @Redirect(method = "onPlayerInteractBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;canPlayerModifyAt(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/math/BlockPos;)Z"))
+//    private boolean canITouchie(ServerWorld world, PlayerEntity playerEntity_1, BlockPos blockPos_1) {
+//        return Functions.canPlayerActuallyModifyAt(world, playerEntity_1, blockPos_1);
+//    }
 }

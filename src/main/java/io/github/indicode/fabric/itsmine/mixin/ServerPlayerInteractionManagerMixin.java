@@ -62,8 +62,6 @@ public class ServerPlayerInteractionManagerMixin {
                     playerEntity_1.sendMessage(Messages.MSG_OPEN_CONTAINER);
                 }
 
-                player.inventory.markDirty();
-                player.inventory.updateItems();
                 return ActionResult.FAIL;
             }
         }
@@ -71,8 +69,6 @@ public class ServerPlayerInteractionManagerMixin {
         player.inventory.updateItems();
         return state.onUse(world, playerEntity_1, hand_1, blockHitResult_1);
     }
-
-
 
     @Redirect(method = "interactBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;isEmpty()Z", ordinal = 2))
     public boolean allowItemUse(ItemStack stack, PlayerEntity playerEntity_1, World world_1, ItemStack itemStack_1, Hand hand_1, BlockHitResult blockHitResult_1) {
@@ -90,11 +86,9 @@ public class ServerPlayerInteractionManagerMixin {
             if (!playerEntity_1.getStackInHand(hand_1).isEmpty())
                 playerEntity_1.sendMessage(Messages.MSG_PLACE_BLOCK);
 
-            Functions.updateInventory(player);
             return true;
         }
 
-        Functions.updateInventory(player);
         return stack.isEmpty();
     }
 
