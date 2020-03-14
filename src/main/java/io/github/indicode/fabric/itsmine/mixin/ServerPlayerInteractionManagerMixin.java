@@ -2,8 +2,6 @@ package io.github.indicode.fabric.itsmine.mixin;
 
 import io.github.indicode.fabric.itsmine.*;
 import net.minecraft.block.*;
-import net.minecraft.block.entity.BarrelBlockEntity;
-import net.minecraft.block.entity.LootableContainerBlockEntity;
 import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
@@ -64,9 +62,13 @@ public class ServerPlayerInteractionManagerMixin {
                     playerEntity_1.sendMessage(Messages.MSG_OPEN_CONTAINER);
                 }
 
+                player.inventory.markDirty();
+                player.inventory.updateItems();
                 return ActionResult.FAIL;
             }
         }
+
+        player.inventory.updateItems();
         return state.onUse(world, playerEntity_1, hand_1, blockHitResult_1);
     }
 
@@ -88,9 +90,11 @@ public class ServerPlayerInteractionManagerMixin {
             if (!playerEntity_1.getStackInHand(hand_1).isEmpty())
                 playerEntity_1.sendMessage(Messages.MSG_PLACE_BLOCK);
 
-            playerEntity_1.inventory.updateItems();
+            Functions.updateInventory(player);
             return true;
         }
+
+        Functions.updateInventory(player);
         return stack.isEmpty();
     }
 

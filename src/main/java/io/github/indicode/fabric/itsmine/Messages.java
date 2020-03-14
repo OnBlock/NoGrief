@@ -106,20 +106,19 @@ public class Messages {
             header("Permissions")
                     .append(line("&6container.enderchest ").append(text("&eAllows others to only open Ender Chest containers")))
                     .append(line("&6container.shulkerbox ").append(text("&eAllows others to only open shulkerox container")))
-                    .append(line("&cmodify_properties ").append(text("&eAllows others to modify the properties of the claim (e.g: Join/leave messages)")))
+                    .append(line("&6modify_properties ").append(text("&eAllows others to modify the properties of the claim (e.g: Join/leave messages)")))
                     .append(line("&6container ").append(text("&eAllows others to open containers (e.g: Chest, EnderChest etc)")))
                     .append(line("&6container ").append(text("&eAllows others to open containers (e.g: Chest, EnderChest etc)")))
                     .append(line("&6container.chest ").append(text("&eAllows others to only open chest containers (Chests and Barrels)"))),
 
             header("Settings")
                     .append(line("&6flight_allowed ").append(text("Allows others to fly in the claim (Only for those who have the Flight permission)")))
-                    .append(line("&6flight_allowed ").append(text("Allows others to fly in the claim (Only for those who have the Flight permission)")))
                     .append(line("&6explosion_destruction ").append(text("Explosions destroy blocks")))
                     .append(line("&6explosion_damage ").append(text("Explosions damage entities")))
-                    .append(line("&6fluid_crosses_border ").append(text("Let fluids go across the borders"))),
+                    .append(line("&6fluid_crosses_border ").append(text("Let fluids go across the borders")))
+                    .append(line("&6fire_crosses_border ").append(text("Let fire to spread across the borders"))),
 
             header("Settings")
-                    .append(line("&6fire_crosses_border ").append(text("Let fire to spread across the borders")))
                     .append(line("&6fire_damage ").append(text("Fire damages entities")))
                     .append(line("&6piston_from_inside ").append(text("Let pistons to move blocks to outside the claim")))
                     .append(line("&6mob_spawning ").append(text("Allow mobs to spawn inside the claim")))

@@ -59,4 +59,7 @@ public class Functions {
             claimFlyNow.remove(player);
         }
     }
+    public static void updateInventory(ServerPlayerEntity player) {
+        player.inventory.updateItems();
+    }
 }
