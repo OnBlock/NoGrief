@@ -19,7 +19,8 @@
     "PistonBlockMixin",
     "ServerPlayerInteractionManagerMixin",
     "PlaceOnUseBlockMixin",
-
+    "FireBlockMixin",
+    "AbstractFireBlockMixin",
     "SpawnRestrictionMixin",
     "OwnedProjectile",
 
