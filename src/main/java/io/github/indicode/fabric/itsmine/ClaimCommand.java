@@ -253,6 +253,7 @@ public class ClaimCommand {
             });
             trusted.then(claimArgument);
             command.then(trusted);
+            dispatcher.register(trusted);
         }
         {
             LiteralArgumentBuilder<ServerCommandSource> stick = literal("stick");
@@ -447,6 +448,7 @@ public class ClaimCommand {
             playerArgument.then(claimArgument);
             trust.then(playerArgument);
             command.then(trust);
+            dispatcher.register(trust);
         }
         {
             LiteralArgumentBuilder<ServerCommandSource> distrust = literal("distrust");
@@ -459,6 +461,7 @@ public class ClaimCommand {
             playerArgument.then(claimArgument);
             distrust.then(playerArgument);
             command.then(distrust);
+            dispatcher.register(distrust);
         }
 
         createExceptionCommand(command, false);
