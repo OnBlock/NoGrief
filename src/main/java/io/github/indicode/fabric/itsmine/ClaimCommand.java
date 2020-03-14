@@ -1525,13 +1525,14 @@ public class ClaimCommand {
         source.sendFeedback(text, false);
         return 1;
     }
-    private static int setOwnerName(ServerCommandSource source, Claim claim, String name) {
+    private static int setOwnerName(ServerCommandSource source, Claim claim, String input) {
+        String name = input.equals("reset") ? null : input;
         source.sendFeedback(new LiteralText("Set the Custom Owner Name to ")
-                .formatted(Formatting.YELLOW).append(new LiteralText(name).formatted(Formatting.GOLD)).append(new LiteralText(" from "))
+                .formatted(Formatting.YELLOW).append(new LiteralText(name == null ? "Reset" : name).formatted(Formatting.GOLD)).append(new LiteralText(" from "))
                         .append(new LiteralText(claim.customOwnerName == null ? "Not Present" : claim.customOwnerName).formatted(Formatting.GOLD))
                         .append(new LiteralText(" for ").formatted(Formatting.YELLOW)).append(new LiteralText(claim.name).formatted(Formatting.GOLD))
                 , false);
-        claim.customOwnerName = name;
+        claim.customOwnerName = input;
         return 1;
     }
     private static int setOwner(ServerCommandSource source, Claim claim, GameProfile profile) {

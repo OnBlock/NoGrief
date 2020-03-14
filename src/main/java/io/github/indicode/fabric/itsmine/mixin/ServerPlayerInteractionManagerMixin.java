@@ -87,6 +87,8 @@ public class ServerPlayerInteractionManagerMixin {
 
             if (!playerEntity_1.getStackInHand(hand_1).isEmpty())
                 playerEntity_1.sendMessage(Messages.MSG_PLACE_BLOCK);
+
+            playerEntity_1.inventory.updateItems();
             return true;
         }
         return stack.isEmpty();

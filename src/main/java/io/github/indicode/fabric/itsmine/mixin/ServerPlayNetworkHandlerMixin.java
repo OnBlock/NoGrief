@@ -30,6 +30,7 @@ public class ServerPlayNetworkHandlerMixin {
         if (claim != null) {
             if (!claim.hasPermission(playerEntity_1.getGameProfile().getId(), Claim.Permission.INTERACT_ENTITY)) {
                 playerEntity_1.sendMessage(Messages.MSG_INTERACT_ENTITY);
+                playerEntity_1.inventory.updateItems();
                 return ActionResult.FAIL;
             }
         }
