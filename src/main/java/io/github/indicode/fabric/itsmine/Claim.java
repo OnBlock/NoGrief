@@ -250,6 +250,8 @@ public class Claim {
         INTERACT_DOORS("interact_doors", "Use Doors"),
         INTERACT_ENTITY("interact_with_entities", "Entity Interaction"),
         DAMAGE_ENTITY("damage_entities", "Hurt Entities"),
+        DAMAGE_ENTITY_HOSTILE("damage_entities.hostile", "Hurt Hostile Entities"),
+        DAMAGE_ENTITY_PASSIVE("damage_entities.passive", "Hurt Passive Entities"),
         FLIGHT("flight", "Flight"),
         CONTAINER("container", "Open Containers"),
         CONTAINER_ENDERCHEST("container.enderchest", "Open Enderchests"),

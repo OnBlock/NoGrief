@@ -87,8 +87,21 @@ public class Messages {
                     .append(line("&6message ").append(text("&eLets you modify the different message events")))
     };
 
-    public static final Text[] SETTINGS = new Text[]{
-            header("&6build ").append(text(""))
+    public static final Text[] SETTINGS_AND_PERMISSIONS = new Text[]{
+            header("Settings ")
+                    .append(line("&6build ").append(text("&eAllows others to build (place and break blocks)")))
+                    .append(line("&6interact_blocks ").append(text("Allows others to Interact (Right click) with blocks")))
+                    .append(line("&6use_items_on_blocks ").append(text("Allows others to use items on blocks (Right click on blocks with an Item)")))
+                    .append(line("&6press_button ").append(text("Allows others to press Buttons")))
+                    .append(line("&6use_levers ").append(text("Allows others to ue Levers")))
+                    .append(line("&6interact_doors ").append(text("Allows others to Interact with Doors")))
+                    .append(line("&6interact_entity ").append(text("Allows others to Interact with Entities (Right click on Entities)")))
+                    .append(line("&6damage_entity ").append(text("Allows others to Damage (Attack) Entities")))
+                    .append(line("&6interact_blocks ").append(text("Allows others to Interact (Right click) with blocks")))
+                    .append(line("&6interact_blocks ").append(text("Allows others to Interact (Right click) with blocks")))
+
+
+
     };
 
     private static Text header(String title) {

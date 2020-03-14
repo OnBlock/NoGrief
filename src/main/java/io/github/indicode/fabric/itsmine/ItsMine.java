@@ -30,8 +30,8 @@ public class ItsMine implements ModInitializer {
             map.registerPermission("itsmine.admin.reload", PermChangeBehavior.UPDATE_COMMAND_TREE);
         });
 
-        //TODO: Remove
-        SharedConstants.isDevelopment = true;
+        //TODO: Enable when developing
+        //SharedConstants.isDevelopment = true;
     }
     public static String blocksToAreaString3d(int blocks) {
         int base = (int) Math.floor(Math.cbrt(blocks));

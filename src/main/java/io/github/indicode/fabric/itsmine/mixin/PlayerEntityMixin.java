@@ -1,10 +1,8 @@
 package io.github.indicode.fabric.itsmine.mixin;
 
-import io.github.indicode.fabric.itsmine.Claim;
-import io.github.indicode.fabric.itsmine.ClaimManager;
-import io.github.indicode.fabric.itsmine.ClaimShower;
-import io.github.indicode.fabric.itsmine.Messages;
+import io.github.indicode.fabric.itsmine.*;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityCategory;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -12,6 +10,7 @@ import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Final;
@@ -53,8 +52,12 @@ public abstract class PlayerEntityMixin extends LivingEntity implements ClaimSho
         PlayerEntity playerEntity_1 = (PlayerEntity)(Object)this;
         Claim claim = ClaimManager.INSTANCE.getClaimAt(entity.getSenseCenterPos(), entity.world.getDimension().getType());
         if (claim != null) {
-            if (!claim.hasPermission(playerEntity_1.getGameProfile().getId(), Claim.Permission.DAMAGE_ENTITY)) {
-                playerEntity_1.sendMessage(Messages.MSG_INTERACT_ENTITY);
+            if (
+                    !claim.hasPermission(playerEntity_1.getGameProfile().getId(), Claim.Permission.DAMAGE_ENTITY) ||
+                            (EntityUtils.isHostile(entity) && !claim.hasPermission(playerEntity_1.getGameProfile().getId(), Claim.Permission.DAMAGE_ENTITY_HOSTILE)) ||
+                            (EntityUtils.isPassive(entity) && !claim.hasPermission(playerEntity_1.getGameProfile().getId(), Claim.Permission.DAMAGE_ENTITY_PASSIVE))
+            ) {
+                playerEntity_1.sendMessage(Messages.MSG_DAMAGE_ENTITY);
                 ci.cancel();
             }
         }
