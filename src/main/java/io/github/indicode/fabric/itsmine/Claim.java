@@ -540,7 +540,8 @@ public class Claim {
 
     public enum HelpBook {
         GET_STARTED("getStarted", Messages.GET_STARTED, "Get Started"),
-        COMMAND("commands", Messages.HELP, "Claim Commands");
+        COMMAND("commands", Messages.HELP, "Claim Commands"),
+        PERMS_AND_SETTINGS("perms_and_settings", Messages.SETTINGS_AND_PERMISSIONS, "Claim Permissions and Settings");
 
         String id;
         String title;

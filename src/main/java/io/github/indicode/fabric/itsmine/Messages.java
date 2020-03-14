@@ -88,20 +88,46 @@ public class Messages {
     };
 
     public static final Text[] SETTINGS_AND_PERMISSIONS = new Text[]{
-            header("Settings ")
+            header("Permissions")
                     .append(line("&6build ").append(text("&eAllows others to build (place and break blocks)")))
-                    .append(line("&6interact_blocks ").append(text("Allows others to Interact (Right click) with blocks")))
-                    .append(line("&6use_items_on_blocks ").append(text("Allows others to use items on blocks (Right click on blocks with an Item)")))
-                    .append(line("&6press_button ").append(text("Allows others to press Buttons")))
-                    .append(line("&6use_levers ").append(text("Allows others to ue Levers")))
-                    .append(line("&6interact_doors ").append(text("Allows others to Interact with Doors")))
-                    .append(line("&6interact_entity ").append(text("Allows others to Interact with Entities (Right click on Entities)")))
-                    .append(line("&6damage_entity ").append(text("Allows others to Damage (Attack) Entities")))
-                    .append(line("&6interact_blocks ").append(text("Allows others to Interact (Right click) with blocks")))
-                    .append(line("&6interact_blocks ").append(text("Allows others to Interact (Right click) with blocks")))
+                    .append(line("&6interact_blocks ").append(text("&eAllows others to Interact (Right click) with blocks")))
+                    .append(line("&6use_items_on_blocks ").append(text("&eAllows others to use items on blocks (Right click on blocks with an Item)")))
+                    .append(line("&6press_button ").append(text("&eAllows others to press Buttons")))
+                    .append(line("&6use_levers ").append(text("&eAllows others to ue Levers")))
+                    .append(line("&6interact_doors ").append(text("&eAllows others to Interact with Doors")))
+                    .append(line("&6interact_entity ").append(text("&eAllows others to Interact with Entities (Right click on Entities)"))),
 
+            header("Permissions")
+                    .append(line("&6damage_entity ").append(text("&eAllows others to Damage (Attack) Entities")))
+                    .append(line("&6damage_entity.hostile ").append(text("&eAllows others Damage (Attack) Hostile Entities, e.g: Zombie, Creeper, Skeleton etc")))
+                    .append(line("&6damage_entity.passive ").append(text("&eAllows others to Damage (Attack) Passive Entities, e.g: Sheep, Cow, Chicken etc")))
+                    .append(line("&6flight ").append(text("&eEnables Flight in the claim (Only for those who have the Flight permission)")))
+                    .append(line("&6container ").append(text("&eAllows others to open containers (e.g: Chest, EnderChest etc)")))
+                    .append(line("&6container ").append(text("&eAllows others to open containers (e.g: Chest, EnderChest etc)")))
+                    .append(line("&6container.chest ").append(text("&eAllows others to only open chest containers (Chests and Barrels)"))),
 
+            header("Permissions")
+                    .append(line("&6container.enderchest ").append(text("&eAllows others to only open Ender Chest containers")))
+                    .append(line("&6container.shulkerbox ").append(text("&eAllows others to only open shulkerox container")))
+                    .append(line("&cmodify_properties ").append(text("&eAllows others to modify the properties of the claim (e.g: Join/leave messages)")))
 
+                    .append(
+                            header("Settings")
+                                    .append(line("&6flight_allowed").append(text("Allows others to fly in the claim (Only for those who have the Flight permission)")))
+                                    .append(line("&6flight_allowed").append(text("Allows others to fly in the claim (Only for those who have the Flight permission)")))
+            ),
+
+            header("Permissions")
+                    .append(line("&6explosion_destruction").append(text("Explosions destroy blocks")))
+                    .append(line("&6explosion_damage").append(text("Explosions damage entities")))
+                    .append(line("&6fluid_crosses_border").append(text("Let fluids go across the borders")))
+                    .append(line("&6fire_crosses_border").append(text("Let fire to spread across the borders")))
+                    .append(line("&6fire_damage").append(text("Fire damages entities")))
+                    .append(line("&6piston_from_inside").append(text("Let pistons to move blocks to outside the claim"))),
+
+            header("Permissions")
+                    .append(line("&6mob_spawning").append(text("Allow mobs to spawn inside the claim")))
+                    .append(line("&6enter_sound").append(text("Play a sound when entering the claim")))
     };
 
     private static Text header(String title) {

@@ -82,6 +82,13 @@ public class ClaimCommand {
         };
         return CommandSource.suggestMatching(strings, builder);
     };
+    public static final SuggestionProvider<ServerCommandSource> BOOK_SUGGESTIONS = (source, builder) -> {
+        List<String> strings = new ArrayList<>();
+        for (Claim.HelpBook value : Claim.HelpBook.values()) {
+            strings.add(value.id);
+        }
+        return CommandSource.suggestMatching(strings, builder);
+    };
     public static final SuggestionProvider<ServerCommandSource> CLAIM_PROVIDER = (source, builder) -> {
         ServerPlayerEntity player = source.getSource().getPlayer();
         List<String> names = new ArrayList<>();
@@ -164,7 +171,8 @@ public class ClaimCommand {
             LiteralArgumentBuilder<ServerCommandSource> help = literal("help");
             help.executes((context) -> sendPage(context.getSource(), Messages.HELP, 1, "Its Mine!", "/claim help commands %page%"));
 
-            RequiredArgumentBuilder<ServerCommandSource, String> id = argument("id", StringArgumentType.word());
+            RequiredArgumentBuilder<ServerCommandSource, String> id = argument("id", StringArgumentType.word())
+                    .suggests(BOOK_SUGGESTIONS);
             RequiredArgumentBuilder<ServerCommandSource, Integer> page = argument("page", IntegerArgumentType.integer(1));
 
             page.executes((context) -> {
@@ -789,15 +797,7 @@ public class ClaimCommand {
             RequiredArgumentBuilder<ServerCommandSource, String> claim = getClaimArgument();
 
             if (!admin) {
-                settings.executes((context) -> {
-                    ServerPlayerEntity player = context.getSource().getPlayer();
-                    Claim claim1 = ClaimManager.INSTANCE.getClaimAt(player.getSenseCenterPos(), player.dimension);
-                    if (claim1 == null) {
-                        context.getSource().sendError(Messages.INVALID_CLAIM);
-                        return -1;
-                    }
-                    return querySettings(context.getSource(), claim1);
-                });
+                settings.executes((context) -> sendPage(context.getSource(), Messages.SETTINGS_AND_PERMISSIONS, 1, "Claim Permissions and Settings", "/claim help perms_and_settings %page%"));
 
                 claim.executes((context) -> {
                     Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
@@ -825,15 +825,7 @@ public class ClaimCommand {
         if (admin) exceptions.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.modify_permissions", 2));
         RequiredArgumentBuilder<ServerCommandSource, String> claim = getClaimArgument();
         if (!admin) {
-            exceptions.executes((context) -> {
-                ServerPlayerEntity player = context.getSource().getPlayer();
-                Claim claim1 = ClaimManager.INSTANCE.getClaimAt(player.getSenseCenterPos(), player.dimension);
-                if (claim1 == null) {
-                    context.getSource().sendError(Messages.INVALID_CLAIM);
-                    return -1;
-                }
-                return showTrustedList(context, claim1, true);
-            });
+            exceptions.executes((context) -> sendPage(context.getSource(), Messages.SETTINGS_AND_PERMISSIONS, 1, "Claim Permissions and Settings", "/claim help perms_and_settings %page%"));
 
             claim.executes((context) -> {
                 Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
