@@ -427,13 +427,14 @@ public class ClaimCommand {
             dispatcher.register(claims);
         }
         {
-            LiteralArgumentBuilder<ServerCommandSource> listall = literal("listall");
-            RequiredArgumentBuilder<ServerCommandSource, Integer> page = argument("page", IntegerArgumentType.integer(1));
-
-            listall.executes(context -> listAll(context.getSource(), 1));
-            page.executes(context -> listAll(context.getSource(), IntegerArgumentType.getInteger(context, "page")));
-            listall.then(page);
-            command.then(listall);
+            //TODO: FIX THIS
+//            LiteralArgumentBuilder<ServerCommandSource> listall = literal("listall");
+//            RequiredArgumentBuilder<ServerCommandSource, Integer> page = argument("page", IntegerArgumentType.integer(1));
+//
+//            listall.executes(context -> listAll(context.getSource(), 1));
+//            page.executes(context -> listAll(context.getSource(), IntegerArgumentType.getInteger(context, "page")));
+//            listall.then(page);
+//            command.then(listall);
         }
         {
             LiteralArgumentBuilder<ServerCommandSource> trust = literal("trust");
@@ -1429,7 +1430,8 @@ public class ClaimCommand {
             return -1;
         }
 
-        List<Text> list = new ArrayList<>();;
+        List<Text> list = new ArrayList<>(claims.size() / 10);
+
         for (int i = 0; i < claims.size(); i++) {
             Claim claim = claims.get(i);
 

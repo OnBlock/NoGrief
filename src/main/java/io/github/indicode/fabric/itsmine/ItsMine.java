@@ -27,6 +27,7 @@ public class ItsMine implements ModInitializer {
             map.registerPermission("itsmine.admin.modify", PermChangeBehavior.UPDATE_COMMAND_TREE);
             map.registerPermission("itsmine.admin.modify_permissions", PermChangeBehavior.UPDATE_COMMAND_TREE);
             map.registerPermission("itsmine.admin.ignore_claims", PermChangeBehavior.UPDATE_COMMAND_TREE);
+            map.registerPermission("itsmine.admin.reload", PermChangeBehavior.UPDATE_COMMAND_TREE);
         });
 
         //TODO: Remove

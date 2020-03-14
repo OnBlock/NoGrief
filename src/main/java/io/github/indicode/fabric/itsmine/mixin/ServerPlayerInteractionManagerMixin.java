@@ -59,7 +59,11 @@ public class ServerPlayerInteractionManagerMixin {
                     DoubleBlockHalf half = state.get(DoorBlock.HALF);
                     ((ServerPlayerEntity) playerEntity_1).networkHandler.sendPacket(new BlockUpdateS2CPacket(world, half == DoubleBlockHalf.LOWER ? pos.up() : pos.down(1)));
                 }
-                playerEntity_1.sendMessage(Messages.MSG_INTERACT_BLOCK);
+
+                if (BlockUtils.isContainer(state.getBlock())) {
+                    playerEntity_1.sendMessage(Messages.MSG_OPEN_CONTAINER);
+                }
+
                 return ActionResult.FAIL;
             }
         }
@@ -78,8 +82,11 @@ public class ServerPlayerInteractionManagerMixin {
                     claim.hasPermission(uuid, Claim.Permission.USE_ITEMS_ON_BLOCKS) ||
                             (stack.getItem() instanceof BlockItem && claim.hasPermission(uuid, Claim.Permission.BUILD)) ||
                             (stack.getItem() instanceof BucketItem && claim.hasPermission(uuid, Claim.Permission.BUILD))
-            ) return false;
-            playerEntity_1.sendMessage(Messages.MSG_INTERACT_BLOCK);
+            )
+                return false;
+
+            if (!playerEntity_1.getStackInHand(hand_1).isEmpty())
+                playerEntity_1.sendMessage(Messages.MSG_PLACE_BLOCK);
             return true;
         }
         return stack.isEmpty();

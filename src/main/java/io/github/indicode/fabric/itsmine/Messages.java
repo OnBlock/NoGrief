@@ -29,6 +29,8 @@ public class Messages {
 
     public static final Text MSG_INTERACT_BLOCK = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_interact_block)).formatted(Formatting.RED));
 
+    public static final Text MSG_OPEN_CONTAINER = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_open_container)).formatted(Formatting.RED));
+
     public static final Text MSG_DAMAGE_ENTITY = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_attack_entity)).formatted(Formatting.RED));
 
     public static final Text[] GET_STARTED = new Text[]{
@@ -83,6 +85,10 @@ public class Messages {
             header("Arguments")
                     .append(line("&6transfer ").append(text("&eLets you transfer the ownership of a claim")))
                     .append(line("&6message ").append(text("&eLets you modify the different message events")))
+    };
+
+    public static final Text[] SETTINGS = new Text[]{
+            header("&6build ").append(text(""))
     };
 
     private static Text header(String title) {

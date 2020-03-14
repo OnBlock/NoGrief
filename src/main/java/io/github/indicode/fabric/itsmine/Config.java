@@ -13,6 +13,7 @@ public class Config {
     public static String msg_no_perm = "&c&lHey!&r&c Sorry but you don't have permission to do that";
     public static String msg_interact_entity = "&c&lHey!&r&c Sorry but you can't interact with Entities here!";
     public static String msg_interact_block = "&c&lHey!&r&c Sorry but you can't interact with Blocks here!";
+    public static String msg_open_container = "&c&lHey!&r&c Sorry but you can't open containers here!";
     public static String msg_break_block = "&c&lHey!&r&c Sorry but you can't Break Blocks here!";
     public static String msg_place_block = "&c&lHey!&r&c Sorry but you can't Place Blocks here!";
     public static String msg_attack_entity = "&c&lHey!&r&c Sorry but you can't Attack Entities here!";
@@ -29,6 +30,7 @@ public class Config {
             prefix = config.getString("msg.prefix", prefix);
             msg_interact_entity = config.getString("msg.interact.entity", msg_interact_entity);
             msg_interact_block = config.getString("msg.interact.block", msg_interact_block);
+            msg_open_container = config.getString("msg.open.container", msg_open_container);
             msg_break_block = config.getString("msg.break.block", msg_break_block);
             msg_place_block = config.getString("msg.place.block", msg_place_block);
             msg_attack_entity = config.getString("msg.attack.entity", msg_attack_entity);
