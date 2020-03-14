@@ -31,7 +31,7 @@ public class Functions {
         }
     }
     public static boolean canPlayerActuallyModifyAt(ServerWorld world, PlayerEntity playerEntity_1, BlockPos blockPos_1) {
-        return !world.getServer().isSpawnProtected(world, blockPos_1, playerEntity_1) && world.getWorldBorder().contains(blockPos_1);
+        return !world.getServer().isSpawnProtected(world, blockPos_1, playerEntity_1) && !world.getWorldBorder().contains(blockPos_1);
     };
     public static boolean isBucketEmpty(BucketItem item) {
         return ((BucketItemMixin)item).getFluid() != Fluids.EMPTY;
