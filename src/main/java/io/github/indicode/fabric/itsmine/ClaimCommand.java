@@ -1175,7 +1175,7 @@ public class ClaimCommand {
                 .append(new LiteralText("[I'M SURE]").setStyle(new Style()
                         .setColor(Formatting.DARK_RED)
                         .setBold(true)
-                        .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, (admin ? "/claim admin" : "/claim") + " destroy " + claim.name + " confirm")))), false);
+                        .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, (admin ? "/claim admin" : "/claim") + " remove " + claim.name + " confirm")))), false);
         return 0;
     }
     private static int delete(ServerCommandSource sender, Claim claim, boolean admin) throws CommandSyntaxException {
