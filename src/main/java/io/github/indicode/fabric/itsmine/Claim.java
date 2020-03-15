@@ -256,7 +256,9 @@ public class Claim {
         CONTAINER("container", "Open Containers"),
         CONTAINER_ENDERCHEST("container.enderchest", "Open Enderchests"),
         CONTAINER_CHEST("container.chest", "Open Chests"),
-        CONTAINER_SHULKERBOX("container.shulkerbox", "Open Shulker Boxes");
+        CONTAINER_SHULKERBOX("container.shulkerbox", "Open Shulker Boxes"),
+        USE_LECTERN("use.lectern", "Use Lectern")
+        ;
 
         String id, name;
         Permission(String id, String name) {

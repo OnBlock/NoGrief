@@ -3,10 +3,12 @@ package io.github.indicode.fabric.itsmine;
 import io.github.indicode.fabric.itsmine.mixin.BlockActionPacketMixin;
 import io.github.indicode.fabric.itsmine.mixin.BucketItemMixin;
 import io.github.indicode.fabric.permissions.Thimble;
-import net.minecraft.block.Blocks;
+import net.minecraft.block.*;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluids;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.BucketItem;
+import net.minecraft.item.Item;
 import net.minecraft.network.Packet;
 import net.minecraft.network.packet.s2c.play.BlockActionS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -59,7 +61,22 @@ public class Functions {
             claimFlyNow.remove(player);
         }
     }
-    public static void updateInventory(ServerPlayerEntity player) {
-        player.inventory.updateItems();
+
+    public static boolean canInteractWith(Claim claim, Block block, UUID player) {
+        return claim.hasPermission(player, Claim.Permission.INTERACT_BLOCKS) ||
+                (BlockUtils.isButton(block) && claim.hasPermission(player, Claim.Permission.PRESS_BUTTONS)) ||
+                (BlockUtils.isLever(block) && claim.hasPermission(player, Claim.Permission.USE_LEVERS)) ||
+                (BlockUtils.isDoor(block) && claim.hasPermission(player, Claim.Permission.INTERACT_DOORS)) ||
+                (BlockUtils.isContainer(block) && claim.hasPermission(player, Claim.Permission.CONTAINER)) ||
+                (BlockUtils.isChest(block) && claim.hasPermission(player, Claim.Permission.CONTAINER_CHEST)) ||
+                (BlockUtils.isEnderchest(block) && claim.hasPermission(player, Claim.Permission.CONTAINER_ENDERCHEST)) ||
+                (BlockUtils.isShulkerBox(block) && claim.hasPermission(player, Claim.Permission.CONTAINER_SHULKERBOX)) ||
+                (BlockUtils.isLectern(block) && claim.hasPermission(player, Claim.Permission.USE_LECTERN));
+    }
+
+    public static boolean canInteractUsingItem(Claim claim, Item item, UUID player) {
+        return claim.hasPermission(player, Claim.Permission.USE_ITEMS_ON_BLOCKS) ||
+                (item instanceof BlockItem && claim.hasPermission(player, Claim.Permission.BUILD)) ||
+                (item instanceof BucketItem && claim.hasPermission(player, Claim.Permission.BUILD));
     }
 }

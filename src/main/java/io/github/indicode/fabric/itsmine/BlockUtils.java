@@ -32,4 +32,8 @@ public class BlockUtils {
     public static boolean isDoor(Block block) {
         return block instanceof DoorBlock;
     }
+
+    public static boolean isLectern(Block block) {
+        return block instanceof LecternBlock;
+    }
 }
