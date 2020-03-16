@@ -35,18 +35,11 @@ public abstract class ServerPlayerInteractionManagerMixin {
     @Shadow public ServerPlayerEntity player;
     @Shadow public ServerWorld world;
 
-
-//    @Shadow public abstract ActionResult interactBlock(PlayerEntity player, World world, ItemStack stack, Hand hand, BlockHitResult hitResult);
-//
-//    @Shadow public abstract ActionResult interactItem(PlayerEntity player, World world, ItemStack stack, Hand hand);
-
     @Redirect(method = "interactBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;onUse(Lnet/minecraft/world/World;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/Hand;Lnet/minecraft/util/hit/BlockHitResult;)Lnet/minecraft/util/ActionResult;"))
     private ActionResult interactIfPossible(BlockState blockState, World world, PlayerEntity player, Hand hand, BlockHitResult hit) {
         BlockPos pos = hit.getBlockPos();
         Claim claim = ClaimManager.INSTANCE.getClaimAt(pos, player.world.getDimension().getType());
         if (claim != null) {
-            System.out.println("Can Interact with " + Registry.BLOCK.getId(blockState.getBlock()).toString() + " > " + Functions.canInteractWith(claim, blockState.getBlock(), player.getUuid()));
-
             if (!Functions.canInteractWith(claim, blockState.getBlock(), player.getUuid())) {
                 player.sendMessage(Messages.MSG_INTERACT_BLOCK);
                 return ActionResult.FAIL;
@@ -56,8 +49,6 @@ public abstract class ServerPlayerInteractionManagerMixin {
                     ((ServerPlayerEntity) player).networkHandler.sendPacket(new BlockUpdateS2CPacket(world, blockHalf == DoubleBlockHalf.LOWER ? pos.up() : pos.down(1)));
                 }
             }
-
-            System.out.println("Claim " + claim.name);
         }
 
         return blockState.onUse(world, player, hand, hit);
@@ -68,9 +59,6 @@ public abstract class ServerPlayerInteractionManagerMixin {
         BlockPos pos = hitResult.getBlockPos().offset(hitResult.getSide());
         Claim claim = ClaimManager.INSTANCE.getClaimAt(pos, world.getDimension().getType());
         if (claim != null && !stack.isEmpty()) {
-
-            System.out.println("Can Interact using item with " + Registry.ITEM.getId(stack.getItem()).toString() + " > " + Functions.canInteractUsingItem(claim, stack.getItem(), player.getUuid()));
-
             if (Functions.canInteractUsingItem(claim, stack.getItem(), player.getUuid())) {
                 return false;
             }
