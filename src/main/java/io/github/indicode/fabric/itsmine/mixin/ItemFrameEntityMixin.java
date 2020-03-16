@@ -42,8 +42,6 @@ public abstract class ItemFrameEntityMixin extends AbstractDecorationEntity {
 
         if (claim != null && claim.hasPermission(player.getUuid(), Claim.Permission.INTERACT_ITEM_FRAME)) {
             itemFrameEntity.setRotation(value);
-        } else {
-            player.sendMessage(Messages.MSG_INTERACT_ENTITY);
         }
     }
 

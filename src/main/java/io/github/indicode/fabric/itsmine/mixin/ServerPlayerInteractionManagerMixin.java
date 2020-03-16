@@ -35,13 +35,17 @@ public abstract class ServerPlayerInteractionManagerMixin {
     @Shadow public ServerPlayerEntity player;
     @Shadow public ServerWorld world;
 
+    @Shadow private int startMiningTime;
+
     @Redirect(method = "interactBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;onUse(Lnet/minecraft/world/World;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/Hand;Lnet/minecraft/util/hit/BlockHitResult;)Lnet/minecraft/util/ActionResult;"))
-    private ActionResult interactIfPossible(BlockState blockState, World world, PlayerEntity player, Hand hand, BlockHitResult hit) {
+    private ActionResult interactIfPossible(BlockState blockState, World world, PlayerEntity player, Hand hand, BlockHitResult hit, PlayerEntity player1, World world1, ItemStack itemStack, Hand hand1, BlockHitResult hitResult1) {
         BlockPos pos = hit.getBlockPos();
         Claim claim = ClaimManager.INSTANCE.getClaimAt(pos, player.world.getDimension().getType());
         if (claim != null) {
             if (!Functions.canInteractWith(claim, blockState.getBlock(), player.getUuid())) {
-                player.sendMessage(Messages.MSG_INTERACT_BLOCK);
+                if (!itemStack.isEmpty() && !(itemStack.getItem() instanceof BlockItem)) {
+                    player.sendMessage(Messages.MSG_INTERACT_BLOCK);
+                }
                 return ActionResult.FAIL;
             } else {
                 if (blockState.getBlock() instanceof DoorBlock && player instanceof ServerPlayerEntity) {

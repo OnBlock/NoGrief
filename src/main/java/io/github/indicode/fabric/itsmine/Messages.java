@@ -33,6 +33,8 @@ public class Messages {
 
     public static final Text MSG_DAMAGE_ENTITY = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_attack_entity)).formatted(Formatting.RED));
 
+    public static final Text MSG_CANT_USE = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_cant_use)).formatted(Formatting.RED));
+
     public static final Text[] GET_STARTED = new Text[]{
             header("How to Claim (Basics)")
                     .append(line(1, "Type &6/claim stick&e then Left click with a stick on a block to set the &6first&e corner of your claim"))
