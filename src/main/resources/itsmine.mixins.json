@@ -27,7 +27,6 @@
     "projectile.ThrownEggEntityMixin",
     "projectile.SnowballEntityMixin",
     "projectile.ThrownEnderpearlEntityMixin",
-    "ItemFrameEntityMixin",
     "EnderPearlItemMixin",
     "StickClaimItemMixin",
     "EntityMixin"

@@ -45,7 +45,10 @@ public abstract class ServerPlayerInteractionManagerMixin {
             if (!Functions.canInteractWith(claim, blockState.getBlock(), player.getUuid())) {
                 if (!itemStack.isEmpty() && !(itemStack.getItem() instanceof BlockItem)) {
                     player.sendMessage(Messages.MSG_INTERACT_BLOCK);
+                } else if (BlockUtils.isContainer(blockState.getBlock())) {
+                    player.sendMessage(Messages.MSG_OPEN_CONTAINER);
                 }
+
                 return ActionResult.FAIL;
             } else {
                 if (blockState.getBlock() instanceof DoorBlock && player instanceof ServerPlayerEntity) {

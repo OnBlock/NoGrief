@@ -8,7 +8,6 @@ public class BlockUtils {
         return block instanceof AbstractChestBlock<?> || isChest(block) || isEnderchest(block) || isShulkerBox(block);
     }
 
-
     public static boolean isChest(Block block) {
         return block == Blocks.CHEST || block == Blocks.BARREL;
     }

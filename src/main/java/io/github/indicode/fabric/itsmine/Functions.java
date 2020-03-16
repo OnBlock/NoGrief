@@ -76,8 +76,7 @@ public class Functions {
                 (BlockUtils.isContainer(block) && claim.hasPermission(player, Claim.Permission.CONTAINER)) ||
                 (BlockUtils.isChest(block) && claim.hasPermission(player, Claim.Permission.CONTAINER_CHEST)) ||
                 (BlockUtils.isEnderchest(block) && claim.hasPermission(player, Claim.Permission.CONTAINER_ENDERCHEST)) ||
-                (BlockUtils.isShulkerBox(block) && claim.hasPermission(player, Claim.Permission.CONTAINER_SHULKERBOX)) ||
-                (BlockUtils.isLectern(block) && claim.hasPermission(player, Claim.Permission.USE_LECTERN));
+                (BlockUtils.isShulkerBox(block) && claim.hasPermission(player, Claim.Permission.CONTAINER_SHULKERBOX));
     }
 
     public static boolean canInteractUsingItem(Claim claim, Item item, UUID player) {

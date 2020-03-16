@@ -17,8 +17,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(EnderPearlItem.class)
 public class EnderPearlItemMixin {
 
-    @Inject(method = "use", at = @At(value = "HEAD"))
-    private void overrideUse(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
+    @Inject(method = "use", at = @At(value = "HEAD"), cancellable = true)
+    private void modifyUse(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
         ItemStack itemStack = user.getStackInHand(hand);
         Claim claim = ClaimManager.INSTANCE.getClaimAt(user.getSenseCenterPos(), user.dimension);
 
