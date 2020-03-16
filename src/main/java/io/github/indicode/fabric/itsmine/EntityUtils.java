@@ -9,6 +9,6 @@ public class EntityUtils {
     }
 
     public static boolean isHostile(Entity entity) {
-        return !entity.getType().getCategory().isPeaceful();
+        return !isPassive(entity);
     }
 }

@@ -13,7 +13,6 @@
     "ExplosionMixin",
     "PlayerEntityMixin",
     "ServerPlayNetworkHandlerMixin",
-    "ProjectileEntityMixin",
     "FluidMixin",
     "LavaMixin",
     "PistonBlockMixin",
@@ -22,8 +21,13 @@
     "FireBlockMixin",
     "AbstractFireBlockMixin",
     "SpawnRestrictionMixin",
-    "OwnedProjectile",
-
+    "projectile.OwnedProjectile",
+    "projectile.ProjectileEntityMixin",
+    "projectile.TridentEntityMixin",
+    "projectile.ThrownEggEntityMixin",
+    "projectile.SnowballEntityMixin",
+    "projectile.ThrownEnderpearlEntityMixin",
+    "ItemFrameEntityMixin",
     "StickClaimItemMixin",
     "EntityMixin"
   ],

@@ -248,7 +248,8 @@ public class Claim {
         PRESS_BUTTONS("press_buttons", "Press Buttons"),
         USE_LEVERS("use_levers", "Use Levers"),
         INTERACT_DOORS("interact_doors", "Use Doors"),
-        INTERACT_ENTITY("interact_with_entities", "Entity Interaction"),
+        INTERACT_ENTITY("interact_entity", "Entity Interaction"),
+        INTERACT_ITEM_FRAME("interact_entity.item_frame", "Interact with Item Frame"),
         DAMAGE_ENTITY("damage_entities", "Hurt Entities"),
         DAMAGE_ENTITY_HOSTILE("damage_entities.hostile", "Hurt Hostile Entities"),
         DAMAGE_ENTITY_PASSIVE("damage_entities.passive", "Hurt Passive Entities"),
@@ -257,7 +258,9 @@ public class Claim {
         CONTAINER_ENDERCHEST("container.enderchest", "Open Enderchests"),
         CONTAINER_CHEST("container.chest", "Open Chests"),
         CONTAINER_SHULKERBOX("container.shulkerbox", "Open Shulker Boxes"),
-        USE_LECTERN("use.lectern", "Use Lectern")
+        USE_LECTERN("use.lectern", "Use Lectern"),
+        USE_ITEM_FRAME("use.item_frame", "Use ItemFrame"),
+        USE_ENDER_PEARL("use.enderpearl", "Use Ender Pearls"),
         ;
 
         String id, name;

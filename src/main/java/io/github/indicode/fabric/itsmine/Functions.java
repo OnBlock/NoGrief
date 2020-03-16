@@ -2,15 +2,21 @@ package io.github.indicode.fabric.itsmine;
 
 import io.github.indicode.fabric.itsmine.mixin.BlockActionPacketMixin;
 import io.github.indicode.fabric.itsmine.mixin.BucketItemMixin;
+import io.github.indicode.fabric.itsmine.mixin.projectile.OwnedProjectile;
 import io.github.indicode.fabric.permissions.Thimble;
 import net.minecraft.block.*;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.Projectile;
+import net.minecraft.entity.projectile.ProjectileEntity;
+import net.minecraft.entity.thrown.ThrownItemEntity;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.BucketItem;
 import net.minecraft.item.Item;
 import net.minecraft.network.Packet;
 import net.minecraft.network.packet.s2c.play.BlockActionS2CPacket;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -79,4 +85,39 @@ public class Functions {
                 (item instanceof BlockItem && claim.hasPermission(player, Claim.Permission.BUILD)) ||
                 (item instanceof BucketItem && claim.hasPermission(player, Claim.Permission.BUILD));
     }
+
+
+    public static boolean canDamageWithProjectile(ThrownItemEntity thrownEntity, Entity entity) {
+        if (checkCanDamageWithProjectile(entity, thrownEntity.getServer(), ((OwnedProjectile) thrownEntity).getOwner())) {
+            thrownEntity.kill();
+            return true;
+        }
+
+        return false;
+    }
+
+    public static boolean canDamageWithProjectile(Projectile projectile, Entity entity) {
+        if (checkCanDamageWithProjectile(entity, projectile.getServer(), ((OwnedProjectile) projectile).getOwner())) {
+            projectile.kill();
+            return true;
+        }
+
+        return false;
+    }
+
+    public static boolean checkCanDamageWithProjectile(Entity entity, MinecraftServer server, UUID uuid) {
+        if (entity.world.isClient)
+            return true;
+
+        ServerPlayerEntity owner = server.getPlayerManager().getPlayer(uuid);
+        Claim claim = ClaimManager.INSTANCE.getClaimAt(entity.getSenseCenterPos(), entity.world.getDimension().getType());
+
+        if (claim != null && owner != null && !claim.hasPermission(owner.getUuid(), Claim.Permission.DAMAGE_ENTITY)) {
+            owner.sendMessage(Messages.MSG_DAMAGE_ENTITY);
+            return false;
+        }
+
+        return true;
+    }
+
 }
