@@ -5,7 +5,6 @@ import net.minecraft.block.*;
 import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
-import net.minecraft.item.BucketItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
@@ -19,8 +18,8 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
-import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -45,8 +44,9 @@ public abstract class ServerPlayerInteractionManagerMixin {
     private ActionResult interactIfPossible(BlockState blockState, World world, PlayerEntity player, Hand hand, BlockHitResult hit) {
         BlockPos pos = hit.getBlockPos();
         Claim claim = ClaimManager.INSTANCE.getClaimAt(pos, player.world.getDimension().getType());
-        System.out.println("Checking onUse");
         if (claim != null) {
+            System.out.println("Can Interact with " + Registry.BLOCK.getId(blockState.getBlock()).toString() + " > " + Functions.canInteractWith(claim, blockState.getBlock(), player.getUuid()));
+
             if (!Functions.canInteractWith(claim, blockState.getBlock(), player.getUuid())) {
                 player.sendMessage(Messages.MSG_INTERACT_BLOCK);
                 return ActionResult.FAIL;
@@ -68,20 +68,20 @@ public abstract class ServerPlayerInteractionManagerMixin {
         BlockPos pos = hitResult.getBlockPos().offset(hitResult.getSide());
         Claim claim = ClaimManager.INSTANCE.getClaimAt(pos, world.getDimension().getType());
         if (claim != null && !stack.isEmpty()) {
+
+            System.out.println("Can Interact using item with " + Registry.ITEM.getId(stack.getItem()).toString() + " > " + Functions.canInteractUsingItem(claim, stack.getItem(), player.getUuid()));
+
             if (Functions.canInteractUsingItem(claim, stack.getItem(), player.getUuid())) {
                 return false;
             }
 
-            if (stack.getItem() instanceof  BlockItem) {
+            if (stack.getItem() instanceof BlockItem) {
                 player.sendMessage(Messages.MSG_PLACE_BLOCK);
-            } else {
-                player.sendMessage(Messages.MSG_INTERACT_BLOCK);
             }
 
             return true;
         }
 
-        System.out.println("No Claim, Returning Default");
         return stack.isEmpty();
     }
 
@@ -106,12 +106,13 @@ public abstract class ServerPlayerInteractionManagerMixin {
         Claim claim = ClaimManager.INSTANCE.getClaimAt(pos, player.world.getDimension().getType());
         if (claim != null) {
             UUID uuid = player.getGameProfile().getId();
-            if (
-                    claim.hasPermission(uuid, Claim.Permission.BUILD)
-            ) return Functions.canPlayerActuallyModifyAt(world, player, pos);
-            player.sendMessage(Messages.MSG_BREAK_BLOCK);
-            return false;
+            if (!claim.hasPermission(uuid, Claim.Permission.BUILD)) {
+                player.sendMessage(Messages.MSG_BREAK_BLOCK);
+                return false;
+            }
+
         }
+
         return world.canPlayerModifyAt(player, pos);
     }
 }
