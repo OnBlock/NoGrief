@@ -50,7 +50,7 @@ public class ClaimCommand {
             throw new SimpleCommandExceptionType(Messages.INVALID_CLAIM).create();
         }
 
-        if (!admin && !claim.permissionManager.hasPermission(player.getGameProfile().getId(), Claim.Permission.MODIFY_FLAGS)) {
+        if (!admin && !claim.permissionManager.hasPermission(player.getGameProfile().getId(), Claim.Permission.MODIFY_SETTINGS)) {
             throw new SimpleCommandExceptionType(Messages.NO_PERMISSION).create();
         }
     }
@@ -1163,7 +1163,7 @@ public class ClaimCommand {
             sender.sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
             return 0;
         }
-        if (!claim.permissionManager.hasPermission(sender.getPlayer().getGameProfile().getId(), Claim.Permission.DELETE_CLAIM)) {
+        if (!claim.permissionManager.hasPermission(sender.getPlayer().getGameProfile().getId(), Claim.Permission.REMOVE_CLAIM)) {
             if (admin && Thimble.hasPermissionOrOp(sender, "itsmine.admin.modify", 4)) {
                 sender.sendFeedback(new LiteralText("WARNING: This is not your claim...").formatted(Formatting.DARK_RED, Formatting.BOLD), false);
             } else {
@@ -1175,7 +1175,7 @@ public class ClaimCommand {
                 .append(new LiteralText("[I'M SURE]").setStyle(new Style()
                         .setColor(Formatting.DARK_RED)
                         .setBold(true)
-                        .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, (admin ? "/claim admin" : "/claim") + " destroy " + claim.name + " confirm")))), false);
+                        .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, (admin ? "/claim admin" : "/claim") + " remove " + claim.name + " confirm")))), false);
         return 0;
     }
     private static int delete(ServerCommandSource sender, Claim claim, boolean admin) throws CommandSyntaxException {
@@ -1183,7 +1183,7 @@ public class ClaimCommand {
             sender.sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
             return 0;
         }
-        if (!claim.permissionManager.hasPermission(sender.getPlayer().getGameProfile().getId(), Claim.Permission.DELETE_CLAIM)) {
+        if (!claim.permissionManager.hasPermission(sender.getPlayer().getGameProfile().getId(), Claim.Permission.REMOVE_CLAIM)) {
             if (admin && Thimble.hasPermissionOrOp(sender, "itsmine.admin.modify", 4)) {
                 sender.sendFeedback(new LiteralText("Deleting a claim belonging to somebody else").formatted(Formatting.DARK_RED, Formatting.BOLD), false);
             } else {
@@ -1196,7 +1196,7 @@ public class ClaimCommand {
         sender.getWorld().getPlayers().forEach(playerEntity -> {
             if (((ClaimShower)playerEntity).getShownClaim() != null && ((ClaimShower)playerEntity).getShownClaim().name.equals(claim.name)) silentHideShow(playerEntity, claim, true, true);
         });
-        sender.sendFeedback(new LiteralText("Deleted the claim \"" + claim.name + "\"").formatted(Formatting.GREEN), !claim.permissionManager.hasPermission(sender.getPlayer().getGameProfile().getId(), Claim.Permission.DELETE_CLAIM));
+        sender.sendFeedback(new LiteralText("Deleted the claim \"" + claim.name + "\"").formatted(Formatting.GREEN), !claim.permissionManager.hasPermission(sender.getPlayer().getGameProfile().getId(), Claim.Permission.REMOVE_CLAIM));
         return 0;
     }
     private static int requestTransfer(ServerCommandSource sender, Claim claim, ServerPlayerEntity player, boolean admin) throws CommandSyntaxException {

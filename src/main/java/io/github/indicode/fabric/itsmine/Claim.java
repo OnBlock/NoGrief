@@ -236,16 +236,15 @@ public class Claim {
 
     public enum Permission {
         //Admin
-        DELETE_CLAIM("delete_claim", "Delete Claim"),
+        REMOVE_CLAIM("remove_claim", "Remove Claim"),
         MODIFY_SIZE("modify_size", "Modify Claim Size"),
-        MODIFY_FLAGS("modify_flags", "Change Claim Flags"),
+        MODIFY_SETTINGS("modify_settings", "Change Claim Settings"),
         MODIFY_PERMISSIONS("modify_permissions", "Change Permissions"),
         //Normal
         MODIFY_PROPERTIES("modify_properties", "Modify Claim Properties"),
         BUILD("build", "Place/Break Blocks"),
         INTERACT_BLOCKS("interact_blocks", "Interact With Blocks"),
         USE_ITEMS_ON_BLOCKS("use_items_on_blocks", "Use Block Modifying items"),
-        PRESS_BUTTONS("press_buttons", "Press Buttons"),
         USE_LEVERS("use.levers", "Use Levers"),
         INTERACT_DOORS("interact_doors", "Use Doors"),
         INTERACT_ENTITY("interact_entity", "Entity Interaction"),
@@ -258,6 +257,7 @@ public class Claim {
         CONTAINER_CHEST("container.chest", "Open Chests"),
         CONTAINER_SHULKERBOX("container.shulkerbox", "Open Shulker Boxes"),
         USE_ENDER_PEARL("use.enderpearl", "Use Ender Pearls"),
+        USE_BUTTONS("use.button", "Use Buttons"),
         ;
 
         String id, name;

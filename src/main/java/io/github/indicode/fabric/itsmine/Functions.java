@@ -8,7 +8,6 @@ import net.minecraft.block.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.Projectile;
-import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.entity.thrown.ThrownItemEntity;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.BlockItem;
@@ -70,7 +69,7 @@ public class Functions {
 
     public static boolean canInteractWith(Claim claim, Block block, UUID player) {
         return claim.hasPermission(player, Claim.Permission.INTERACT_BLOCKS) ||
-                (BlockUtils.isButton(block) && claim.hasPermission(player, Claim.Permission.PRESS_BUTTONS)) ||
+                (BlockUtils.isButton(block) && claim.hasPermission(player, Claim.Permission.USE_BUTTONS)) ||
                 (BlockUtils.isLever(block) && claim.hasPermission(player, Claim.Permission.USE_LEVERS)) ||
                 (BlockUtils.isDoor(block) && claim.hasPermission(player, Claim.Permission.INTERACT_DOORS)) ||
                 (BlockUtils.isContainer(block) && claim.hasPermission(player, Claim.Permission.CONTAINER)) ||

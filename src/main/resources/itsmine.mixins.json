@@ -29,7 +29,8 @@
     "projectile.ThrownEnderpearlEntityMixin",
     "EnderPearlItemMixin",
     "StickClaimItemMixin",
-    "EntityMixin"
+    "EntityMixin",
+    "EnderDragonEntityMixin"
   ],
   "client": [
     "IntegratedServerMixin"
