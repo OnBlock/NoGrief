@@ -71,14 +71,20 @@ public class Claim {
         ) return true;
         else return checkOther && claim.intersects(this, false);
     }
+    @Nullable
     public Claim getZoneCovering(BlockPos pos) {
         if (includesPosition(pos)) {
             for (Claim child : children) {
                 Claim value = child.getZoneCovering(pos);
-                if (value != null) return value;
+                if (value != null) {
+                    return value;
+                }
             }
+
             return this;
-        } else return null;
+        }
+
+        return null;
     }
     /*public ClaimSettings getSettingsAt(BlockPos pos) {
         Claim at = getZoneCovering(pos);
@@ -475,7 +481,7 @@ public class Claim {
             PISTON_FROM_OUTSIDE("pistons_outside_border", "Pistons Cross border from Outside", false),
             MOB_SPAWNING("mob_spawn", "Natural mob spawning", true),
 //            KEEP_INVENTORY("keep_inventory", "Keep Inventory", true),
-            ENTER_SOUND("enter_sound", "Enter Sound", true),
+            ENTER_SOUND("enter_sound", "Enter Sound", false),
             BREAK_FARMLANDS("break_farmlands", "Break Farmlands", false);
 
             String id, name;
