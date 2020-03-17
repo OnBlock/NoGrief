@@ -237,11 +237,11 @@ public class Claim {
     public enum Permission {
         //Admin
         REMOVE_CLAIM("remove_claim", "Remove Claim"),
-        MODIFY_SIZE("modify_size", "Modify Claim Size"),
-        MODIFY_SETTINGS("modify_settings", "Change Claim Settings"),
-        MODIFY_PERMISSIONS("modify_permissions", "Change Permissions"),
+        MODIFY_SIZE("modify.size", "Modify Claim Size"),
+        MODIFY_SETTINGS("modify.settings", "Change Claim Settings"),
+        MODIFY_PERMISSIONS("modify.permissions", "Change Permissions"),
         //Normal
-        MODIFY_PROPERTIES("modify_properties", "Modify Claim Properties"),
+        MODIFY_PROPERTIES("modify.properties", "Modify Claim Properties"),
         BUILD("build", "Place/Break Blocks"),
         INTERACT_BLOCKS("interact_blocks", "Interact With Blocks"),
         USE_ITEMS_ON_BLOCKS("use_items_on_blocks", "Use Block Modifying items"),
@@ -257,8 +257,7 @@ public class Claim {
         CONTAINER_CHEST("container.chest", "Open Chests"),
         CONTAINER_SHULKERBOX("container.shulkerbox", "Open Shulker Boxes"),
         USE_ENDER_PEARL("use.enderpearl", "Use Ender Pearls"),
-        USE_BUTTONS("use.button", "Use Buttons"),
-        ;
+        USE_BUTTONS("use.button", "Use Buttons");
 
         String id, name;
         Permission(String id, String name) {
@@ -476,7 +475,8 @@ public class Claim {
             PISTON_FROM_OUTSIDE("pistons_outside_border", "Pistons Cross border from Outside", false),
             MOB_SPAWNING("mob_spawn", "Natural mob spawning", true),
 //            KEEP_INVENTORY("keep_inventory", "Keep Inventory", true),
-            ENTER_SOUND("enter_sound", "Enter Sound", false);
+            ENTER_SOUND("enter_sound", "Enter Sound", true),
+            BREAK_FARMLANDS("break_farmlands", "Break Farmlands", false);
 
             String id, name;
             boolean defaultValue;

@@ -46,7 +46,7 @@ public abstract class ServerPlayerInteractionManagerMixin {
                 if (!itemStack.isEmpty() && !(itemStack.getItem() instanceof BlockItem)) {
                     player.sendMessage(Messages.MSG_INTERACT_BLOCK);
                 } else if (BlockUtils.isContainer(blockState.getBlock())) {
-                    player.sendMessage(Messages.MSG_OPEN_CONTAINER);
+                    player.addMessage(Messages.MSG_OPEN_CONTAINER, true);
                 }
 
                 return ActionResult.FAIL;
@@ -71,7 +71,7 @@ public abstract class ServerPlayerInteractionManagerMixin {
             }
 
             if (stack.getItem() instanceof BlockItem) {
-                player.sendMessage(Messages.MSG_PLACE_BLOCK);
+                player.addMessage(Messages.MSG_PLACE_BLOCK, true);
             }
 
             return true;
@@ -102,7 +102,7 @@ public abstract class ServerPlayerInteractionManagerMixin {
         if (claim != null) {
             UUID uuid = player.getGameProfile().getId();
             if (!claim.hasPermission(uuid, Claim.Permission.BUILD)) {
-                player.sendMessage(Messages.MSG_BREAK_BLOCK);
+                player.addMessage(Messages.MSG_BREAK_BLOCK, true);
                 return false;
             }
 

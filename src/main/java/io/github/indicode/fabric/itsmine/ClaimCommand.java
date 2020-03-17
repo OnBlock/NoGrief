@@ -1499,15 +1499,23 @@ public class ClaimCommand {
             int allowed = 0;
             int i = 0;
             boolean nextColor = false;
+            Text perms = new LiteralText("");
+
             for (Claim.Permission value : Claim.Permission.values()) {
                 if (claim.permissionManager.hasPermission(uuid, value)) {
                     Formatting formatting = nextColor ? Formatting.GREEN : Formatting.DARK_GREEN;
-                    hover.append(new LiteralText(value.id).formatted(formatting)).append(" ");
-                    if (i == 3) hover.append("\n");
+                    perms.append(new LiteralText(value.id).formatted(formatting)).append(" ");
+                    if (i == 3) perms.append("\n");
                     allowed++;
                     i++;
                     nextColor = !nextColor;
                 }
+            }
+
+            if (allowed == Claim.Permission.values().length) {
+                hover.append(new LiteralText("All " + allowed + " Permissions").formatted(Formatting.YELLOW, Formatting.ITALIC));
+            } else {
+                hover.append(perms);
             }
 
             pText.append(new LiteralText(" ")

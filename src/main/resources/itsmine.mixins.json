@@ -30,7 +30,9 @@
     "EnderPearlItemMixin",
     "StickClaimItemMixin",
     "EntityMixin",
-    "EnderDragonEntityMixin"
+    "EnderDragonEntityMixin",
+    "FarmlandBlockMixin",
+    "BoatItemMixin"
   ],
   "client": [
     "IntegratedServerMixin"

@@ -19,8 +19,10 @@ public class Config {
     public static String msg_attack_entity = "&c&lHey!&r&c Sorry but you can't Attack Entities here!";
     public static String msg_enter_default = "&eNow entering claim &6%claim%";
     public static String msg_leave_default = "&eNow leaving claim &6%claim%";
-    public static String msg_cant_enter = "&cHey! Sorry but you don't have permission to enter this claim!";
-    public static String msg_cant_use = "&cHey! Sorry but you can't to use that here!";
+    public static String msg_cant_enter = "&c&lHey!&r&c Sorry but you don't have permission to enter this claim!";
+    public static String msg_cant_use = "&c&lHey!&r&c Sorry but you can't to use that here!";
+    public static String msg_cant_farm = "&c&lHey!&r&c Sorry but you can't farm crops here!";
+
     public static int event_msg_stay_ticks = -1;
     private static ModConfig modConfig = new ModConfig("itsmine");
     static void sync(boolean overwrite) {
@@ -39,6 +41,7 @@ public class Config {
             msg_leave_default = config.getString("msg.leave_claim", msg_leave_default, "Variables: %claim% %player%");
             msg_cant_enter = config.getString("msg.cant_enter", msg_cant_enter);
             msg_cant_use = config.getString("msg.cant_use", msg_cant_use);
+            msg_cant_farm = config.getString("msg.cant_farm", msg_cant_farm);
             event_msg_stay_ticks = config.getInt("event.msg.stay_ticks", event_msg_stay_ticks, "Sets how many ticks an event message will stay on action bar, Default: -1");
         });
     }
