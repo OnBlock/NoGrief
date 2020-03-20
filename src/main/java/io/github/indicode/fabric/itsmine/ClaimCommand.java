@@ -425,13 +425,13 @@ public class ClaimCommand {
             RequiredArgumentBuilder<ServerCommandSource, String> player = argument("player", StringArgumentType.word());
             player.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.check_others", 2));
             player.suggests(PLAYERS_PROVIDER);
-            list.executes(context -> list(context.getSource(), null));
+            list.executes(context -> list(context.getSource(), context.getSource().getName()));
             player.executes(context -> list(context.getSource(), StringArgumentType.getString(context, "player")));
             list.then(player);
             command.then(list);
 
             LiteralArgumentBuilder<ServerCommandSource> claims = literal("claims")
-                    .executes(context -> list(context.getSource(), null))
+                    .executes(context -> list(context.getSource(), context.getSource().getName()))
                     .then(player);
             dispatcher.register(claims);
         }
@@ -1401,7 +1401,7 @@ public class ClaimCommand {
         }
 
 
-        Text text = new LiteralText("\n").append(new LiteralText("Claims: " + target).formatted(Formatting.GOLD)).append("\n ");
+        Text text = new LiteralText("\n").append(new LiteralText("Claims (" + target + "): ").formatted(Formatting.GOLD)).append("\n ");
         boolean nextColor = false;
         for (Claim claim : claims) {
             Text cText = new LiteralText(claim.name).formatted(nextColor ? Formatting.YELLOW : Formatting.GOLD).styled((style) -> {
