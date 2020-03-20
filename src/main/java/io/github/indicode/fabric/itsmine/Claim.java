@@ -11,6 +11,8 @@ import net.minecraft.world.dimension.DimensionType;
 
 import java.util.*;
 
+import static io.github.indicode.fabric.itsmine.NBTUitls.*;
+
 /**
  * @author Indigo Amann
  */
@@ -185,7 +187,9 @@ public class Claim {
         {
             tag.put("settings", settings.toTag());
             tag.put("permissions", permissionManager.toNBT());
-            if (claimBlockOwner != null) tag.putUuidOld("top_owner", claimBlockOwner);
+            if(claimBlockOwner != null) putUUID(tag, "top_owner", claimBlockOwner);
+//            if (claimBlockOwner != null) tag.putUuidNew("top_owner", claimBlockOwner);
+
         }
         {
             CompoundTag meta = new CompoundTag();
@@ -225,7 +229,8 @@ public class Claim {
             this.settings = new ClaimSettings(tag.getCompound("settings"));
             permissionManager = new PermissionManager();
             permissionManager.fromNBT(tag.getCompound("permissions"));
-            if (tag.containsUuidOld("top_owner")) claimBlockOwner = tag.getUuidOld("top_owner");
+            if (containsUUID(tag, "top_owner")) claimBlockOwner = getUUID(tag,"top_owner");
+
         }
         {
             CompoundTag meta = tag.getCompound("meta");
