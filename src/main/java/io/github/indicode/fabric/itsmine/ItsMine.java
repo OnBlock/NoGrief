@@ -7,15 +7,20 @@ import net.minecraft.SharedConstants;
 import net.minecraft.server.command.ServerCommandSource;
 
 import java.lang.reflect.InvocationTargetException;
+import java.security.Permission;
 import java.util.UUID;
 
 /**
  * @author Indigo Amann
  */
 public class ItsMine implements ModInitializer {
+    private static Permissions permissions;
+
     @Override
     public void onInitialize() {
         Config.sync(false);
+        permissions = new Permissions();
+
         Thimble.permissionWriters.add((map, server) -> {
             map.registerPermission("itsmine.specify_groups", PermChangeBehavior.UPDATE_COMMAND_TREE);
             map.registerPermission("itsmine.claim_fly", (enabled, player) -> {
@@ -27,11 +32,13 @@ public class ItsMine implements ModInitializer {
             map.registerPermission("itsmine.admin.modify", PermChangeBehavior.UPDATE_COMMAND_TREE);
             map.registerPermission("itsmine.admin.modify_permissions", PermChangeBehavior.UPDATE_COMMAND_TREE);
             map.registerPermission("itsmine.admin.ignore_claims", PermChangeBehavior.UPDATE_COMMAND_TREE);
-            map.registerPermission("itsmine.admin.reload", PermChangeBehavior.UPDATE_COMMAND_TREE);
         });
 
         //TODO: Enable when developing
         //SharedConstants.isDevelopment = true;
+    }
+    public static Permissions permissions() {
+        return permissions;
     }
     public static String blocksToAreaString3d(int blocks) {
         int base = (int) Math.floor(Math.cbrt(blocks));

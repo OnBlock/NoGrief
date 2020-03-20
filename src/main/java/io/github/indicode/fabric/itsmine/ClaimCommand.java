@@ -67,7 +67,7 @@ public class ClaimCommand {
         return perm(str, 2);
     }
     private static Predicate<ServerCommandSource> perm(String str, int op) {
-        return source -> Thimble.hasPermissionOrOp(source, "itsmine." + str, op);
+        return source -> ItsMine.permissions().hasPermission(source, "itsmine." + str, op);
     }
     private static final Predicate<ServerCommandSource> PERMISSION_CHECK_ADMIN = src -> perm("admin").test(src) || perm("admin.modify_balance").test(src) ||
             perm("admin.infinite_blocks").test(src) || perm("admin.modify").test(src) ||
@@ -294,7 +294,7 @@ public class ClaimCommand {
         {
             LiteralArgumentBuilder<ServerCommandSource> check = literal("blocks");
             RequiredArgumentBuilder<ServerCommandSource, EntitySelector> other = argument("player", EntityArgumentType.player());
-            other.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.checkothers", 2));
+            other.requires(source -> ItsMine.permissions().hasPermission(source, Permissions.Command.ADMIN_CHECK_OTHERS, 2));
             other.executes(ctx -> checkPlayer(ctx.getSource(), EntityArgumentType.getPlayer(ctx, "player").getGameProfile().getId()));
             check.then(other);
             check.executes(ctx -> checkPlayer(ctx.getSource(), ctx.getSource().getPlayer().getGameProfile().getId()));
@@ -423,7 +423,7 @@ public class ClaimCommand {
         {
             LiteralArgumentBuilder<ServerCommandSource> list = literal("list");
             RequiredArgumentBuilder<ServerCommandSource, String> player = argument("player", StringArgumentType.word());
-            player.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.check_others", 2));
+            player.requires(source -> ItsMine.permissions().hasPermission(source, Permissions.Command.ADMIN_CHECK_OTHERS, 2));
             player.suggests(PLAYERS_PROVIDER);
             list.executes(context -> list(context.getSource(), context.getSource().getName()));
             player.executes(context -> list(context.getSource(), StringArgumentType.getString(context, "player")));
@@ -479,7 +479,7 @@ public class ClaimCommand {
             admin.requires(PERMISSION_CHECK_ADMIN);
             {
                 LiteralArgumentBuilder<ServerCommandSource> add = literal("addBlocks");
-                add.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.modify_balance", 2));
+                add.requires(source -> ItsMine.permissions().hasPermission(source, Permissions.Command.ADMIN_MODIFY_BALANCE, 2));
                 RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = argument("player", EntityArgumentType.players());
                 RequiredArgumentBuilder<ServerCommandSource, Integer> amount = argument("amount", IntegerArgumentType.integer());
                 amount.executes(context -> {
@@ -571,7 +571,7 @@ public class ClaimCommand {
             }
             {
                 LiteralArgumentBuilder<ServerCommandSource> remove = literal("removeBlocks");
-                remove.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.modify_balance", 2));
+                remove.requires(source ->ItsMine.permissions().hasPermission(source, Permissions.Command.ADMIN_MODIFY_BALANCE, 2));
                 RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = argument("player", EntityArgumentType.players());
                 RequiredArgumentBuilder<ServerCommandSource, Integer> amount = argument("amount", IntegerArgumentType.integer());
                 amount.executes(context -> {
@@ -585,7 +585,7 @@ public class ClaimCommand {
             }
             {
                 LiteralArgumentBuilder<ServerCommandSource> set = literal("setBlocks");
-                set.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.modify_balance", 2));
+                set.requires(source -> ItsMine.permissions().hasPermission(source, Permissions.Command.ADMIN_MODIFY_BALANCE, 2));
                 RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = argument("player", EntityArgumentType.players());
                 RequiredArgumentBuilder<ServerCommandSource, Integer> amount = argument("amount", IntegerArgumentType.integer());
                 amount.executes(context -> {
@@ -599,7 +599,7 @@ public class ClaimCommand {
             }
             {
                 LiteralArgumentBuilder<ServerCommandSource> delete = literal("remove");
-                delete.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.modify", 4));
+                delete.requires(source -> ItsMine.permissions().hasPermission(source, Permissions.Command.ADMIN_MODIFY, 2));
                 RequiredArgumentBuilder<ServerCommandSource, String> claim = getClaimArgument();
                 LiteralArgumentBuilder<ServerCommandSource> confirm = literal("confirm");
                 confirm.executes(context -> delete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")), true));
@@ -611,7 +611,7 @@ public class ClaimCommand {
             }
             {
                 LiteralArgumentBuilder<ServerCommandSource> create = literal("create");
-                create.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.infinite_claim", 4));
+                create.requires(source -> ItsMine.permissions().hasPermission(source, Permissions.Command.ADMIN_INFINITE_CLAIM, 2));
                 ArgumentBuilder<ServerCommandSource, ?> name = argument("name", StringArgumentType.word());
                 ArgumentBuilder<ServerCommandSource, ?> customOwner = argument("customOwnerName", StringArgumentType.word());
                 ArgumentBuilder<ServerCommandSource, ?> min = argument("min", BlockPosArgumentType.blockPos());
@@ -666,7 +666,7 @@ public class ClaimCommand {
             }
             {
                 LiteralArgumentBuilder<ServerCommandSource> ignore = literal("ignoreClaims");
-                ignore.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.ignore_claims", 4));
+                ignore.requires(source -> ItsMine.permissions().hasPermission(source, Permissions.Command.ADMIN_IGNORE_CLAIMS, 2));
                 ignore.executes(context -> {
                     UUID id = context.getSource().getPlayer().getGameProfile().getId();
                     boolean isIgnoring = ClaimManager.INSTANCE.ignoringClaims.contains(id);
@@ -680,7 +680,7 @@ public class ClaimCommand {
             {
                 {
                     LiteralArgumentBuilder<ServerCommandSource> expand = literal("expand");
-                    expand.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.infinite_claim", 4) && Thimble.hasPermissionOrOp(source, "itsmine.admin.modify", 4));
+                    expand.requires(source -> ItsMine.permissions().hasPermission(source, Permissions.Command.ADMIN_INFINITE_CLAIM, 2) && ItsMine.permissions().hasPermission(source, Permissions.Command.ADMIN_MODIFY, 2));
                     RequiredArgumentBuilder<ServerCommandSource, Integer> amount = argument("distance", IntegerArgumentType.integer(1, Integer.MAX_VALUE));
                     RequiredArgumentBuilder<ServerCommandSource, String> direction = argument("direction", StringArgumentType.word());
                     direction.suggests(DIRECTION_SUGGESTION_BUILDER);
@@ -707,7 +707,7 @@ public class ClaimCommand {
                 }
                 {
                     LiteralArgumentBuilder<ServerCommandSource> shrink = literal("shrink");
-                    shrink.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.infinite_claim", 4) && Thimble.hasPermissionOrOp(source, "itsmine.admin.modify", 4));
+                    shrink.requires(source -> ItsMine.permissions().hasPermission(source, Permissions.Command.ADMIN_INFINITE_CLAIM, 2) && ItsMine.permissions().hasPermission(source, Permissions.Command.ADMIN_MODIFY, 2));
                     RequiredArgumentBuilder<ServerCommandSource, Integer> amount = argument("distance", IntegerArgumentType.integer(1, Integer.MAX_VALUE));
                     RequiredArgumentBuilder<ServerCommandSource, String> direction = argument("direction", StringArgumentType.word());
                     direction.suggests(DIRECTION_SUGGESTION_BUILDER);
@@ -822,7 +822,7 @@ public class ClaimCommand {
         }
 
         LiteralArgumentBuilder<ServerCommandSource> exceptions = literal("permissions");
-        if (admin) exceptions.requires(source -> Thimble.hasPermissionOrOp(source, "itsmine.admin.modify_permissions", 2));
+        if (admin) exceptions.requires(source -> ItsMine.permissions().hasPermission(source, Permissions.Command.ADMIN_MODIFY_PERMISSIONS, 2));
         RequiredArgumentBuilder<ServerCommandSource, String> claim = getClaimArgument();
         if (!admin) {
             exceptions.executes((context) -> sendPage(context.getSource(), Messages.SETTINGS_AND_PERMISSIONS, 1, "Claim Permissions and Settings", "/claim help perms_and_settings %page%"));
@@ -900,7 +900,7 @@ public class ClaimCommand {
             playerLiteral.then(player);
         }
         LiteralArgumentBuilder<ServerCommandSource> groupLiteral = literal("group");
-        groupLiteral.requires(sender -> Thimble.hasPermissionOrOp(sender, "itsmine.specify_groups", 2));
+        groupLiteral.requires(source -> ItsMine.permissions().hasPermission(source, Permissions.Command.SPECIFY_GROUPS, 2));
         {
             RequiredArgumentBuilder<ServerCommandSource, String> group = argument("group", StringArgumentType.word());
             group.suggests(PermissionCommand.SUGGESTIONS_BUILDER);
@@ -1132,7 +1132,7 @@ public class ClaimCommand {
         if (!ClaimManager.INSTANCE.claimsByName.containsKey(name)) {
             if (!ClaimManager.INSTANCE.wouldIntersect(claim)) {
                 // works because only the first statement is evaluated if true
-                if ((admin && Thimble.hasPermissionOrOp(owner, "itsmine.admin.infinite_blocks", 4)) || ClaimManager.INSTANCE.useClaimBlocks(ownerID, subInt)) {
+                if ((admin && ItsMine.permissions().hasPermission(owner, Permissions.Command.INFINITE_BLOCKS, 2)) || ClaimManager.INSTANCE.useClaimBlocks(ownerID, subInt)) {
                     ClaimManager.INSTANCE.addClaim(claim);
                     owner.sendFeedback(new LiteralText("").append(new LiteralText("Your claim was created").formatted(Formatting.GREEN)).append(new LiteralText("(Area: " + sub.getX() + "x" + sub.getY() + "x" + sub.getZ() + ")").setStyle(new Style()
                             .setColor(Formatting.GREEN).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(subInt + " blocks").formatted(Formatting.YELLOW))))), false);
@@ -1164,7 +1164,7 @@ public class ClaimCommand {
             return 0;
         }
         if (!claim.permissionManager.hasPermission(sender.getPlayer().getGameProfile().getId(), Claim.Permission.REMOVE_CLAIM)) {
-            if (admin && Thimble.hasPermissionOrOp(sender, "itsmine.admin.modify", 4)) {
+            if (admin && ItsMine.permissions().hasPermission(sender, Permissions.Command.ADMIN_MODIFY, 2)) {
                 sender.sendFeedback(new LiteralText("WARNING: This is not your claim...").formatted(Formatting.DARK_RED, Formatting.BOLD), false);
             } else {
                 sender.sendFeedback(new LiteralText("You cannot delete that claim").formatted(Formatting.RED), false);
@@ -1184,7 +1184,7 @@ public class ClaimCommand {
             return 0;
         }
         if (!claim.permissionManager.hasPermission(sender.getPlayer().getGameProfile().getId(), Claim.Permission.REMOVE_CLAIM)) {
-            if (admin && Thimble.hasPermissionOrOp(sender, "itsmine.admin.modify", 4)) {
+            if (admin && ItsMine.permissions().hasPermission(sender, Permissions.Command.ADMIN_MODIFY, 2)) {
                 sender.sendFeedback(new LiteralText("Deleting a claim belonging to somebody else").formatted(Formatting.DARK_RED, Formatting.BOLD), false);
             } else {
                 sender.sendFeedback(new LiteralText("You cannot delete that claim").formatted(Formatting.RED), false);
@@ -1205,7 +1205,7 @@ public class ClaimCommand {
             return 0;
         }
         if (!claim.claimBlockOwner.equals(sender.getPlayer().getGameProfile().getId())) {
-            if (admin && Thimble.hasPermissionOrOp(sender, "itsmine.admin.modify", 4)) {
+            if (admin && ItsMine.permissions().hasPermission(sender, Permissions.Command.ADMIN_MODIFY, 2)) {
                 sender.sendFeedback(new LiteralText("WARNING: This is not your claim...").formatted(Formatting.DARK_RED, Formatting.BOLD), false);
             } else {
                 sender.sendFeedback(new LiteralText("You cannot transfer ownership that claim").formatted(Formatting.RED), false);
@@ -1226,7 +1226,7 @@ public class ClaimCommand {
             return 0;
         }
         if (!claim.claimBlockOwner.equals(sender.getPlayer().getGameProfile().getId())) {
-            if (admin && Thimble.hasPermissionOrOp(sender, "itsmine.admin.modify", 4)) {
+            if (admin && ItsMine.permissions().hasPermission(sender, Permissions.Command.ADMIN_MODIFY, 2)) {
                 sender.sendFeedback(new LiteralText("Transfering ownership of a claim belonging to somebody else").formatted(Formatting.DARK_RED, Formatting.BOLD), false);
             } else {
                 sender.sendFeedback(new LiteralText("You cannot transfer ownership that claim").formatted(Formatting.RED), false);
