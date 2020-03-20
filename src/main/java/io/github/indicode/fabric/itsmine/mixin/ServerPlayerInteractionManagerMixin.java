@@ -18,7 +18,6 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -50,12 +49,13 @@ public abstract class ServerPlayerInteractionManagerMixin {
                 }
 
                 return ActionResult.FAIL;
-            } else {
-                if (blockState.getBlock() instanceof DoorBlock && player instanceof ServerPlayerEntity) {
-                    DoubleBlockHalf blockHalf = blockState.get(DoorBlock.HALF);
-                    ((ServerPlayerEntity) player).networkHandler.sendPacket(new BlockUpdateS2CPacket(world, blockHalf == DoubleBlockHalf.LOWER ? pos.up() : pos.down(1)));
-                }
             }
+//            else {
+//                if (blockState.getBlock() instanceof DoorBlock && player instanceof ServerPlayerEntity) {
+//                    DoubleBlockHalf blockHalf = blockState.get(DoorBlock.HALF);
+//                    ((ServerPlayerEntity) player).networkHandler.sendPacket(new BlockUpdateS2CPacket(world, blockHalf == DoubleBlockHalf.LOWER ? pos.up() : pos.down(1)));
+//                }
+//            }
         }
 
         return blockState.onUse(world, player, hand, hit);
