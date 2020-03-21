@@ -3,7 +3,6 @@ package io.github.indicode.fabric.itsmine;
 import io.github.indicode.fabric.itsmine.mixin.BlockActionPacketMixin;
 import io.github.indicode.fabric.itsmine.mixin.BucketItemMixin;
 import io.github.indicode.fabric.itsmine.mixin.projectile.OwnedProjectile;
-import io.github.indicode.fabric.permissions.Thimble;
 import net.minecraft.block.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -53,7 +52,7 @@ public class Functions {
         }
     }
     public static void refreshFly(ServerPlayerEntity player) {
-        flyers.put(player.getGameProfile().getId(), player.world.getServer().getPlayerManager().isOperator(player.getGameProfile()) || Thimble.PERMISSIONS.hasPermission("itsmine.claim_fly", player.getGameProfile().getId()));
+        flyers.put(player.getGameProfile().getId(), player.world.getServer().getPlayerManager().isOperator(player.getGameProfile()) || ItsMine.permissions().hasPermission(player.getCommandSource(),"itsmine.claim_fly", 2));
     }
     private static List<UUID> claimFlyNow = new ArrayList<>();
     public static boolean isClaimFlying(UUID player) {
