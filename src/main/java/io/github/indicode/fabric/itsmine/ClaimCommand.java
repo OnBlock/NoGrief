@@ -848,7 +848,6 @@ public class ClaimCommand {
             });
         }
 
-        LiteralArgumentBuilder<ServerCommandSource> playerLiteral = literal("player");
         {
             RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = argument("player", EntityArgumentType.player());
             LiteralArgumentBuilder<ServerCommandSource> remove = literal("remove");
@@ -897,53 +896,7 @@ public class ClaimCommand {
                 permNode.then(allow);
                 player.then(permNode);
             }
-            playerLiteral.then(player);
-        }
-        LiteralArgumentBuilder<ServerCommandSource> groupLiteral = literal("group");
-        groupLiteral.requires(source -> ItsMine.permissions().hasPermission(source, Permissions.Command.SPECIFY_GROUPS, 2));
-        {
-            RequiredArgumentBuilder<ServerCommandSource, String> group = argument("group", StringArgumentType.word());
-            group.suggests(PermissionCommand.SUGGESTIONS_BUILDER);
-            LiteralArgumentBuilder<ServerCommandSource> remove = literal("remove");
-            remove.executes(context -> {
-                Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
-                if (verifyPermission(claim1, Claim.Permission.MODIFY_PERMISSIONS, context, admin)) {
-                    String group1 = StringArgumentType.getString(context, "group");
-                    verifyGroup(group1);
-                    claim1.permissionManager.resetPermissions(group1);
-                    context.getSource().sendFeedback(new LiteralText("Members of " + group1 + " no longer have that exception in the claim").formatted(Formatting.YELLOW), false);
-                }
-                return 0;
-            });
-            group.then(remove);
-            for (Claim.Permission value : Claim.Permission.values()) {
-                LiteralArgumentBuilder<ServerCommandSource> permNode = literal(value.id);
-                RequiredArgumentBuilder<ServerCommandSource, Boolean> allow = argument("allow", BoolArgumentType.bool());
-                allow.executes(context -> {
-                    Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
-                    if (verifyPermission(claim1, Claim.Permission.MODIFY_PERMISSIONS, context, admin)) {
-                        String group1 = StringArgumentType.getString(context, "group");
-                        verifyGroup(group1);
-                        boolean permission = BoolArgumentType.getBool(context, "allow");
-                        modifyException(claim1, group1, value, permission);
-                        context.getSource().sendFeedback(new LiteralText("Members of " + group1 + (permission ? " now" : " no longer") + " has the permission " + value.name).formatted(Formatting.YELLOW), false);
-                    }
-                    return 0;
-                });
-                permNode.executes(context -> {
-                    Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
-                    if (verifyPermission(claim1, Claim.Permission.MODIFY_PERMISSIONS, context, admin)) {
-                        String group1 = StringArgumentType.getString(context, "group");
-                        verifyGroup(group1);
-                        boolean permission = hasPermission(claim1, group1, value);
-                        context.getSource().sendFeedback(new LiteralText("Members of " + group1 + (permission ? " now" : " do not") + " have the permission " + value.name).formatted(Formatting.YELLOW), false);
-                    }
-                    return 0;
-                });
-                permNode.then(allow);
-                group.then(permNode);
-            }
-            groupLiteral.then(group);
+            claim.then(player);
         }
         {
             LiteralArgumentBuilder<ServerCommandSource> message = literal("message");
@@ -975,8 +928,7 @@ public class ClaimCommand {
             command.then(message);
         }
 
-        claim.then(playerLiteral);
-        claim.then(groupLiteral);
+
         exceptions.then(claim);
         command.then(exceptions);
     }

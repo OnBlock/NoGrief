@@ -31,7 +31,7 @@ public class Config {
             claims2d = config.getBool("2D claims", claims2d, "Claims extending from y 0 to y 256");
             baseClaimBlocks2d = config.getInt("2D base claim blocks", baseClaimBlocks2d, "Area Filled: " + ItsMine.blocksToAreaString2d(baseClaimBlocks2d));
             baseClaimBlocks3d = config.getInt("3D base claim blocks", baseClaimBlocks3d, "Area Filled: " + ItsMine.blocksToAreaString3d(baseClaimBlocks3d));
-            permissionManager = config.getString("permissionManager", permissionManager, "Values: thimble, luckperms");
+            permissionManager = config.getString("permissionManager", permissionManager, "Values: thimble, luckperms, vanilla");
             prefix = config.getString("msg.prefix", prefix);
             msg_interact_entity = config.getString("msg.interact.entity", msg_interact_entity);
             msg_interact_block = config.getString("msg.interact.block", msg_interact_block);

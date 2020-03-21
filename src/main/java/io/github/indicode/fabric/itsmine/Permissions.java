@@ -15,25 +15,35 @@ import org.apache.logging.log4j.core.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
+import java.util.UUID;
 
 public class Permissions {
-    private final Manager manager;
-    private final boolean present;
+    private Manager manager;
+    private boolean present;
 
     public Permissions() {
         Logger logger = (Logger) LogManager.getLogger("ItsMine");
+        logger.info("Setting up Permissions...");
         this.manager = Manager.fromString(Config.permissionManager);
-        this.present = checkPresent(manager);
 
-        logger.info("Checking " + manager.getName() +" for Availability");
+        if (manager == Manager.VANILLA) {
+            this.present = false;
+            return;
+        }
 
-        if (!present) {
-            logger.warn("**** " + manager.getName() + " is not Present! Switching to vanilla operator system");
+        logger.info("Checking " + manager.getName() + " for Availability");
+
+        this.present = this.checkPresent();
+
+        if (!this.present) {
+            logger.warn("**** " + manager.getName() + " is not present! Switching to vanilla operator system");
             logger.warn("     You need to install either LuckPerms for Fabric Or Thimble to manage the permissions");
+            this.manager = Manager.NONE;
             return;
         }
 
         logger.info("Using " + manager.getName() + " as the Permission Manager");
+
 
         if (manager == Manager.THIMBLE) {
             Thimble.permissionWriters.add((map, server) -> {
@@ -72,6 +82,31 @@ public class Permissions {
         return src.hasPermissionLevel(opLevel);
     }
 
+    public boolean hasPermission(UUID uuid, String permission, int opLevel) {
+        if (present) {
+            if (manager == Manager.LUCKPERMS) {
+                LuckPerms luckPerms = LuckPermsProvider.get();
+
+                try {
+                    User user = luckPerms.getUserManager().getUser(uuid);
+
+                    if (user != null) {
+                        QueryOptions options = luckPerms.getContextManager().getQueryOptions(user);
+                        return user.getCachedData().getPermissionData(options).checkPermission(perm).asBoolean();
+                    }
+
+                } catch (CommandSyntaxException ignored) {
+                }
+            }
+
+            if (manager == Manager.THIMBLE) {
+                return fromThimble(src, permission, opLevel);
+            }
+        }
+
+        return src.hasPermissionLevel(opLevel);
+    }
+
     private boolean fromLuckPerms(ServerCommandSource src, String perm, int op) {
         LuckPerms luckPerms = LuckPermsProvider.get();
 
@@ -94,15 +129,22 @@ public class Permissions {
         return Thimble.hasPermissionOrOp(src, perm, op);
     }
 
-    private boolean checkPresent(Manager manager) {
+    private boolean checkPresent() {
         if (manager == Manager.NONE) {
             return false;
         }
 
         try {
             if (manager == Manager.LUCKPERMS) {
-                LuckPermsProvider.get();
-                return true;
+                try {
+                    LuckPermsProvider.get();
+                    return true;
+                } catch (Throwable ignored) {
+                }
+            }
+
+            if (manager == Manager.THIMBLE) {
+                Thimble.permissionWriters.get(0);
             }
 
             return FabricLoader.getInstance().getModContainer(manager.getName().toLowerCase(Locale.ROOT)).isPresent();
@@ -120,6 +162,7 @@ public class Permissions {
     }
 
     public enum Manager {
+        VANILLA("Vanilla", ""),
         NONE("none", ""),
         LUCKPERMS("LuckPerms", "net.luckperms.api.LuckPerms"),
         THIMBLE("Thimble", "io.github.indicode.fabric.permissions.Thimble");
