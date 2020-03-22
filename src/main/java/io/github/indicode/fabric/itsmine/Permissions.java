@@ -82,29 +82,25 @@ public class Permissions {
         return src.hasPermissionLevel(opLevel);
     }
 
-    public boolean hasPermission(UUID uuid, String permission, int opLevel) {
+    public boolean hasPermission(UUID uuid, String permission) {
         if (present) {
             if (manager == Manager.LUCKPERMS) {
                 LuckPerms luckPerms = LuckPermsProvider.get();
 
-                try {
-                    User user = luckPerms.getUserManager().getUser(uuid);
+                User user = luckPerms.getUserManager().getUser(uuid);
 
-                    if (user != null) {
-                        QueryOptions options = luckPerms.getContextManager().getQueryOptions(user);
-                        return user.getCachedData().getPermissionData(options).checkPermission(perm).asBoolean();
-                    }
-
-                } catch (CommandSyntaxException ignored) {
+                if (user != null) {
+                    QueryOptions options = luckPerms.getContextManager().getStaticQueryOptions();
+                    return user.getCachedData().getPermissionData(options).checkPermission(permission).asBoolean();
                 }
             }
 
             if (manager == Manager.THIMBLE) {
-                return fromThimble(src, permission, opLevel);
+                return Thimble.PERMISSIONS.hasPermission(permission, uuid);
             }
         }
 
-        return src.hasPermissionLevel(opLevel);
+        return false;
     }
 
     private boolean fromLuckPerms(ServerCommandSource src, String perm, int op) {

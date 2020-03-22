@@ -1,7 +1,6 @@
 package io.github.indicode.fabric.itsmine;
 
 import blue.endless.jankson.annotation.Nullable;
-import io.github.indicode.fabric.permissions.Thimble;
 import net.minecraft.nbt.*;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -11,7 +10,7 @@ import net.minecraft.world.dimension.DimensionType;
 
 import java.util.*;
 
-import static io.github.indicode.fabric.itsmine.NBTUitls.*;
+import static io.github.indicode.fabric.itsmine.NBTUtil.*;
 
 /**
  * @author Indigo Amann
@@ -187,7 +186,7 @@ public class Claim {
         {
             tag.put("settings", settings.toTag());
             tag.put("permissions", permissionManager.toNBT());
-            if(claimBlockOwner != null) putUUID(tag, "top_owner", claimBlockOwner);
+            if(claimBlockOwner != null) tag.putUuidNew("top_owner", claimBlockOwner);
 //            if (claimBlockOwner != null) tag.putUuidNew("top_owner", claimBlockOwner);
 
         }
@@ -290,10 +289,15 @@ public class Claim {
             return playerPermissions.get(player) != null && playerPermissions.get(player).isPermissionSet(permission);
         }
         public boolean hasPermission(UUID player, Permission permission) {
-            if (isPermissionSet(player, permission)) return playerPermissions.get(player).hasPermission(permission);
+            if (isPermissionSet(player, permission))
+                return playerPermissions.get(player).hasPermission(permission);
+
             for (Map.Entry<String, ClaimPermissionMap> entry : groupPermissions.entrySet()) {
-                if (Thimble.PERMISSIONS.hasPermission(entry.getKey(), player) && entry.getValue().hasPermission(permission)) return true;
+//                if (Thimble.PERMISSIONS.hasPermission(entry.getKey(), player) && entry.getValue().hasPermission(permission))
+//                    return true;
+                return ItsMine.permissions().hasPermission(player, entry.getKey()) && entry.getValue().hasPermission(permission);
             }
+
             return defaults.hasPermission(permission);
         }
         public void setPermission(UUID player, Permission permission, boolean enabled) {

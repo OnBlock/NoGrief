@@ -14,11 +14,8 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import io.github.indicode.fabric.itsmine.mixin.BlockUpdatePacketMixin;
-import io.github.indicode.fabric.permissions.Thimble;
-import io.github.indicode.fabric.permissions.command.PermissionCommand;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.command.CommandException;
 import net.minecraft.command.EntitySelector;
 import net.minecraft.command.arguments.BlockPosArgumentType;
 import net.minecraft.command.arguments.EntityArgumentType;
@@ -39,7 +36,8 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
-import static net.minecraft.server.command.CommandManager.*;
+import static net.minecraft.server.command.CommandManager.argument;
+import static net.minecraft.server.command.CommandManager.literal;
 
 /**
  * @author Indigo Amann
@@ -950,11 +948,6 @@ public class ClaimCommand {
             return false;
         } else {
             return true;
-        }
-    }
-    private static void verifyGroup(String permission) {
-        if (Thimble.PERMISSIONS.permissionExists(permission)) {
-            throw new CommandException(new LiteralText("Nonexistant permission group").formatted(Formatting.RED));
         }
     }
 
