@@ -5,7 +5,7 @@ import net.minecraft.nbt.CompoundTag;
 
 import java.util.UUID;
 
-public class NBTUitls {
+public class NBTUtil {
 
     public static UUID getUUID(CompoundTag tag, String key){
         if (tag.contains(key + "Least") && tag.contains(key + "Most")) {
@@ -19,11 +19,6 @@ public class NBTUitls {
 
     public static boolean containsUUID(CompoundTag tag, String key){
         return tag.contains(key + "Least") && tag.contains(key + "Most");
-    }
-
-    public static void putUUID(CompoundTag tag, String key, UUID uuid){
-        tag.putLong(key + "Least", uuid.getLeastSignificantBits());
-        tag.putLong(key + "Most", uuid.getMostSignificantBits());
     }
 
 }
