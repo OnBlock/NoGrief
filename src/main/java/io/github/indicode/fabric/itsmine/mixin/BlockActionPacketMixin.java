@@ -14,14 +14,14 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(BlockActionS2CPacket.class)
 public interface BlockActionPacketMixin {
     @Accessor("pos")
-    public BlockPos getPos();
+    BlockPos getPos();
 
     @Accessor("type")
-    public int getType();
+    int getType();
 
     @Accessor("data")
-    public int getData();
+    int getData();
 
     @Accessor("block")
-    public Block getBlock();
+    Block getBlock();
 }

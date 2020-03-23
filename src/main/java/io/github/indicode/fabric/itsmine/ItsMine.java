@@ -1,14 +1,7 @@
 package io.github.indicode.fabric.itsmine;
 
-import io.github.indicode.fabric.permissions.PermChangeBehavior;
-import io.github.indicode.fabric.permissions.Thimble;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.SharedConstants;
-import net.minecraft.server.command.ServerCommandSource;
-
-import java.lang.reflect.InvocationTargetException;
-import java.security.Permission;
-import java.util.UUID;
 
 /**
  * @author Indigo Amann
@@ -18,11 +11,11 @@ public class ItsMine implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        Config.sync(false);
+        Config.sync();
         permissions = new Permissions();
 
         //TODO: Enable when developing
-        //SharedConstants.isDevelopment = true;
+        SharedConstants.isDevelopment = true;
     }
     public static Permissions permissions() {
         return permissions;

@@ -20,7 +20,7 @@ public class EnderPearlItemMixin {
     @Inject(method = "use", at = @At(value = "HEAD"), cancellable = true)
     private void modifyUse(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
         ItemStack itemStack = user.getStackInHand(hand);
-        Claim claim = ClaimManager.INSTANCE.getClaimAt(user.getSenseCenterPos(), user.dimension);
+        Claim claim = ClaimManager.INSTANCE.getClaimAt(user.getBlockPos(), user.dimension);
 
         if (claim != null && !claim.hasPermission(user.getUuid(), Claim.Permission.USE_ENDER_PEARL)) {
             user.sendMessage(Messages.MSG_CANT_USE);

@@ -25,6 +25,7 @@ public class Claim {
     public PermissionManager permissionManager = new PermissionManager();
     public UUID claimBlockOwner = null;
     public String customOwnerName, enterMessage, leaveMessage;
+    public boolean isChild = false;
     public Claim() {
 
     }
@@ -221,7 +222,11 @@ public class Claim {
             children = new ArrayList<>();
             ListTag subzoneList = (ListTag) tag.get("subzones");
             if (subzoneList != null) {
-                subzoneList.forEach(it -> children.add(new Claim((CompoundTag) it)));
+                subzoneList.forEach(it -> {
+                    Claim claim = new Claim((CompoundTag) it);
+                    claim.isChild = true;
+                    children.add(claim);
+                });
             }
         }
         {

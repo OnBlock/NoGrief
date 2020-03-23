@@ -25,22 +25,23 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class EntityMixin {
     @Shadow public World world;
 
-    @Shadow private Vec3d field_22467;
+    @Shadow public abstract Vec3d getPos();
+
     private Claim pclaim = null;
     @Inject(method = "setPos", at = @At("HEAD"))
     public void doPrePosActions(double x, double y, double z, CallbackInfo ci) {
         if (!world.isClient && (Object)this instanceof PlayerEntity) {
             PlayerEntity player = (PlayerEntity) (Object) this;
-            if (player.getSenseCenterPos() == null) return;
-            pclaim = ClaimManager.INSTANCE.getClaimAt(player.getSenseCenterPos(), player.world.dimension.getType());
+            if (player.getBlockPos() == null) return;
+            pclaim = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.world.dimension.getType());
         }
     }
     @Inject(method = "setPos", at = @At("RETURN"))
     public void doPostPosActions(double x, double y, double z, CallbackInfo ci) {
         if (!world.isClient && (Object)this instanceof PlayerEntity) {
             PlayerEntity player = (PlayerEntity) (Object) this;
-            if (player.getSenseCenterPos() == null) return;
-            Claim claim = ClaimManager.INSTANCE.getClaimAt(player.getSenseCenterPos(), player.world.dimension.getType());
+            if (player.getBlockPos() == null) return;
+            Claim claim = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.world.dimension.getType());
             if (pclaim != claim && player instanceof ServerPlayerEntity) {
                 ServerPlayerEntity serverPlayerEntity = (ServerPlayerEntity)player;
                 if (serverPlayerEntity.networkHandler != null) {
@@ -54,7 +55,7 @@ public abstract class EntityMixin {
                         serverPlayerEntity.networkHandler.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.ACTIONBAR, new LiteralText(ChatColor.translate(message)), -1, Config.event_msg_stay_ticks, -1));
 
                     if (claim != null && claim.settings.getSetting(Claim.ClaimSettings.Setting.ENTER_SOUND)) {
-                        serverPlayerEntity.networkHandler.sendPacket(new PlaySoundIdS2CPacket(Registry.SOUND_EVENT.getId(SoundEvents.BLOCK_CONDUIT_ACTIVATE), SoundCategory.MASTER, this.field_22467, 2, 1.2F));
+                        serverPlayerEntity.networkHandler.sendPacket(new PlaySoundIdS2CPacket(Registry.SOUND_EVENT.getId(SoundEvents.BLOCK_CONDUIT_ACTIVATE), SoundCategory.MASTER, this.getPos(), 2, 1.2F));
                     }
                 }
             }
@@ -74,10 +75,10 @@ public abstract class EntityMixin {
     public void doTickActions(CallbackInfo ci) {
         if (!world.isClient && (Object)this instanceof PlayerEntity) {
             PlayerEntity player = (PlayerEntity) (Object)this;
-            if (player.getSenseCenterPos() == null)
+            if (player.getBlockPos() == null)
                 return;
             boolean old = player.abilities.allowFlying;
-            Claim claim = ClaimManager.INSTANCE.getClaimAt(player.getSenseCenterPos(), player.world.dimension.getType());
+            Claim claim = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.world.dimension.getType());
             if (player instanceof ServerPlayerEntity) {
                 if (player.abilities.allowFlying && !player.isSpectator() && !player.isCreative() && ((claim == null || !claim.settings.getSetting(Claim.ClaimSettings.Setting.FLIGHT_ALLOWED) || !claim.hasPermission(player.getGameProfile().getId(), Claim.Permission.FLIGHT)) && Functions.isClaimFlying(player.getGameProfile().getId()))) {
                     player.abilities.allowFlying = false;

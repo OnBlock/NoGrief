@@ -43,6 +43,7 @@ import static net.minecraft.server.command.CommandManager.literal;
  * @author Indigo Amann
  */
 public class ClaimCommand {
+    public static final int MAX_NAME_LENGTH = 30;
     private static void validateCanAccess(ServerPlayerEntity player, Claim claim, boolean admin) throws CommandSyntaxException {
         if (claim == null) {
             throw new SimpleCommandExceptionType(Messages.INVALID_CLAIM).create();
@@ -90,7 +91,7 @@ public class ClaimCommand {
     public static final SuggestionProvider<ServerCommandSource> CLAIM_PROVIDER = (source, builder) -> {
         ServerPlayerEntity player = source.getSource().getPlayer();
         List<String> names = new ArrayList<>();
-        Claim current = ClaimManager.INSTANCE.getClaimAt(player.getSenseCenterPos(), player.dimension);
+        Claim current = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.dimension);
         if (current != null) names.add(current.name);
         for (Claim claim : ClaimManager.INSTANCE.getPlayerClaims(player.getGameProfile().getId())) {
             if (claim != null) {
@@ -151,20 +152,23 @@ public class ClaimCommand {
         return CommandSource.suggestMatching(strings, builder);
     };
 
-    private static void registerHelp(LiteralArgumentBuilder<ServerCommandSource> builder, String id, Text[] texts, String title) {
-        LiteralArgumentBuilder<ServerCommandSource> argumentBuilder = literal(id)
-                .executes((context) -> sendPage(context.getSource(), texts, 1, title, "/claim help " + id + " %page%"));
-        RequiredArgumentBuilder<ServerCommandSource, Integer> pageArgument = argument("page", IntegerArgumentType.integer(1, texts.length))
-                .executes((context) -> sendPage(context.getSource(), texts, IntegerArgumentType.getInteger(context, "page"), title, "/claim help " + id + " %page%"));
-
-        argumentBuilder.then(pageArgument);
-        builder.then(argumentBuilder);
-    }
-
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        LiteralArgumentBuilder<ServerCommandSource> command = literal("claim")
+        LiteralArgumentBuilder<ServerCommandSource> main = literal("itsmine")
+                .requires(src -> ItsMine.permissions().hasPermission(src, Permissions.Command.COMMAND, 2))
                 .executes((context) -> sendPage(context.getSource(), Messages.GET_STARTED, 1, "Get Started", "/claim help getStarted %page%"));
 
+        register(main, dispatcher);
+
+        LiteralArgumentBuilder<ServerCommandSource> alias = literal("claim").redirect(main.build())
+                .requires(src -> ItsMine.permissions().hasPermission(src, Permissions.Command.COMMAND, 2))
+                .executes((context) -> sendPage(context.getSource(), Messages.GET_STARTED, 1, "Get Started", "/claim help getStarted %page%"));
+
+        dispatcher.register(main);
+        dispatcher.register(alias);
+    }
+
+    private static void register(LiteralArgumentBuilder<ServerCommandSource> command, CommandDispatcher<ServerCommandSource> dispatcher) {
+        //SubzoneCommand.register(command, false);
         {
             LiteralArgumentBuilder<ServerCommandSource> help = literal("help");
             help.executes((context) -> sendPage(context.getSource(), Messages.HELP, 1, "Its Mine!", "/claim help commands %page%"));
@@ -241,9 +245,9 @@ public class ClaimCommand {
             RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = getClaimArgument();
             trusted.executes((context)-> {
                 ServerPlayerEntity player = context.getSource().getPlayer();
-                Claim claim = ClaimManager.INSTANCE.getClaimAt(player.getSenseCenterPos(), player.dimension);
+                Claim claim = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.dimension);
                 if (claim == null) {
-                    context.getSource().sendError(new LiteralText("That claim does not exist"));
+                    context.getSource().sendError(Messages.INVALID_CLAIM);
                     return -1;
                 }
                 return showTrustedList(context, claim, false);
@@ -252,7 +256,7 @@ public class ClaimCommand {
             claimArgument.executes((context) -> {
                 Claim claim = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
                 if (claim == null) {
-                    context.getSource().sendError(new LiteralText("That claim does not exist"));
+                    context.getSource().sendError(Messages.INVALID_CLAIM);
                     return -1;
                 }
                 return showTrustedList(context, claim, false);
@@ -277,7 +281,7 @@ public class ClaimCommand {
         }
         {
             LiteralArgumentBuilder<ServerCommandSource> show = literal("show");
-            show.executes(context -> showClaim(context.getSource(), ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getSenseCenterPos(), context.getSource().getWorld().dimension.getType()), false));
+            show.executes(context -> showClaim(context.getSource(), ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().dimension.getType()), false));
             RequiredArgumentBuilder<ServerCommandSource, String> name = argument("name", StringArgumentType.word());
             name.suggests(CLAIM_PROVIDER);
             name.executes(context -> showClaim(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "name")), false));
@@ -318,7 +322,7 @@ public class ClaimCommand {
                 direction.suggests(DIRECTION_SUGGESTION_BUILDER);
 
                 direction.executes(context -> expand(
-                        ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getSenseCenterPos(), context.getSource().getWorld().getDimension().getType()),
+                        ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
                         IntegerArgumentType.getInteger(context, "distance"),
                         directionByName(StringArgumentType.getString(context, "direction")),
                         context.getSource(),
@@ -326,7 +330,7 @@ public class ClaimCommand {
                 ));
 
                 amount.executes(context -> expand(
-                        ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getSenseCenterPos(), context.getSource().getWorld().getDimension().getType()),
+                        ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
                         IntegerArgumentType.getInteger(context, "distance"),
                         Direction.getEntityFacingOrder(context.getSource().getPlayer())[0],
                         context.getSource(),
@@ -344,7 +348,7 @@ public class ClaimCommand {
                 direction.suggests(DIRECTION_SUGGESTION_BUILDER);
 
                 direction.executes(context -> expand(
-                        ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getSenseCenterPos(), context.getSource().getWorld().getDimension().getType()),
+                        ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
                         -IntegerArgumentType.getInteger(context, "distance"),
                         directionByName(StringArgumentType.getString(context, "direction")),
                         context.getSource(),
@@ -352,7 +356,7 @@ public class ClaimCommand {
                 ));
 
                 amount.executes(context -> expand(
-                        ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getSenseCenterPos(), context.getSource().getWorld().getDimension().getType()),
+                        ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
                         -IntegerArgumentType.getInteger(context, "distance"),
                         Direction.getEntityFacingOrder(context.getSource().getPlayer())[0],
                         context.getSource(),
@@ -495,7 +499,7 @@ public class ClaimCommand {
                 RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = getClaimArgument();
 
                 newOwner.executes((context) -> {
-                    Claim claim = ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getSenseCenterPos(), context.getSource().getPlayer().dimension);
+                    Claim claim = ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getPlayer().dimension);
                     if (claim == null) {
                         context.getSource().sendError(Messages.INVALID_CLAIM);
                         return -1;
@@ -536,7 +540,7 @@ public class ClaimCommand {
                 RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = getClaimArgument();
 
                 nameArgument.executes((context) -> {
-                   Claim claim = ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getSenseCenterPos(), context.getSource().getPlayer().dimension);
+                   Claim claim = ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getPlayer().dimension);
                    if (claim == null) {
                        context.getSource().sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
                        return -1;
@@ -684,7 +688,7 @@ public class ClaimCommand {
                     direction.suggests(DIRECTION_SUGGESTION_BUILDER);
 
                     direction.executes(context -> expand(
-                            ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getSenseCenterPos(), context.getSource().getWorld().getDimension().getType()),
+                            ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
                             IntegerArgumentType.getInteger(context, "distance"),
                             directionByName(StringArgumentType.getString(context, "direction")),
                             context.getSource(),
@@ -692,7 +696,7 @@ public class ClaimCommand {
                     ));
 
                     amount.executes(context -> expand(
-                            ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getSenseCenterPos(), context.getSource().getWorld().getDimension().getType()),
+                            ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
                             IntegerArgumentType.getInteger(context, "distance"),
                             Direction.getEntityFacingOrder(context.getSource().getPlayer())[0],
                             context.getSource(),
@@ -711,7 +715,7 @@ public class ClaimCommand {
                     direction.suggests(DIRECTION_SUGGESTION_BUILDER);
 
                     direction.executes(context -> expand(
-                            ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getSenseCenterPos(), context.getSource().getWorld().getDimension().getType()),
+                            ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
                             -IntegerArgumentType.getInteger(context, "distance"),
                             directionByName(StringArgumentType.getString(context, "direction")),
                             context.getSource(),
@@ -719,7 +723,7 @@ public class ClaimCommand {
                     ));
 
                     amount.executes(context -> expand(
-                            ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getSenseCenterPos(), context.getSource().getWorld().getDimension().getType()),
+                            ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
                             -IntegerArgumentType.getInteger(context, "distance"),
                             Direction.getEntityFacingOrder(context.getSource().getPlayer())[0],
                             context.getSource(),
@@ -734,7 +738,6 @@ public class ClaimCommand {
             createExceptionCommand(admin, true);
             command.then(admin);
         }
-        dispatcher.register(command);
     }
 
     private static int sendPage(ServerCommandSource source, Text[] text, int page, String title, String command) {
@@ -974,7 +977,7 @@ public class ClaimCommand {
         BlockState block = hide ? null : Blocks.SEA_LANTERN.getDefaultState();
         int showRange = 5;
         int closeShowRange = 8;
-        BlockPos pos = hide ? ((ClaimShower)player).getLastShowPos() : player.getSenseCenterPos();
+        BlockPos pos = hide ? ((ClaimShower)player).getLastShowPos() : player.getBlockPos();
         ((ClaimShower)player).setLastShowPos(pos);
         for (int x = claim.min.getX(); x <= claim.min.getX() + showRange; x++) {
             sendBlockPacket(player, new BlockPos(x, claim.min.getY(), claim.min.getZ()), block);
@@ -1040,6 +1043,10 @@ public class ClaimCommand {
         player.networkHandler.sendPacket(packet);
     }
     private static int createClaim(String name, ServerCommandSource owner, BlockPos posA, BlockPos posB, boolean admin, @Nullable String cOwnerName) throws CommandSyntaxException {
+        if (name.length() > MAX_NAME_LENGTH) {
+            owner.sendError(Messages.MSG_LONG_NAME);
+            return -1;
+        }
         UUID ownerID = owner.getPlayer().getGameProfile().getId();
         int x, y = 0, z, mx, my = 255, mz;
         if (posA.getX() > posB.getX()) {
@@ -1071,7 +1078,7 @@ public class ClaimCommand {
         sub = sub.add(1, Config.claims2d ? 0 : 1,1);
         int subInt = sub.getX() * (Config.claims2d ? 1 : sub.getY()) * sub.getZ();
 
-        Claim claim = new Claim(name, admin ? null : ownerID, min, max, owner.getWorld().getDimension().getType(), owner.getPlayer().getSenseCenterPos());
+        Claim claim = new Claim(name, admin ? null : ownerID, min, max, owner.getWorld().getDimension().getType(), owner.getPlayer().getBlockPos());
         if (cOwnerName != null) claim.customOwnerName = cOwnerName;
         claim.permissionManager.playerPermissions.put(ownerID, new Claim.InvertedPermissionMap());
         if (!ClaimManager.INSTANCE.claimsByName.containsKey(name)) {
@@ -1526,7 +1533,7 @@ public class ClaimCommand {
     }
     private static int executeSetting(ServerCommandSource source, String input, @Nullable String claimName, boolean isQuery, boolean value, boolean admin) throws CommandSyntaxException {
         ServerPlayerEntity player = source.getPlayer();
-        Claim claim1 = claimName == null || claimName.isEmpty() ? ClaimManager.INSTANCE.getClaimAt(player.getSenseCenterPos(), player.dimension) :
+        Claim claim1 = claimName == null || claimName.isEmpty() ? ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.dimension) :
                 ClaimManager.INSTANCE.claimsByName.get(claimName);
         if (claim1 == null) {
             source.sendError(Messages.INVALID_CLAIM);
@@ -1552,7 +1559,7 @@ public class ClaimCommand {
     }
     private static int executePermission(ServerCommandSource source, String input, @Nullable String claimName, boolean isQuery, boolean value, boolean admin) throws CommandSyntaxException {
         ServerPlayerEntity player = source.getPlayer();
-        Claim claim1 = claimName == null ? ClaimManager.INSTANCE.getClaimAt(player.getSenseCenterPos(), player.dimension) :
+        Claim claim1 = claimName == null ? ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.dimension) :
                 ClaimManager.INSTANCE.claimsByName.get(claimName);
         if (claim1 == null) {
             source.sendError(Messages.INVALID_CLAIM);
@@ -1594,7 +1601,7 @@ public class ClaimCommand {
     }
     private static int executeTrust(CommandContext<ServerCommandSource> context, ServerPlayerEntity target, boolean set, @Nullable String claimName) throws CommandSyntaxException {
         ServerPlayerEntity p = context.getSource().getPlayer();
-        Claim claim1 = claimName == null ? ClaimManager.INSTANCE.getClaimAt(p.getSenseCenterPos(), p.dimension) : ClaimManager.INSTANCE.claimsByName.get(claimName);
+        Claim claim1 = claimName == null ? ClaimManager.INSTANCE.getClaimAt(p.getBlockPos(), p.dimension) : ClaimManager.INSTANCE.claimsByName.get(claimName);
         validateClaim(claim1);
 
         return setTrust(context, claim1, target, set, false);

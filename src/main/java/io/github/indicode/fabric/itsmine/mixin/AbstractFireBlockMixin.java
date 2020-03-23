@@ -14,7 +14,7 @@ public abstract class AbstractFireBlockMixin {
 
     @Redirect(method = "onEntityCollision", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;isFireImmune()Z"))
     private boolean neverGonnaBurnYouUp(Entity entity) {
-        Claim claim = ClaimManager.INSTANCE.getClaimAt(entity.getSenseCenterPos(), entity.dimension);
+        Claim claim = ClaimManager.INSTANCE.getClaimAt(entity.getBlockPos(), entity.dimension);
         if (claim != null && !claim.settings.getSetting(Claim.ClaimSettings.Setting.FIRE_DAMAGE)) {
             return true;
         }

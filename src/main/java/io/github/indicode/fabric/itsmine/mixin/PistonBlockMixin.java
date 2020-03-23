@@ -33,13 +33,13 @@ public class PistonBlockMixin {
         Claim newClaim = ClaimManager.INSTANCE.getClaimAt(newPos, world.getDimension().getType());
         if (oldClaim != newClaim) {
             if (oldClaim == null) {
-                if (!(Boolean) newClaim.settings.getSetting(Claim.ClaimSettings.Setting.PISTON_FROM_OUTSIDE)) ci.setReturnValue(false);
+                if (!newClaim.settings.getSetting(Claim.ClaimSettings.Setting.PISTON_FROM_OUTSIDE)) ci.setReturnValue(false);
             }
             else if (newClaim == null) {
-                if (!(Boolean) oldClaim.settings.getSetting(Claim.ClaimSettings.Setting.PISTON_FROM_INSIDE)) ci.setReturnValue(false);
+                if (!oldClaim.settings.getSetting(Claim.ClaimSettings.Setting.PISTON_FROM_INSIDE)) ci.setReturnValue(false);
             } else {
-                if (!(Boolean) oldClaim.settings.getSetting(Claim.ClaimSettings.Setting.PISTON_FROM_INSIDE) ||
-                        !(Boolean) newClaim.settings.getSetting(Claim.ClaimSettings.Setting.PISTON_FROM_OUTSIDE)) ci.setReturnValue(false);
+                if (!oldClaim.settings.getSetting(Claim.ClaimSettings.Setting.PISTON_FROM_INSIDE) ||
+                        !newClaim.settings.getSetting(Claim.ClaimSettings.Setting.PISTON_FROM_OUTSIDE)) ci.setReturnValue(false);
             }
         }
     }

@@ -35,7 +35,7 @@ public class Messages {
 
     public static final Text MSG_CANT_USE = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_cant_use)).formatted(Formatting.RED));
 
-    public static final Text MSG_CANT_FARM = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_cant_farm)).formatted(Formatting.RED));
+    public static final Text MSG_LONG_NAME = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_long_name)).formatted(Formatting.RED));
 
     public static final Text[] GET_STARTED = new Text[]{
             header("How to Claim (Basics)")

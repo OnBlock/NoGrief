@@ -22,12 +22,12 @@ public class Config {
     public static String msg_leave_default = "&eNow leaving claim &6%claim%";
     public static String msg_cant_enter = "&c&lHey!&r&c Sorry but you don't have permission to enter this claim!";
     public static String msg_cant_use = "&c&lHey!&r&c Sorry but you can't to use that here!";
-    public static String msg_cant_farm = "&c&lHey!&r&c Sorry but you can't farm crops here!";
+    public static String msg_long_name = "&cThe name of the Claim must be less than 30 characters!";
 
     public static int event_msg_stay_ticks = -1;
     private static ModConfig modConfig = new ModConfig("itsmine");
-    static void sync(boolean overwrite) {
-        modConfig.configure(overwrite, config -> {
+    static void sync() {
+        modConfig.configure(false, config -> {
             claims2d = config.getBool("2D claims", claims2d, "Claims extending from y 0 to y 256");
             baseClaimBlocks2d = config.getInt("2D base claim blocks", baseClaimBlocks2d, "Area Filled: " + ItsMine.blocksToAreaString2d(baseClaimBlocks2d));
             baseClaimBlocks3d = config.getInt("3D base claim blocks", baseClaimBlocks3d, "Area Filled: " + ItsMine.blocksToAreaString3d(baseClaimBlocks3d));
@@ -43,7 +43,7 @@ public class Config {
             msg_leave_default = config.getString("msg.leave_claim", msg_leave_default, "Variables: %claim% %player%");
             msg_cant_enter = config.getString("msg.cant_enter", msg_cant_enter);
             msg_cant_use = config.getString("msg.cant_use", msg_cant_use);
-            msg_cant_farm = config.getString("msg.cant_farm", msg_cant_farm);
+            msg_long_name = config.getString("msg.long_name", msg_long_name);
             event_msg_stay_ticks = config.getInt("event.msg.stay_ticks", event_msg_stay_ticks, "Sets how many ticks an event message will stay on action bar, Default: -1");
         });
     }
