@@ -48,7 +48,7 @@ public class Permissions {
         if (manager == Manager.THIMBLE) {
             Thimble.permissionWriters.add((map, server) -> {
                 for (Command value : Command.values()) {
-                    map.registerPermission(value.NODE, PermChangeBehavior.UPDATE_COMMAND_TREE);
+                    map.registerPermission(value.getNode(), PermChangeBehavior.UPDATE_COMMAND_TREE);
                 }
             });
         }
