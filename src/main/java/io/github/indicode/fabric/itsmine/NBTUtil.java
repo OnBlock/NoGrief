@@ -18,7 +18,7 @@ public class NBTUtil {
     }
 
     public static boolean containsUUID(CompoundTag tag, String key){
-        return tag.contains(key + "Least") && tag.contains(key + "Most");
+        return (tag.contains(key + "Least") && tag.contains(key + "Most")) || tag.containsUuidNew(key);
     }
 
 }
