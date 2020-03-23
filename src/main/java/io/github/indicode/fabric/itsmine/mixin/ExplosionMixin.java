@@ -22,8 +22,6 @@ public class ExplosionMixin {
         Claim claim = ClaimManager.INSTANCE.getClaimAt(pos, world.getDimension().getType());
         if (claim != null && !world.isAir(pos) && !world.getBlockState(pos).getBlock().equals(Blocks.TNT)) {
             if (!claim.settings.getSetting(Claim.ClaimSettings.Setting.EXPLOSION_DESTRUCTION)) {
-                System.out.println("Well hello there! a explosion is trying to blowup a block, and the setting is disabled in that claim, so imma just shadow the block as a Bedrock");
-
                 return Blocks.BEDROCK.getDefaultState();
             }
         }
@@ -36,8 +34,6 @@ public class ExplosionMixin {
         Claim claim = ClaimManager.INSTANCE.getClaimAt(blockPos_1, entity.world.getDimension().getType());
         if (claim != null) {
             if (!claim.settings.getSetting(Claim.ClaimSettings.Setting.EXPLOSION_DAMAGE)) {
-                System.out.println("Well hello there! a explosion is trying to damage a entity, and the setting is disabled in that claim, so imma quickly make them immune to explosions");
-
                 return true;
             }
         }

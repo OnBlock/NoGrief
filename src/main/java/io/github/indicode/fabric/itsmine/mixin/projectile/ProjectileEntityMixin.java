@@ -1,37 +1,37 @@
 package io.github.indicode.fabric.itsmine.mixin.projectile;
 
-import io.github.indicode.fabric.itsmine.Claim;
-import io.github.indicode.fabric.itsmine.ClaimManager;
+import blue.endless.jankson.annotation.Nullable;
 import io.github.indicode.fabric.itsmine.Functions;
 import io.github.indicode.fabric.itsmine.Messages;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.Projectile;
 import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.server.PlayerManager;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.LiteralText;
-import net.minecraft.util.Formatting;
+import net.minecraft.util.hit.EntityHitResult;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
-
-import java.util.UUID;
 
 /**
  * @author Indigo Amann
  */
 @Mixin(ProjectileEntity.class)
 public abstract class ProjectileEntityMixin {
-    @Redirect(method = "onEntityHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;damage(Lnet/minecraft/entity/damage/DamageSource;F)Z"))
-    private boolean imInvincible(Entity entity, DamageSource source, float amount) {
-        if (Functions.canDamageWithProjectile((ProjectileEntity) (Object) this, entity)) {
-            return entity.damage(source, amount);
-        }
+    @Shadow protected abstract void onEntityHit(EntityHitResult entityHitResult);
 
-        return false;
+    @Shadow @Nullable
+    public abstract Entity getOwner();
+
+    @Redirect(method = "onCollision", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/projectile/ProjectileEntity;onEntityHit(Lnet/minecraft/util/hit/EntityHitResult;)V"))
+    private void imInvincible(ProjectileEntity projectileEntity, EntityHitResult entityHitResult) {
+        if (Functions.canDamageWithProjectile((ProjectileEntity) (Object) this, projectileEntity)) {
+            this.onEntityHit(entityHitResult);
+        } else {
+            if (this.getOwner() instanceof PlayerEntity) {
+                this.getOwner().sendMessage(Messages.MSG_DAMAGE_ENTITY);
+            }
+        }
     }
 //    public boolean imInvincible(Entity entity, DamageSource damageSource_1, float float_1) {
 //        if (entity.world.isClient()) return entity.damage(damageSource_1, float_1);

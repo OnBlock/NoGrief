@@ -192,7 +192,6 @@ public class Permissions {
     }
 
     public enum Command {
-        COMMAND("command"),
         SPECIFY_GROUPS("specify_groups"),
         CLAIM_FLY("claim_fly"),
         INFINITE_BLOCKS("infinite_blocks"),

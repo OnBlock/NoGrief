@@ -7,8 +7,8 @@ import io.github.indicode.fabric.permissions.Thimble;
 import net.minecraft.block.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.Projectile;
-import net.minecraft.entity.thrown.ThrownItemEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
+import net.minecraft.entity.projectile.thrown.ThrownEntity;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.BucketItem;
@@ -85,7 +85,7 @@ public class Functions {
     }
 
 
-    public static boolean canDamageWithProjectile(ThrownItemEntity thrownEntity, Entity entity) {
+    public static boolean canDamageWithProjectile(ThrownEntity thrownEntity, Entity entity) {
         if (checkCanDamageWithProjectile(entity, thrownEntity.getServer(), ((OwnedProjectile) thrownEntity).getOwner())) {
             thrownEntity.kill();
             return true;
@@ -94,7 +94,7 @@ public class Functions {
         return false;
     }
 
-    public static boolean canDamageWithProjectile(Projectile projectile, Entity entity) {
+    public static boolean canDamageWithProjectile(ProjectileEntity projectile, Entity entity) {
         if (checkCanDamageWithProjectile(entity, projectile.getServer(), ((OwnedProjectile) projectile).getOwner())) {
             projectile.kill();
             return true;
@@ -108,7 +108,7 @@ public class Functions {
             return true;
 
         ServerPlayerEntity owner = server.getPlayerManager().getPlayer(uuid);
-        Claim claim = ClaimManager.INSTANCE.getClaimAt(entity.getSenseCenterPos(), entity.world.getDimension().getType());
+        Claim claim = ClaimManager.INSTANCE.getClaimAt(entity.getBlockPos(), entity.world.getDimension().getType());
 
         if (claim != null && owner != null && !claim.hasPermission(owner.getUuid(), Claim.Permission.DAMAGE_ENTITY)) {
             owner.sendMessage(Messages.MSG_DAMAGE_ENTITY);

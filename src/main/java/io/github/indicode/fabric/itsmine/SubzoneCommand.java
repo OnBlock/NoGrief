@@ -21,9 +21,7 @@ public class SubzoneCommand {
     private static final String SUB_ZONE_NAME_FORMAT = "%s.%s";
 
     public static void register(LiteralArgumentBuilder<ServerCommandSource> command, boolean admin) {
-        LiteralArgumentBuilder<ServerCommandSource> builder = CommandManager.literal("subzone")
-                .requires(src -> ItsMine.permissions().hasPermission(src, Permissions.Command.COMMAND, 2));
-
+        LiteralArgumentBuilder<ServerCommandSource> builder = CommandManager.literal("subzone");
         {
             LiteralArgumentBuilder<ServerCommandSource> add = CommandManager.literal("add");
 

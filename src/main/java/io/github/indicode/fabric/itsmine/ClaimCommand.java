@@ -21,6 +21,8 @@ import net.minecraft.command.arguments.BlockPosArgumentType;
 import net.minecraft.command.arguments.EntityArgumentType;
 import net.minecraft.command.arguments.GameProfileArgumentType;
 import net.minecraft.command.arguments.PosArgument;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
 import net.minecraft.server.command.CommandSource;
 import net.minecraft.server.command.ServerCommandSource;
@@ -154,14 +156,14 @@ public class ClaimCommand {
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         LiteralArgumentBuilder<ServerCommandSource> main = literal("itsmine")
-                .requires(src -> ItsMine.permissions().hasPermission(src, Permissions.Command.COMMAND, 2))
                 .executes((context) -> sendPage(context.getSource(), Messages.GET_STARTED, 1, "Get Started", "/claim help getStarted %page%"));
 
         register(main, dispatcher);
 
-        LiteralArgumentBuilder<ServerCommandSource> alias = literal("claim").redirect(main.build())
-                .requires(src -> ItsMine.permissions().hasPermission(src, Permissions.Command.COMMAND, 2))
+        LiteralArgumentBuilder<ServerCommandSource> alias = literal("claim")
                 .executes((context) -> sendPage(context.getSource(), Messages.GET_STARTED, 1, "Get Started", "/claim help getStarted %page%"));
+
+        register(alias, dispatcher);
 
         dispatcher.register(main);
         dispatcher.register(alias);
@@ -462,11 +464,11 @@ public class ClaimCommand {
         }
         {
             LiteralArgumentBuilder<ServerCommandSource> distrust = literal("distrust");
-            RequiredArgumentBuilder<ServerCommandSource, EntitySelector> playerArgument = argument("player", EntityArgumentType.player());
+            RequiredArgumentBuilder<ServerCommandSource, EntitySelector> playerArgument = argument("player", EntityArgumentType.entity());
             RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = getClaimArgument();
 
-            playerArgument.executes((context -> executeTrust(context, EntityArgumentType.getPlayer(context, "player"), false, null)));
-            claimArgument.executes((context -> executeTrust(context, EntityArgumentType.getPlayer(context, "player"), false, StringArgumentType.getString(context, "claim"))));
+            playerArgument.executes((context -> executeTrust(context, EntityArgumentType.getEntity(context, "player"), false, null)));
+            claimArgument.executes((context -> executeTrust(context, EntityArgumentType.getEntity(context, "player"), false, StringArgumentType.getString(context, "claim"))));
 
             playerArgument.then(claimArgument);
             distrust.then(playerArgument);
@@ -1296,7 +1298,7 @@ public class ClaimCommand {
         text.append(new LiteralText("Claim Info: " + claim.name).formatted(Formatting.GOLD)).append("\n");
         text.append(newInfoLine("Name", new LiteralText(claim.name).formatted(Formatting.WHITE)));
         text.append(newInfoLine("Owner",
-                owner != null ? new LiteralText(owner.getName()).formatted(Formatting.GOLD) :
+                owner != null && claim.customOwnerName == null ? new LiteralText(owner.getName()).formatted(Formatting.GOLD) :
                         claim.customOwnerName != null ? new LiteralText(claim.customOwnerName).formatted(Formatting.GOLD) :
                                 new LiteralText("Not Present").formatted(Formatting.RED, Formatting.ITALIC)));
         text.append(newInfoLine("Size", new LiteralText(size.getX() + (claim.is2d() ? "x" : ("x" + size.getY() + "x")) + size.getZ()).formatted(Formatting.GREEN)));
@@ -1439,11 +1441,19 @@ public class ClaimCommand {
         claim.permissionManager.playerPermissions.forEach((uuid, perm) -> {
             atomicInteger.incrementAndGet();
             Text pText = new LiteralText("");
+            Text owner;
             GameProfile profile = source.getMinecraftServer().getUserCache().getByUuid(uuid);
-            String name = profile != null ? profile.getName() : uuid.toString();
+            if (profile != null) {
+                owner = new LiteralText(profile.getName());
+            } else {
+                owner = new LiteralText(uuid.toString()).styled((style) -> {
+                    style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Click to Copy")));
+                    style.setClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, uuid.toString()));
+                });
+            }
 
             pText.append(new LiteralText(atomicInteger.get() + ". ").formatted(Formatting.GOLD))
-                    .append(new LiteralText(name).formatted(Formatting.YELLOW));
+                    .append(owner.formatted(Formatting.YELLOW));
 
             Text hover = new LiteralText("");
             hover.append(new LiteralText("Permissions:").formatted(Formatting.WHITE)).append("\n");
@@ -1599,7 +1609,12 @@ public class ClaimCommand {
                 .append(Messages.Command.getSettings(claim)).append("\n"), false);
         return 1;
     }
-    private static int executeTrust(CommandContext<ServerCommandSource> context, ServerPlayerEntity target, boolean set, @Nullable String claimName) throws CommandSyntaxException {
+    private static int executeTrust(CommandContext<ServerCommandSource> context, Entity entity, boolean set, @Nullable String claimName) throws CommandSyntaxException {
+        if (!(entity instanceof PlayerEntity)) {
+            context.getSource().sendError(new LiteralText("Only Players!"));
+            return -1;
+        }
+        ServerPlayerEntity target = (ServerPlayerEntity) entity;
         ServerPlayerEntity p = context.getSource().getPlayer();
         Claim claim1 = claimName == null ? ClaimManager.INSTANCE.getClaimAt(p.getBlockPos(), p.dimension) : ClaimManager.INSTANCE.claimsByName.get(claimName);
         validateClaim(claim1);
