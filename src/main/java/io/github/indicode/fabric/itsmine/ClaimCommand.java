@@ -238,7 +238,7 @@ public class ClaimCommand {
                     .requires(src -> ItsMine.permissions().hasPermission(src, Permissions.Command.CLAIM_FLY, 2));
             RequiredArgumentBuilder<ServerCommandSource, Boolean> setArgument = CommandManager.argument("set", BoolArgumentType.bool());
 
-            fly.executes((context) -> setFly(context, !Claim.flyers.contains(context.getSource().getPlayer().getUuid())));
+            fly.executes((context) -> setFly(context, !ClaimManager.INSTANCE.flyers.contains(context.getSource().getPlayer().getUuid())));
             setArgument.executes((context) -> setFly(context, BoolArgumentType.getBool(context, "set")));
 
             fly.then(setArgument);
@@ -1647,13 +1647,13 @@ public class ClaimCommand {
     private static int setFly(CommandContext<ServerCommandSource> context, boolean set) throws CommandSyntaxException {
         ServerPlayerEntity player = context.getSource().getPlayer();
         if (set) {
-            Claim.flyers.add(player.getUuid());
+            ClaimManager.INSTANCE.flyers.add(player.getUuid());
             player.addMessage(new LiteralText("Enabled Ability to fly in Claims").formatted(Formatting.GREEN), false);
             return 1;
         }
 
         player.addMessage(new LiteralText("Disabled Ability to fly in Claims").formatted(Formatting.RED), false);
-        Claim.flyers.remove(player.getUuid());
+        ClaimManager.INSTANCE.flyers.remove(player.getUuid());
         return -1;
     }
 }

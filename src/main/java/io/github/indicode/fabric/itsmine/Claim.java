@@ -26,7 +26,6 @@ public class Claim {
     public UUID claimBlockOwner = null;
     public String customOwnerName, enterMessage, leaveMessage;
     public boolean isChild = false;
-    public static List<UUID> flyers = new ArrayList<>();
     public Claim() {
 
     }
@@ -198,15 +197,7 @@ public class Claim {
             if (this.leaveMessage != null) meta.putString("leaveMsg", this.leaveMessage);
             tag.put("meta", meta);
         }
-        {
-            ListTag listTag = new ListTag();
-            for (UUID flyer : flyers) {
-                CompoundTag tag1 = new CompoundTag();
-                tag1.putUuidNew("uuid", flyer);
-                listTag.add(tag1);
-            }
-            tag.put("flyers", listTag);
-        }
+
         if (this.customOwnerName != null) tag.putString("cOwnerName", this.customOwnerName);
         tag.putString("name", name);
         return tag;
@@ -250,14 +241,6 @@ public class Claim {
             CompoundTag meta = tag.getCompound("meta");
             if (meta.contains("enterMsg")) this.enterMessage = meta.getString("enterMsg");
             if (meta.contains("leaveMsg")) this.leaveMessage = meta.getString("leaveMsg");
-        }
-        {
-            ListTag listTag = tag.getList("flyers", 11);
-            flyers.clear();
-            for (int i = 0; i < listTag.size(); i++) {
-                CompoundTag tag1 = listTag.getCompound(i);
-                flyers.add(tag1.getUuidNew("uuid"));
-            }
         }
         if (tag.contains("cOwnerName")) this.customOwnerName = tag.getString("cOwnerName");
         name = tag.getString("name");

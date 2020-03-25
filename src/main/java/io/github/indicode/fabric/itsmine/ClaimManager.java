@@ -22,6 +22,7 @@ public class ClaimManager {
     public static ClaimManager INSTANCE = null;
     private HashMap<UUID, Integer> blocksLeft = new HashMap<>();
     public List<UUID> ignoringClaims = new ArrayList<>();
+    public List<UUID> flyers = new ArrayList<>();
     public int getClaimBlocks(UUID id) {
         return blocksLeft.getOrDefault(id, Config.claims2d ? Config.baseClaimBlocks2d : Config.baseClaimBlocks3d);
     }
@@ -83,6 +84,13 @@ public class ClaimManager {
             tvargetter.putString("id", id.toString());
             ignoring.add(tvargetter.get("id"));
         });
+        ListTag listTag = new ListTag();
+        for (UUID flyer : flyers) {
+            CompoundTag tag1 = new CompoundTag();
+            tag1.putUuidNew("uuid", flyer);
+            listTag.add(tag1);
+        }
+        tag.put("flyers", listTag);
         tag.put("ignoring", ignoring);
         return tag;
     }
@@ -109,5 +117,11 @@ public class ClaimManager {
         blocksLeftTag.getKeys().forEach(key -> blocksLeft.put(UUID.fromString(key), blocksLeftTag.getInt(key)));
         ListTag ignoringTag = (ListTag) tag.get("ignoring");
         ignoringTag.forEach(it -> ignoringClaims.add(UUID.fromString(it.asString())));
+        ListTag listTag = tag.getList("flyers", 11);
+        flyers.clear();
+        for (int i = 0; i < listTag.size(); i++) {
+            CompoundTag tag1 = listTag.getCompound(i);
+            flyers.add(tag1.getUuidNew("uuid"));
+        }
     }
 }

@@ -95,6 +95,7 @@ public abstract class EntityMixin {
                 if (
                         player.abilities.allowFlying &&
                                 shouldChange(player) &&
+                                ClaimManager.INSTANCE.flyers.contains(player.getUuid()) &&
                                 (
                                         (
                                                 claim == null || !claim.settings.getSetting(Claim.ClaimSettings.Setting.FLIGHT_ALLOWED) ||
@@ -107,11 +108,14 @@ public abstract class EntityMixin {
                     player.abilities.flying = false;
                     Functions.setClaimFlying(player.getGameProfile().getId(), false);
 
-                    BlockPos pos = Functions.getPosOnGround(player.getBlockPos(), player.getEntityWorld());
-                    player.teleport(pos.getX(), pos.getY(), pos.getZ());
+                    World world = player.getEntityWorld();
+                    if (world.getBlockState(player.getBlockPos().down(4)).isAir() && !player.isOnGround()) {
+                        BlockPos pos = Functions.getPosOnGround(player.getBlockPos(), world);
+                        player.teleport(pos.getX(), pos.getY(), pos.getZ());
+                    }
                 } else if (
                         !player.abilities.allowFlying &&
-                                Claim.flyers.contains(player.getUuid()) &&
+                                ClaimManager.INSTANCE.flyers.contains(player.getUuid()) &&
                                 shouldChange(player) &&
                                 claim != null &&
                                 claim.settings.getSetting(Claim.ClaimSettings.Setting.FLIGHT_ALLOWED)

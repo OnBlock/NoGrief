@@ -21,6 +21,8 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.BlockView;
+import net.minecraft.world.World;
+import net.minecraft.world.dimension.DimensionType;
 
 import java.util.*;
 
@@ -119,14 +121,14 @@ public class Functions {
         return true;
     }
 
-    public static BlockPos getPosOnGround(BlockPos pos, BlockView view) {
-        BlockPos blockPos = new BlockPos(pos.getX(), 256.0D, pos.getZ());
+    public static BlockPos getPosOnGround(BlockPos pos, World world) {
+        BlockPos blockPos = new BlockPos(pos.getX(), pos.getY(), pos.getZ());
 
         do {
             blockPos = blockPos.down();
-        } while (view.getBlockState(blockPos).isAir());
+        } while (world.getBlockState(blockPos).isAir());
 
-        return blockPos;
+        return blockPos.up();
     }
 
 }
