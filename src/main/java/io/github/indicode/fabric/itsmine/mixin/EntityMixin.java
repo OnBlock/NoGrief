@@ -12,6 +12,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Texts;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
@@ -27,6 +28,9 @@ public abstract class EntityMixin {
 
     @Shadow public abstract Vec3d getPos();
 
+    @Shadow public abstract void tick();
+
+    @Shadow public boolean removed;
     private Claim pclaim = null;
     @Inject(method = "setPos", at = @At("HEAD"))
     public void doPrePosActions(double x, double y, double z, CallbackInfo ci) {
@@ -71,28 +75,62 @@ public abstract class EntityMixin {
                 .replace("%player%", player.getName().asString());
     }
 
+    private static int tick = 0;
+
     @Inject(method = "tick", at = @At("RETURN"))
     public void doTickActions(CallbackInfo ci) {
-        if (!world.isClient && (Object)this instanceof PlayerEntity) {
-            PlayerEntity player = (PlayerEntity) (Object)this;
-            if (player.getBlockPos() == null)
+        tick++;
+        if (tick >= 5 && !world.isClient && ((Entity) (Object) this instanceof PlayerEntity)) {
+            tick = 0;
+
+            PlayerEntity player = (PlayerEntity) (Object) this;
+            if (player.getBlockPos() == null) {
                 return;
+            }
+
             boolean old = player.abilities.allowFlying;
             Claim claim = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.world.dimension.getType());
+
             if (player instanceof ServerPlayerEntity) {
-                if (player.abilities.allowFlying && !player.isSpectator() && !player.isCreative() && ((claim == null || !claim.settings.getSetting(Claim.ClaimSettings.Setting.FLIGHT_ALLOWED) || !claim.hasPermission(player.getGameProfile().getId(), Claim.Permission.FLIGHT)) && Functions.isClaimFlying(player.getGameProfile().getId()))) {
+                if (
+                        player.abilities.allowFlying &&
+                                shouldChange(player) &&
+                                (
+                                        (
+                                                claim == null || !claim.settings.getSetting(Claim.ClaimSettings.Setting.FLIGHT_ALLOWED) ||
+                                                !claim.hasPermission(player.getGameProfile().getId(), Claim.Permission.FLIGHT)
+                                        )
+                                                && Functions.isClaimFlying(player.getGameProfile().getId())
+                                )
+                ) {
                     player.abilities.allowFlying = false;
                     player.abilities.flying = false;
                     Functions.setClaimFlying(player.getGameProfile().getId(), false);
-                } else if (!player.abilities.allowFlying && !player.isSpectator() && !player.isCreative() && claim != null && claim.settings.getSetting(Claim.ClaimSettings.Setting.FLIGHT_ALLOWED) && claim.hasPermission(player.getGameProfile().getId(), Claim.Permission.FLIGHT) && Functions.canClaimFly((ServerPlayerEntity) player)) {
+
+                    BlockPos pos = Functions.getPosOnGround(player.getBlockPos(), player.getEntityWorld());
+                    player.teleport(pos.getX(), pos.getY(), pos.getZ());
+                } else if (
+                        !player.abilities.allowFlying &&
+                                Claim.flyers.contains(player.getUuid()) &&
+                                shouldChange(player) &&
+                                claim != null &&
+                                claim.settings.getSetting(Claim.ClaimSettings.Setting.FLIGHT_ALLOWED)
+                                && claim.hasPermission(player.getGameProfile().getId(), Claim.Permission.FLIGHT)
+                                && Functions.canClaimFly((ServerPlayerEntity) player)
+                ) {
                     player.abilities.allowFlying = true;
                     Functions.setClaimFlying(player.getGameProfile().getId(), true);
                 }
+
                 if (player.abilities.allowFlying != old) {
                     player.sendAbilitiesUpdate();
                 }
             }
 
         }
+    }
+
+    private boolean shouldChange(PlayerEntity player) {
+        return !player.isSpectator() && !player.isCreative();
     }
 }

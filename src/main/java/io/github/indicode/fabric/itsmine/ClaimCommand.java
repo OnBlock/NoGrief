@@ -24,6 +24,7 @@ import net.minecraft.command.arguments.PosArgument;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
+import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.CommandSource;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -233,9 +234,19 @@ public class ClaimCommand {
             command.then(create);
         }
         {
+            LiteralArgumentBuilder<ServerCommandSource> fly = literal("fly")
+                    .requires(src -> ItsMine.permissions().hasPermission(src, Permissions.Command.CLAIM_FLY, 2));
+            RequiredArgumentBuilder<ServerCommandSource, Boolean> setArgument = CommandManager.argument("set", BoolArgumentType.bool());
+
+            fly.executes((context) -> setFly(context, !Claim.flyers.contains(context.getSource().getPlayer().getUuid())));
+            setArgument.executes((context) -> setFly(context, BoolArgumentType.getBool(context, "set")));
+
+            fly.then(setArgument);
+            command.then(fly);
+        }
+        {
             LiteralArgumentBuilder<ServerCommandSource> rename = literal("rename");
-            RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = argument("claim", StringArgumentType.word())
-                    .suggests(CLAIM_PROVIDER);
+            RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = getClaimArgument().suggests(CLAIM_PROVIDER);
             RequiredArgumentBuilder<ServerCommandSource, String> nameArgument = argument("name", StringArgumentType.word());
             nameArgument.executes((context) -> rename(context, false));
             claimArgument.then(nameArgument);
@@ -1632,5 +1643,17 @@ public class ClaimCommand {
             context.getSource().sendFeedback(new LiteralText(ChatColor.translate(message)), false);
         }
         return 1;
+    }
+    private static int setFly(CommandContext<ServerCommandSource> context, boolean set) throws CommandSyntaxException {
+        ServerPlayerEntity player = context.getSource().getPlayer();
+        if (set) {
+            Claim.flyers.add(player.getUuid());
+            player.addMessage(new LiteralText("Enabled Ability to fly in Claims").formatted(Formatting.GREEN), false);
+            return 1;
+        }
+
+        player.addMessage(new LiteralText("Disabled Ability to fly in Claims").formatted(Formatting.RED), false);
+        Claim.flyers.remove(player.getUuid());
+        return -1;
     }
 }
