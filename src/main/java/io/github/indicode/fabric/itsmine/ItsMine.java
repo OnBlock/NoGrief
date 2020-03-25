@@ -15,7 +15,7 @@ public class ItsMine implements ModInitializer {
         permissions = new Permissions();
 
         //TODO: Enable when developing
-        SharedConstants.isDevelopment = true;
+        //SharedConstants.isDevelopment = true;
     }
     public static Permissions permissions() {
         return permissions;
