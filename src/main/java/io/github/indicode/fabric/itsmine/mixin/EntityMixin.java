@@ -75,14 +75,10 @@ public abstract class EntityMixin {
                 .replace("%player%", player.getName().asString());
     }
 
-    private static int tick = 0;
 
     @Inject(method = "tick", at = @At("RETURN"))
     public void doTickActions(CallbackInfo ci) {
-        tick++;
-        if (tick >= 5 && !world.isClient && ((Entity) (Object) this instanceof PlayerEntity)) {
-            tick = 0;
-
+        if (!world.isClient && (Object) this instanceof PlayerEntity) {
             PlayerEntity player = (PlayerEntity) (Object) this;
             if (player.getBlockPos() == null) {
                 return;
@@ -95,13 +91,14 @@ public abstract class EntityMixin {
                 if (
                         player.abilities.allowFlying &&
                                 shouldChange(player) &&
-                                ClaimManager.INSTANCE.flyers.contains(player.getUuid()) &&
                                 (
                                         (
+                                                !ClaimManager.INSTANCE.flyers.contains(player.getUuid()) ||
                                                 claim == null || !claim.settings.getSetting(Claim.ClaimSettings.Setting.FLIGHT_ALLOWED) ||
-                                                !claim.hasPermission(player.getGameProfile().getId(), Claim.Permission.FLIGHT)
+                                                !claim.hasPermission(player.getGameProfile().getId(), Claim.Permission.FLIGHT) ||
+                                                !Functions.canFly((ServerPlayerEntity) player)
                                         )
-                                                && Functions.isClaimFlying(player.getGameProfile().getId())
+                                                //&& Functions.isClaimFlying(player.getGameProfile().getId())
                                 )
                 ) {
                     player.abilities.allowFlying = false;
@@ -109,7 +106,7 @@ public abstract class EntityMixin {
                     Functions.setClaimFlying(player.getGameProfile().getId(), false);
 
                     World world = player.getEntityWorld();
-                    if (world.getBlockState(player.getBlockPos().down(4)).isAir() && !player.isOnGround()) {
+                    if (world.getBlockState(player.getBlockPos().down(5)).isAir() && !player.isOnGround()) {
                         BlockPos pos = Functions.getPosOnGround(player.getBlockPos(), world);
                         player.teleport(pos.getX(), pos.getY(), pos.getZ());
                     }
@@ -119,11 +116,12 @@ public abstract class EntityMixin {
                                 shouldChange(player) &&
                                 claim != null &&
                                 claim.settings.getSetting(Claim.ClaimSettings.Setting.FLIGHT_ALLOWED)
-                                && claim.hasPermission(player.getGameProfile().getId(), Claim.Permission.FLIGHT)
-                                && Functions.canClaimFly((ServerPlayerEntity) player)
+                                && claim.hasPermission(player.getUuid(), Claim.Permission.FLIGHT)
+                                && Functions.canFly((ServerPlayerEntity) player)
+                                ///&& Functions.canClaimFly((ServerPlayerEntity) player)
                 ) {
                     player.abilities.allowFlying = true;
-                    Functions.setClaimFlying(player.getGameProfile().getId(), true);
+                    //Functions.setClaimFlying(player.getGameProfile().getId(), true);
                 }
 
                 if (player.abilities.allowFlying != old) {

@@ -26,8 +26,11 @@
   ],
 
   "depends": {
-    "fabricloader": ">=0.4.0"
+    "fabricloader": ">=0.7.1+build.174",
+    "thimble": "*"
   },
   "suggests": {
+    "luckperms": "*",
+    "thimble": "*"
   }
 }

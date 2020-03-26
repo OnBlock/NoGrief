@@ -28,6 +28,7 @@ public class Permissions {
 
         if (manager == Manager.VANILLA) {
             this.present = false;
+            logger.info("Using Vanilla Permissions for Claims");
             return;
         }
 
@@ -140,7 +141,7 @@ public class Permissions {
             }
 
             if (manager == Manager.THIMBLE) {
-                Thimble.permissionWriters.get(0);
+                return true;
             }
 
             return FabricLoader.getInstance().getModContainer(manager.getName().toLowerCase(Locale.ROOT)).isPresent();

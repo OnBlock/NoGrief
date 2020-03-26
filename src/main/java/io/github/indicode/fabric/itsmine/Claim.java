@@ -486,7 +486,7 @@ public class Claim {
     }
     public static class ClaimSettings{
         public enum Setting {
-            FLIGHT_ALLOWED("flight_allowed", "Flying Enabled", true),
+            FLIGHT_ALLOWED("flight_allowed", "Flying Allowed", true),
             EXPLOSION_DESTRUCTION("explosion_destruction", "Explosion Destroys Blocks", false),
             EXPLOSION_DAMAGE("explosion_damage", "Explosion Damages Entities", false),
             FLUID_CROSSES_BORDERS("fluid_crosses_borders", "Fluid Crosses Borders", false),
