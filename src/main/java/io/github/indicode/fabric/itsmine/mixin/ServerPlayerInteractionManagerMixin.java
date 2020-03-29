@@ -2,12 +2,10 @@ package io.github.indicode.fabric.itsmine.mixin;
 
 import io.github.indicode.fabric.itsmine.*;
 import net.minecraft.block.*;
-import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.server.world.ServerWorld;

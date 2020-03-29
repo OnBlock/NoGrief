@@ -98,10 +98,10 @@ public class Functions {
 
     public static boolean canDamageWithProjectile(ThrownEntity thrownEntity, Entity entity) {
         if (checkCanDamageWithProjectile(entity, thrownEntity.getServer(), ((OwnedProjectile) thrownEntity).getOwner())) {
-            thrownEntity.kill();
             return true;
         }
 
+        thrownEntity.kill();
         return false;
     }
 
@@ -138,5 +138,6 @@ public class Functions {
 
         return blockPos.up();
     }
+
 
 }

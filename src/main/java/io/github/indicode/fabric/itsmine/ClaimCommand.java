@@ -14,6 +14,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import io.github.indicode.fabric.itsmine.mixin.BlockUpdatePacketMixin;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.command.EntitySelector;
@@ -24,19 +25,27 @@ import net.minecraft.command.arguments.PosArgument;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.CommandSource;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.world.BlockView;
+import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.dimension.DimensionType;
 
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 
 import static net.minecraft.server.command.CommandManager.argument;
@@ -171,7 +180,7 @@ public class ClaimCommand {
     }
 
     private static void register(LiteralArgumentBuilder<ServerCommandSource> command, CommandDispatcher<ServerCommandSource> dispatcher) {
-        //SubzoneCommand.register(command, false);
+        SubzoneCommand.register(command, false);
         {
             LiteralArgumentBuilder<ServerCommandSource> help = literal("help");
             help.executes((context) -> sendPage(context.getSource(), Messages.HELP, 1, "Its Mine!", "/claim help commands %page%"));
@@ -437,13 +446,16 @@ public class ClaimCommand {
         }
         {
             LiteralArgumentBuilder<ServerCommandSource> list = literal("list");
+            LiteralArgumentBuilder<ServerCommandSource> listall = literal("listall");
             RequiredArgumentBuilder<ServerCommandSource, String> player = argument("player", StringArgumentType.word());
             player.requires(source -> ItsMine.permissions().hasPermission(source, Permissions.Command.ADMIN_CHECK_OTHERS, 2));
             player.suggests(PLAYERS_PROVIDER);
             list.executes(context -> list(context.getSource(), context.getSource().getName()));
+            listall.executes(context -> listall(context.getSource()));
             player.executes(context -> list(context.getSource(), StringArgumentType.getString(context, "player")));
             list.then(player);
             command.then(list);
+            command.then(listall);
 
             LiteralArgumentBuilder<ServerCommandSource> claims = literal("claims")
                     .executes(context -> list(context.getSource(), context.getSource().getName()))
@@ -987,69 +999,39 @@ public class ClaimCommand {
         return 0;
     }
     private static void silentHideShow(ServerPlayerEntity player, Claim claim, boolean hide, boolean updateStatus) {
-        BlockState block = hide ? null : Blocks.SEA_LANTERN.getDefaultState();
-        int showRange = 5;
-        int closeShowRange = 8;
-        BlockPos pos = hide ? ((ClaimShower)player).getLastShowPos() : player.getBlockPos();
-        ((ClaimShower)player).setLastShowPos(pos);
-        for (int x = claim.min.getX(); x <= claim.min.getX() + showRange; x++) {
-            sendBlockPacket(player, new BlockPos(x, claim.min.getY(), claim.min.getZ()), block);
-            sendBlockPacket(player, new BlockPos(x, claim.max.getY(), claim.min.getZ()), block);
-            sendBlockPacket(player, new BlockPos(x, claim.min.getY(), claim.max.getZ()), block);
-            sendBlockPacket(player, new BlockPos(x, claim.max.getY(), claim.max.getZ()), block);
-        }
-        for (int x = claim.max.getX() - showRange; x <= claim.max.getX(); x++) {
-            sendBlockPacket(player, new BlockPos(x, claim.min.getY(), claim.min.getZ()), block);
-            sendBlockPacket(player, new BlockPos(x, claim.max.getY(), claim.min.getZ()), block);
-            sendBlockPacket(player, new BlockPos(x, claim.min.getY(), claim.max.getZ()), block);
-            sendBlockPacket(player, new BlockPos(x, claim.max.getY(), claim.max.getZ()), block);
-        }
-        if (claim.includesPosition(pos)) for (int x = pos.getX() - closeShowRange; x <= pos.getX() + closeShowRange; x++) {
-            if (x < claim.min.getX() || x > claim.max.getX()) continue;
-            sendBlockPacket(player, new BlockPos(x, pos.getY(), claim.min.getZ()), block);
-            sendBlockPacket(player, new BlockPos(x, pos.getY(), claim.max.getZ()), block);
-        }
-        for (int y = claim.min.getY(); y <= claim.min.getY() + showRange; y++) {
-            sendBlockPacket(player, new BlockPos(claim.min.getX(), y, claim.min.getZ()), block);
-            sendBlockPacket(player, new BlockPos(claim.max.getX(), y, claim.min.getZ()), block);
-            sendBlockPacket(player, new BlockPos(claim.min.getX(), y, claim.max.getZ()), block);
-            sendBlockPacket(player, new BlockPos(claim.max.getX(), y, claim.max.getZ()), block);
-        }
-        for (int y = claim.max.getY() - showRange; y <= claim.max.getY(); y++) {
-            sendBlockPacket(player, new BlockPos(claim.min.getX(), y, claim.min.getZ()), block);
-            sendBlockPacket(player, new BlockPos(claim.max.getX(), y, claim.min.getZ()), block);
-            sendBlockPacket(player, new BlockPos(claim.min.getX(), y, claim.max.getZ()), block);
-            sendBlockPacket(player, new BlockPos(claim.max.getX(), y, claim.max.getZ()), block);
-        }
-        if (claim.includesPosition(pos)) for (int y = pos.getY() - closeShowRange; y <= pos.getY() + closeShowRange; y++) {
-            if (y < claim.min.getY() || y > claim.max.getY()) continue;
-            sendBlockPacket(player, new BlockPos(pos.getX(), y, claim.min.getZ()), block);
-            sendBlockPacket(player, new BlockPos(claim.max.getX(), y, pos.getZ()), block);
-            sendBlockPacket(player, new BlockPos(claim.min.getX(), y, pos.getZ()), block);
-            sendBlockPacket(player, new BlockPos(pos.getX(), y, claim.max.getZ()), block);
-        }
-        for (int z = claim.min.getZ(); z <= claim.min.getZ() + showRange; z++) {
-            sendBlockPacket(player, new BlockPos(claim.min.getX(), claim.min.getY(), z), block);
-            sendBlockPacket(player, new BlockPos(claim.max.getX(), claim.min.getY(), z), block);
-            sendBlockPacket(player, new BlockPos(claim.min.getX(), claim.max.getY(), z), block);
-            sendBlockPacket(player, new BlockPos(claim.max.getX(), claim.max.getY(), z), block);
-        }
-        for (int z = claim.max.getZ() - showRange; z <= claim.max.getZ(); z++) {
-            sendBlockPacket(player, new BlockPos(claim.min.getX(), claim.min.getY(), z), block);
-            sendBlockPacket(player, new BlockPos(claim.max.getX(), claim.min.getY(), z), block);
-            sendBlockPacket(player, new BlockPos(claim.min.getX(), claim.max.getY(), z), block);
-            sendBlockPacket(player, new BlockPos(claim.max.getX(), claim.max.getY(), z), block);
-        }
-        if (claim.includesPosition(pos)) for (int z = pos.getZ() - closeShowRange; z <= pos.getZ() + closeShowRange; z++) {
-            if (z < claim.min.getZ() || z > claim.max.getZ()) continue;
-            sendBlockPacket(player, new BlockPos(claim.min.getX(), pos.getY(), z), block);
-            sendBlockPacket(player, new BlockPos(claim.max.getX(), pos.getY(), z), block);
-        }
         if (updateStatus) {
             if (!hide) ((ClaimShower) player).setShownClaim(claim);
             else ((ClaimShower) player).setShownClaim(null);
         }
+        BlockState block = hide ? null : Blocks.GOLD_BLOCK.getDefaultState();
+        showCorners(player, claim, hide, block);
+        if(!claim.isChild){
+            block = hide ? null : Blocks.DIAMOND_BLOCK.getDefaultState();
+            for(Claim subzone : claim.children){
+                showCorners(player, subzone, hide, block);
+            }
+        }
+
     }
+
+    private static void showCorners(ServerPlayerEntity player, Claim claim, boolean hide, BlockState state){
+        state = hide ? null : state;
+        sendBlockPacket(player, new BlockPos(Functions.getPosOnGround(new BlockPos(claim.min.getX(), 256, claim.min.getZ()), player.getEntityWorld())).down(), state);
+        sendBlockPacket(player, new BlockPos(Functions.getPosOnGround(new BlockPos(claim.min.getX(), 256, claim.max.getZ()), player.getEntityWorld())).down(), state);
+        sendBlockPacket(player, new BlockPos(Functions.getPosOnGround(new BlockPos(claim.max.getX(), 256, claim.min.getZ()), player.getEntityWorld())).down(), state);
+        sendBlockPacket(player, new BlockPos(Functions.getPosOnGround(new BlockPos(claim.max.getX(), 256, claim.max.getZ()), player.getEntityWorld())).down(), state);
+
+        sendBlockPacket(player, new BlockPos(Functions.getPosOnGround(new BlockPos(claim.min.getX(), 256, claim.min.getZ()), player.getEntityWorld())).down().south(), state);
+        sendBlockPacket(player, new BlockPos(Functions.getPosOnGround(new BlockPos(claim.min.getX(), 256, claim.max.getZ()), player.getEntityWorld())).down().east(), state);
+        sendBlockPacket(player, new BlockPos(Functions.getPosOnGround(new BlockPos(claim.max.getX(), 256, claim.min.getZ()), player.getEntityWorld())).down().south(), state);
+        sendBlockPacket(player, new BlockPos(Functions.getPosOnGround(new BlockPos(claim.max.getX(), 256, claim.max.getZ()), player.getEntityWorld())).down().north(), state);
+
+        sendBlockPacket(player, new BlockPos(Functions.getPosOnGround(new BlockPos(claim.min.getX(), 256, claim.min.getZ()), player.getEntityWorld())).down().east(), state);
+        sendBlockPacket(player, new BlockPos(Functions.getPosOnGround(new BlockPos(claim.min.getX(), 256, claim.max.getZ()), player.getEntityWorld())).down().north(), state);
+        sendBlockPacket(player, new BlockPos(Functions.getPosOnGround(new BlockPos(claim.max.getX(), 256, claim.min.getZ()), player.getEntityWorld())).down().west(), state);
+        sendBlockPacket(player, new BlockPos(Functions.getPosOnGround(new BlockPos(claim.max.getX(), 256, claim.max.getZ()), player.getEntityWorld())).down().west(), state);
+    }
+
     private static void sendBlockPacket(ServerPlayerEntity player, BlockPos pos, BlockState state) {
         BlockUpdateS2CPacket packet =  new BlockUpdateS2CPacket(player.world, pos);
         if (state != null) ((BlockUpdatePacketMixin)packet).setState(state);
@@ -1091,7 +1073,7 @@ public class ClaimCommand {
         sub = sub.add(1, Config.claims2d ? 0 : 1,1);
         int subInt = sub.getX() * (Config.claims2d ? 1 : sub.getY()) * sub.getZ();
 
-        Claim claim = new Claim(name, admin ? null : ownerID, min, max, owner.getWorld().getDimension().getType(), owner.getPlayer().getBlockPos());
+        Claim claim = new Claim(name, admin ? null : ownerID, min, max, owner.getWorld().getDimension().getType(), owner.getPlayer().getBlockPos(), false);
         if (cOwnerName != null) claim.customOwnerName = cOwnerName;
         claim.permissionManager.playerPermissions.put(ownerID, new Claim.InvertedPermissionMap());
         if (!ClaimManager.INSTANCE.claimsByName.containsKey(name)) {
@@ -1156,14 +1138,28 @@ public class ClaimCommand {
                 return 0;
             }
         }
-        ClaimManager.INSTANCE.releaseBlocksToOwner(claim);
-        ClaimManager.INSTANCE.claimsByName.remove(claim.name);
+        if(!claim.isChild){
+            ClaimManager.INSTANCE.releaseBlocksToOwner(claim);
+            ClaimManager.INSTANCE.claimsByName.remove(claim.name);
+            for(Claim subzone : claim.children){
+                ClaimManager.INSTANCE.claimsByName.remove(subzone.name);
+            }
+        }else{
+            System.out.println("Parent subzones " + ClaimManager.INSTANCE.claimsByName.remove(claim.name).children.size());
+                System.out.println("Deleted claim " + ClaimManager.INSTANCE.claimsByName.remove(claim.name).name);
+            ClaimManager.INSTANCE.claimsByName.remove(claim.name);
+            System.out.println("Parent claim " + claim.getParentClaim(claim).name);
+            claim.removeSubzone(claim.getParentClaim(claim));
+            System.out.println("Parent subzones2 " + ClaimManager.INSTANCE.claimsByName.remove(claim.name).children.size());
+        }
         sender.getWorld().getPlayers().forEach(playerEntity -> {
             if (((ClaimShower)playerEntity).getShownClaim() != null && ((ClaimShower)playerEntity).getShownClaim().name.equals(claim.name)) silentHideShow(playerEntity, claim, true, true);
         });
         sender.sendFeedback(new LiteralText("Deleted the claim \"" + claim.name + "\"").formatted(Formatting.GREEN), !claim.permissionManager.hasPermission(sender.getPlayer().getGameProfile().getId(), Claim.Permission.REMOVE_CLAIM));
         return 0;
     }
+
+
     private static int requestTransfer(ServerCommandSource sender, Claim claim, ServerPlayerEntity player, boolean admin) throws CommandSyntaxException {
         if (claim == null) {
             sender.sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
@@ -1235,9 +1231,9 @@ public class ClaimCommand {
     private static boolean hasPermission(Claim claim, ServerPlayerEntity exception, Claim.Permission permission) {
         return claim.permissionManager.hasPermission(exception.getGameProfile().getId(), permission);
     }
-    private static boolean hasPermission(Claim claim, String exception, Claim.Permission permission) {
-        return claim.permissionManager.hasPermission(exception, permission);
-    }
+//    private static boolean hasPermission(Claim claim, String exception, Claim.Permission permission) {
+//        return claim.permissionManager.hasPermission(exception, permission);
+//    }
     private static Direction directionByName(String name) {
         for (Direction direction : Direction.values()) {
             if (name.equals(direction.getName())) return direction;
@@ -1350,6 +1346,26 @@ public class ClaimCommand {
         return new LiteralText("").append(new LiteralText("* " + title + ": ").formatted(Formatting.YELLOW))
                 .append(text).append("\n");
     }
+
+    private static ArrayList<Claim> getClaims(){
+        ArrayList<Claim> claims = new ArrayList<>();
+        ClaimManager.INSTANCE.claimsByName.forEach((s, claim) -> {
+            claims.add(claim);
+        });
+        return claims;
+    }
+
+    private static int listall(ServerCommandSource source){
+        List<Claim> claims = getClaims();
+        Text text = new LiteralText("\n").append(new LiteralText("Claims").formatted(Formatting.GOLD)).append("\n ");
+        for (Claim claim : claims) {
+            Text cText = new LiteralText(claim.name).formatted(Formatting.GOLD);
+            text.append(cText.append(" "));
+        }
+        source.sendFeedback(text.append("\n"), false);
+        return 1;
+    }
+
     private static int list(ServerCommandSource source, String target) throws CommandSyntaxException {
         ServerPlayerEntity player = source.getPlayer();
         GameProfile profile = target == null ? player.getGameProfile() : source.getMinecraftServer().getUserCache().findByName(target);
@@ -1369,13 +1385,23 @@ public class ClaimCommand {
         Text text = new LiteralText("\n").append(new LiteralText("Claims (" + target + "): ").formatted(Formatting.GOLD)).append("\n ");
         boolean nextColor = false;
         for (Claim claim : claims) {
-            Text cText = new LiteralText(claim.name).formatted(nextColor ? Formatting.YELLOW : Formatting.GOLD).styled((style) -> {
-                style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Click for more Info").formatted(Formatting.GREEN)));
-                style.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/claim info " + claim.name));
-            });
+            if(!claim.isChild) {
+                Text cText = new LiteralText(claim.name).formatted(nextColor ? Formatting.YELLOW : Formatting.GOLD).styled((style) -> {
+                    Text hoverText = new LiteralText("Click for more Info").formatted(Formatting.GREEN);
+                    if (claim.children.size() > 0) {
+                        hoverText.append("\n\nSubzones:");
+                        for (Claim subzone : claim.children) {
+                            hoverText.append("\n- " + subzone.name);
+                        }
+                    }
+                    style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText));
 
-            nextColor = !nextColor;
-            text.append(cText.append(" "));
+                    style.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/claim info " + claim.name));
+                });
+
+                nextColor = !nextColor;
+                text.append(cText.append(" "));
+            }
         }
 
         source.sendFeedback(text.append("\n"), false);

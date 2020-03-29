@@ -2,6 +2,7 @@ package io.github.indicode.fabric.itsmine.mixin;
 
 import com.mojang.brigadier.CommandDispatcher;
 import io.github.indicode.fabric.itsmine.ClaimCommand;
+import io.github.indicode.fabric.itsmine.SubzoneCommand;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import org.spongepowered.asm.mixin.Mixin;

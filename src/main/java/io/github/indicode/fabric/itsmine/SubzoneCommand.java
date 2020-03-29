@@ -15,6 +15,7 @@ import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
 
+import java.text.Format;
 import java.util.UUID;
 
 public class SubzoneCommand {
@@ -33,7 +34,7 @@ public class SubzoneCommand {
                     .executes(ctx -> addZone(ctx.getSource(), StringArgumentType.getString(ctx, "name"), StringArgumentType.getString(ctx, "claim"), admin));
 
             name.then(claim);
-            builder.then(name);
+            add.then(name);
             builder.then(add);
         }
 
@@ -58,12 +59,25 @@ public class SubzoneCommand {
         } else if (selectedPositions.getRight() == null) {
             source.sendFeedback(new LiteralText("You need to specify block positions or select position #2(Left Click) with a stick.").formatted(Formatting.RED), false);
         } else {
-            subZone = createSubzone(source, name, selectedPositions.getLeft(), selectedPositions.getRight(), admin);
-            if (subZone != null) {
-                ClaimManager.INSTANCE.stickPositions.remove(player);
-
-
-                return 1;
+                name = claim.name + "." + name;
+                subZone = createSubzone(source, name, selectedPositions.getLeft(), selectedPositions.getRight(), admin);
+            if (subZone.dimension == claim.dimension && claim.includesPosition(subZone.min) && claim.includesPosition(subZone.max) && !claim.isChild){
+                if (!ClaimManager.INSTANCE.wouldSubzoneIntersect((subZone))){
+                    claim.addSubzone(subZone);
+                    ClaimManager.INSTANCE.addClaim(subZone);
+                    subZone.permissionManager = claim.permissionManager;
+//                    subZone.permissionManager.playerPermissions.put(subZone.claimBlockOwner, new Claim.InvertedPermissionMap());
+                    source.sendFeedback(new LiteralText("").append(new LiteralText("Your subzone was created.").formatted(Formatting.GREEN)), false);
+                }else{
+                    player.sendMessage(new LiteralText("Your subzone would overlap with another subzone").formatted(Formatting.RED));
+                }
+                if (subZone != null) {
+                    ClaimManager.INSTANCE.stickPositions.remove(player);
+                    return 1;
+                }
+                return 0;
+            }else{
+                player.sendMessage(new LiteralText("Subzone must be inside the original claim, in the same dimension").formatted(Formatting.RED));
             }
         }
 
@@ -100,9 +114,7 @@ public class SubzoneCommand {
         BlockPos max = new BlockPos(mx, my, mz);
         BlockPos sub = max.subtract(min);
         sub = sub.add(1, Config.claims2d ? 0 : 1,1);
-
-        source.sendFeedback(new LiteralText("").append(new LiteralText("Your claim was created").formatted(Formatting.GREEN)).append(new LiteralText("(Area: " + sub.getX() + "x" + sub.getY() + "x" + sub.getZ() + ")").setStyle(new Style().setColor(Formatting.GREEN))), false);
-        return new Claim(name, admin ? null : ownerID, min, max, source.getWorld().getDimension().getType(), source.getPlayer().getBlockPos());
+        return new Claim(name, admin ? null : ownerID, min, max, source.getWorld().getDimension().getType(), source.getPlayer().getBlockPos(), true);
     }
 
     private static Claim validateAndGet(ServerCommandSource source, @Nullable String  claimName) throws CommandSyntaxException {

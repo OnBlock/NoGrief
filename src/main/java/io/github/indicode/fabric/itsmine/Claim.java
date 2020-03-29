@@ -9,6 +9,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.world.dimension.DimensionType;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static io.github.indicode.fabric.itsmine.NBTUtil.*;
 
@@ -33,24 +34,25 @@ public class Claim {
         fromTag(tag);
     }
     public Claim(String name, UUID claimBlockOwner, BlockPos min, BlockPos max, DimensionType dimension) {
-        this(name, claimBlockOwner, min, max, dimension, null);
+        this(name, claimBlockOwner, min, max, dimension, null, false);
     }
-    public Claim(String name, UUID claimBlockOwner, BlockPos min, BlockPos max, DimensionType dimension, @Nullable BlockPos tpPos) {
+    public Claim(String name, UUID claimBlockOwner, BlockPos min, BlockPos max, DimensionType dimension, @Nullable BlockPos tpPo, boolean isChild) {
         this.claimBlockOwner = claimBlockOwner;
         this.min = min;
         this.max = max;
         this.name = name;
         this.dimension = dimension;
         this.tpPos = tpPos;
+        this.isChild = isChild;
     }
     public boolean includesPosition(BlockPos pos) {
         return pos.getX() >= min.getX() && pos.getY() >= min.getY() && pos.getZ() >= min.getZ() &&
                 pos.getX() <= max.getX() && pos.getY() <= max.getY() && pos.getZ() <= max.getZ();
     }
     public boolean intersects(Claim claim) {
-        return intersects(claim, true);
+        return intersects(claim, true, false);
     }
-    public boolean intersects(Claim claim, boolean checkOther) {
+    public boolean intersects(Claim claim, boolean checkOther, boolean checkforsubzone) {
         if (claim == null) return false;
         if (!claim.dimension.equals(dimension)) return false;
         BlockPos a = min,
@@ -61,17 +63,25 @@ public class Claim {
                 f = new BlockPos(max.getX(), max.getY(), min.getZ()),
                 g = new BlockPos(max.getX(), min.getY(), max.getZ()),
                 h = new BlockPos(min.getX(), max.getY(), max.getZ());
-        if (
-                claim.includesPosition(a) ||
-                claim.includesPosition(b) ||
-                claim.includesPosition(c) ||
-                claim.includesPosition(d) ||
-                claim.includesPosition(e) ||
-                claim.includesPosition(f) ||
-                claim.includesPosition(g) ||
-                claim.includesPosition(h)
-        ) return true;
-        else return checkOther && claim.intersects(this, false);
+        if(claim.isChild && checkforsubzone || !claim.isChild && !checkforsubzone){
+            if(
+            claim.includesPosition(a) ||
+            claim.includesPosition(b) ||
+            claim.includesPosition(c) ||
+            claim.includesPosition(d) ||
+            claim.includesPosition(e) ||
+            claim.includesPosition(f) ||
+            claim.includesPosition(g) ||
+            claim.includesPosition(h)
+            ) {
+                return true;
+            }
+            //If the claim is a subzone and checking for subzone is disabled or if the claim isnt a subzone and checking is enabled, instantly return false
+        }else if (claim.isChild && !checkforsubzone || !claim.isChild && checkforsubzone) {
+            return false;
+        }
+        else return checkOther && claim.intersects(this, false, checkforsubzone);
+        return false;
     }
     @Nullable
     public Claim getZoneCovering(BlockPos pos) {
@@ -107,10 +117,29 @@ public class Claim {
     //    return player.equals(owner) || ClaimManager.INSTANCE.ignoringClaims.contains(player) || getPermissionsAt(player, pos).hasPermission(permission);
     //}
     public void addSubzone(Claim claim) {
-        if (claim != null && claim.dimension == dimension && includesPosition(claim.min) && includesPosition(claim.max)) {
-            children.add(claim);
-        } else throw new IllegalArgumentException("Subzone must be inside the original claim, in the same dimension, and not null");
+        children.add(claim);
     }
+
+    public void removeSubzone(Claim claim) {
+        children.remove(claim);
+    }
+
+    @Nullable
+    AtomicReference<Claim> atomic = new AtomicReference<>();
+    public Claim getParentClaim(Claim subzone){
+        if(subzone.isChild){
+            ClaimManager.INSTANCE.claimsByName.forEach((name, claim) -> {
+                for(Claim subzone2 : claim.children){
+                    if(subzone2 == subzone){
+                        atomic.set(claim);
+                    }
+                }
+            });
+            return atomic.get();
+        }
+        return null;
+    }
+
     public void expand(BlockPos min, BlockPos max) {
         this.min = this.min.add(min);
         this.max = this.max.add(max);
@@ -180,9 +209,11 @@ public class Claim {
             tag.put("position", pos);
         }
         {
-            ListTag subzoneList = new ListTag();
-            children.forEach(it -> subzoneList.add(it.toTag()));
-            tag.put("subzones", subzoneList);
+            if(!isChild){
+                ListTag subzoneList = new ListTag();
+                children.forEach(it -> subzoneList.add(it.toTag()));
+                tag.put("subzones", subzoneList);
+            }
         }
         {
             tag.put("settings", settings.toTag());
@@ -220,14 +251,16 @@ public class Claim {
             this.dimension = DimensionType.byId(new Identifier(pos.getString("dimension")));
         }
         {
-            children = new ArrayList<>();
-            ListTag subzoneList = (ListTag) tag.get("subzones");
-            if (subzoneList != null) {
-                subzoneList.forEach(it -> {
-                    Claim claim = new Claim((CompoundTag) it);
-                    claim.isChild = true;
-                    children.add(claim);
-                });
+            if(!isChild){
+                children = new ArrayList<>();
+                ListTag subzoneList = (ListTag) tag.get("subzones");
+                if (subzoneList != null) {
+                    subzoneList.forEach(it -> {
+                        Claim claim = new Claim((CompoundTag) it);
+                        claim.isChild = true;
+                        children.add(claim);
+                    });
+                }
             }
         }
         {
@@ -317,13 +350,13 @@ public class Claim {
         public void resetPermissions(UUID player) {
             playerPermissions.remove(player);
         }
-        public boolean isPermissionSet(String group, Permission permission) {
-            return groupPermissions.get(group) != null && groupPermissions.get(group).isPermissionSet(permission);
-        }
-        public boolean hasPermission(String group, Permission permission) {
-            if (isPermissionSet(group, permission)) return groupPermissions.get(group).hasPermission(permission);
-            return defaults.hasPermission(permission);
-        }
+//        public boolean isPermissionSet(String group, Permission permission) {
+//            return groupPermissions.get(group) != null && groupPermissions.get(group).isPermissionSet(permission);
+//        }
+//        public boolean hasPermission(String group, Permission permission) {
+//            if (isPermissionSet(group, permission)) return groupPermissions.get(group).hasPermission(permission);
+//            return defaults.hasPermission(permission);
+//        }
         public void setPermission(String group, Permission permission, boolean enabled) {
             if (!groupPermissions.containsKey(group)) groupPermissions.put(group, new DefaultPermissionMap());
             groupPermissions.get(group).setPermission(permission, enabled);
