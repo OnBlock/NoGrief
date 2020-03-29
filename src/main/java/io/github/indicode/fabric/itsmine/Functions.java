@@ -3,7 +3,6 @@ package io.github.indicode.fabric.itsmine;
 import io.github.indicode.fabric.itsmine.mixin.BlockActionPacketMixin;
 import io.github.indicode.fabric.itsmine.mixin.BucketItemMixin;
 import io.github.indicode.fabric.itsmine.mixin.projectile.OwnedProjectile;
-import io.github.indicode.fabric.permissions.Thimble;
 import net.minecraft.block.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
