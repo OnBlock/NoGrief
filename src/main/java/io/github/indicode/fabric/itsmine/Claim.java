@@ -219,7 +219,6 @@ public class Claim {
             tag.put("settings", settings.toTag());
             tag.put("permissions", permissionManager.toNBT());
             if(claimBlockOwner != null) tag.putUuidNew("top_owner", claimBlockOwner);
-//            if (claimBlockOwner != null) tag.putUuidNew("top_owner", claimBlockOwner);
 
         }
         {

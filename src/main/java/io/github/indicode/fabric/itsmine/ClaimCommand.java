@@ -1145,12 +1145,8 @@ public class ClaimCommand {
                 ClaimManager.INSTANCE.claimsByName.remove(subzone.name);
             }
         }else{
-            System.out.println("Parent subzones " + ClaimManager.INSTANCE.claimsByName.remove(claim.name).children.size());
-                System.out.println("Deleted claim " + ClaimManager.INSTANCE.claimsByName.remove(claim.name).name);
+            claim.getParentClaim(claim).removeSubzone(claim);
             ClaimManager.INSTANCE.claimsByName.remove(claim.name);
-            System.out.println("Parent claim " + claim.getParentClaim(claim).name);
-            claim.removeSubzone(claim.getParentClaim(claim));
-            System.out.println("Parent subzones2 " + ClaimManager.INSTANCE.claimsByName.remove(claim.name).children.size());
         }
         sender.getWorld().getPlayers().forEach(playerEntity -> {
             if (((ClaimShower)playerEntity).getShownClaim() != null && ((ClaimShower)playerEntity).getShownClaim().name.equals(claim.name)) silentHideShow(playerEntity, claim, true, true);
