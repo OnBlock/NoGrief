@@ -32,7 +32,8 @@
     "EntityMixin",
     "EnderDragonEntityMixin",
     "FarmlandBlockMixin",
-    "BoatItemMixin"
+    "BoatItemMixin",
+    "LecternScreenHandlerMixin"
   ],
   "client": [
     "IntegratedServerMixin"

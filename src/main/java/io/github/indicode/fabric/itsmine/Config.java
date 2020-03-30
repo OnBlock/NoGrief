@@ -23,6 +23,7 @@ public class Config {
     public static String msg_cant_enter = "&c&lHey!&r&c Sorry but you don't have permission to enter this claim!";
     public static String msg_cant_use = "&c&lHey!&r&c Sorry but you can't to use that here!";
     public static String msg_long_name = "&cThe name of the Claim must be less than 30 characters!";
+    public static String msg_cant_do ="&c&lHey!&r&c Sorry but you can't do that!";
 
     public static int event_msg_stay_ticks = -1;
     private static ModConfig modConfig = new ModConfig("itsmine");
@@ -44,6 +45,7 @@ public class Config {
             msg_cant_enter = config.getString("msg.cant_enter", msg_cant_enter);
             msg_cant_use = config.getString("msg.cant_use", msg_cant_use);
             msg_long_name = config.getString("msg.long_name", msg_long_name);
+            msg_cant_do = config.getString("msg.cant_do", msg_cant_do);
             event_msg_stay_ticks = config.getInt("event.msg.stay_ticks", event_msg_stay_ticks, "Sets how many ticks an event message will stay on action bar, Default: -1");
         });
     }

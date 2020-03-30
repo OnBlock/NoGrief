@@ -37,6 +37,8 @@ public class Messages {
 
     public static final Text MSG_LONG_NAME = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_long_name)).formatted(Formatting.RED));
 
+    public static final Text MSG_CANT_DO = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_cant_do)).formatted(Formatting.RED));
+
     public static final Text[] GET_STARTED = new Text[]{
             header("How to Claim (Basics)")
                     .append(line(1, "Type &6/claim stick&e then Left click with a stick on a block to set the &6first&e corner of your claim"))

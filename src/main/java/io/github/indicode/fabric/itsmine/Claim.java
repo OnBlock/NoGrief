@@ -296,6 +296,7 @@ public class Claim {
         USE_LEVERS("use.levers", "Use Levers"),
         INTERACT_DOORS("interact_doors", "Use Doors"),
         INTERACT_ENTITY("interact_entity", "Entity Interaction"),
+        INTERACT_LECTERN("interact_lectern", "Lectern Interaction"),
         DAMAGE_ENTITY("damage_entities", "Hurt Entities"),
         DAMAGE_ENTITY_HOSTILE("damage_entities.hostile", "Hurt Hostile Entities"),
         DAMAGE_ENTITY_PASSIVE("damage_entities.passive", "Hurt Passive Entities"),
@@ -305,7 +306,9 @@ public class Claim {
         CONTAINER_CHEST("container.chest", "Open Chests"),
         CONTAINER_SHULKERBOX("container.shulkerbox", "Open Shulker Boxes"),
         USE_ENDER_PEARL("use.enderpearl", "Use Ender Pearls"),
-        USE_BUTTONS("use.button", "Use Buttons");
+        USE_BUTTONS("use.button", "Use Buttons"),
+        SPAWN_BOAT("spawn.boat", "Spawn Boats");
+
 
         String id, name;
         Permission(String id, String name) {
