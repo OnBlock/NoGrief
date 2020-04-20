@@ -1,7 +1,11 @@
 package io.github.indicode.fabric.itsmine;
 
 import blue.endless.jankson.annotation.Nullable;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -11,7 +15,7 @@ import net.minecraft.world.dimension.DimensionType;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static io.github.indicode.fabric.itsmine.NBTUtil.*;
+import static io.github.indicode.fabric.itsmine.util.NbtUtil.*;
 
 /**
  * @author Indigo Amann
@@ -24,6 +28,7 @@ public class Claim {
     public List<Claim> children = new ArrayList<>();
     public ClaimSettings settings = new ClaimSettings();
     public PermissionManager permissionManager = new PermissionManager();
+    public Rent rent = new Rent();
     public UUID claimBlockOwner = null;
     public String customOwnerName, enterMessage, leaveMessage;
     public boolean isChild = false;
@@ -49,9 +54,77 @@ public class Claim {
         return pos.getX() >= min.getX() && pos.getY() >= min.getY() && pos.getZ() >= min.getZ() &&
                 pos.getX() <= max.getX() && pos.getY() <= max.getY() && pos.getZ() <= max.getZ();
     }
+
+    public boolean isInside (Claim claim){
+        BlockPos a = min,
+                b = max,
+                c = new BlockPos(max.getX(), min.getY(), min.getZ()),
+                d = new BlockPos(min.getX(), max.getY(), min.getZ()),
+                e = new BlockPos(min.getX(), min.getY(), max.getZ()),
+                f = new BlockPos(max.getX(), max.getY(), min.getZ()),
+                g = new BlockPos(max.getX(), min.getY(), max.getZ()),
+                h = new BlockPos(min.getX(), max.getY(), max.getZ());
+            if(
+                            claim.includesPosition(a) &&
+                            claim.includesPosition(b) &&
+                            claim.includesPosition(c) &&
+                            claim.includesPosition(d) &&
+                            claim.includesPosition(e) &&
+                            claim.includesPosition(f) &&
+                            claim.includesPosition(g) &&
+                            claim.includesPosition(h)
+            ){
+                return true;
+            }
+            return false;
+    }
+
     public boolean intersects(Claim claim) {
         return intersects(claim, true, false);
     }
+
+    public int getEntities(ServerWorld world){
+        AtomicReference<Integer> entities = new AtomicReference<>();
+        entities.set(0);
+        MonitorableWorld monitorableWorld = (MonitorableWorld) world;
+        monitorableWorld.EntityList().forEach((uuid, entity) -> {
+            if(includesPosition(entity.getBlockPos())) {
+                entities.set(entities.get()+1);
+            }
+        });
+
+        return entities.get();
+    }
+
+    public Map<EntityType, Integer> getEntitySorted(Map<UUID, Entity> entityMap){
+        AtomicReference<Map<EntityType, Integer>> entityTypeMap = new AtomicReference<>(new HashMap<>());
+        entityMap.forEach((uuid, entity) -> {
+            if(entityTypeMap.get().containsKey(entity.getType())){
+                Map<EntityType, Integer> entityTypeIntegerMap = entityTypeMap.get();
+                entityTypeIntegerMap.put(entity.getType(), entityTypeIntegerMap.get(entity.getType())+1);
+                entityTypeMap.set(entityTypeIntegerMap);
+            } else {
+                Map<EntityType, Integer> entityTypeIntegerMap = entityTypeMap.get();
+                entityTypeIntegerMap.put(entity.getType(), 1);
+                entityTypeMap.set(entityTypeIntegerMap);
+            }
+        });
+        return Functions.sortByValue(entityTypeMap.get());
+    }
+
+    public Map<UUID, Entity> getEntityMap(Claim claim, ServerWorld world){
+        AtomicReference<Map<UUID, Entity>> entityMap = new AtomicReference<>(new HashMap<>());
+        MonitorableWorld monitorableWorld = (MonitorableWorld) world;
+        monitorableWorld.EntityList().forEach((uuid, entity) -> {
+            if(claim.includesPosition(entity.getBlockPos())) {
+                Map<UUID, Entity> entityList = entityMap.get();
+                entityList.put(uuid, entity);
+                entityMap.set(entityList);
+            }
+        });
+        return entityMap.get();
+    }
+
     public boolean intersects(Claim claim, boolean checkOther, boolean checkforsubzone) {
         if (claim == null) return false;
         if (!claim.dimension.equals(dimension)) return false;
@@ -98,24 +171,11 @@ public class Claim {
 
         return null;
     }
-    /*public ClaimSettings getSettingsAt(BlockPos pos) {
-        Claim at = getZoneCovering(pos);
-        if (at != null) {
-            return at.settings;
-        } else return settings;
-    }
-    public ClaimPermissions getPermissionsAt(UUID player, BlockPos pos) {
-        Claim at = getZoneCovering(pos);
-        if (at != null) {
-            return at.getPlayerPermissions(player);
-        } else return settings;
-    }*/
+
     public boolean hasPermission(UUID player, Permission permission) {
         return ClaimManager.INSTANCE.ignoringClaims.contains(player) || permissionManager.hasPermission(player, permission);
     }
-    //public boolean hasPermissionAt(UUID player, ClaimPermissions.Permission permission, BlockPos pos) {
-    //    return player.equals(owner) || ClaimManager.INSTANCE.ignoringClaims.contains(player) || getPermissionsAt(player, pos).hasPermission(permission);
-    //}
+
     public void addSubzone(Claim claim) {
         children.add(claim);
     }
@@ -124,66 +184,72 @@ public class Claim {
         children.remove(claim);
     }
 
-    @Nullable
-    AtomicReference<Claim> atomic = new AtomicReference<>();
-    public Claim getParentClaim(Claim subzone){
-        if(subzone.isChild){
-            ClaimManager.INSTANCE.claimsByName.forEach((name, claim) -> {
-                for(Claim subzone2 : claim.children){
-                    if(subzone2 == subzone){
-                        atomic.set(claim);
-                    }
-                }
-            });
-            return atomic.get();
-        }
-        return null;
-    }
-
-    public void expand(BlockPos min, BlockPos max) {
-        this.min = this.min.add(min);
-        this.max = this.max.add(max);
-    }
     public BlockPos getSize() {
         return max.subtract(min);
     }
+
     public void expand(BlockPos modifier) {
-        if (modifier.getX() > 0) max = max.add(modifier.getX(), 0, 0);
-        else min = min.add(modifier.getX(), 0, 0);
-        if (modifier.getY() > 0) max = max.add(0, modifier.getY(), 0);
-        else min = min.add(0, modifier.getY(), 0);
-        if (modifier.getZ() > 0) max = max.add(0, 0, modifier.getZ());
-        else min = min.add(0, 0, modifier.getZ());
+        if (modifier.getX() > 0) {
+            max = max.add(modifier.getX(), 0, 0);
+        }
+        else {
+            min = min.add(modifier.getX(), 0, 0);
+        }
+        if (modifier.getY() > 0) {
+            max = max.add(0, modifier.getY(), 0);
+        }
+        else {
+            min = min.add(0, modifier.getY(), 0);
+        }
+        if (modifier.getZ() > 0) {
+            max = max.add(0, 0, modifier.getZ());
+        }
+        else {
+            min = min.add(0, 0, modifier.getZ());
+        }
     }
-    public boolean shrink(BlockPos modifier) {
+    public void shrink(BlockPos modifier) {
         if (modifier.getX() < 0) {
-            if (min.getX() - modifier.getX() > max.getX()) return false;
             min = min.add(-modifier.getX(), 0, 0);
         } else {
-            if (max.getX() - modifier.getX() < min.getX()) return false;
             max = max.add(-modifier.getX(), 0, 0);
         }
         if (modifier.getY() < 0) {
-            if (min.getY() - modifier.getY() > max.getY()) return false;
             min = min.add(0, -modifier.getY(), 0);
         } else {
-            if (max.getY() - modifier.getY() < min.getY()) return false;
             max = max.add(0, -modifier.getY(), 0);
         }
         if (modifier.getZ() < 0) {
-            if (min.getZ() - modifier.getZ() > max.getZ()) return false;
             min = min.add(0, 0, -modifier.getZ());
         } else {
-            if (max.getZ() - modifier.getZ() < min.getZ()) return false;
             max = max.add(0, 0, -modifier.getZ());
+        }
+    }
+
+    public boolean canShrinkWithoutHittingOtherSide(BlockPos modifier){
+        if (modifier.getX() < 0) {
+            if (min.getX() - modifier.getX() > max.getX()) return false;
+        } else {
+            if (max.getX() - modifier.getX() < min.getX()) return false;
+        }
+        if (modifier.getY() < 0) {
+            if (min.getY() - modifier.getY() > max.getY()) return false;
+        } else {
+            if (max.getY() - modifier.getY() < min.getY()) return false;
+        }
+        if (modifier.getZ() < 0) {
+            if (min.getZ() - modifier.getZ() > max.getZ()) return false;
+        } else {
+            if (max.getZ() - modifier.getZ() < min.getZ()) return false;
         }
         return true;
     }
+
     public void expand(Direction direction, int distance) {
         expand(new BlockPos(direction.getOffsetX() * distance, direction.getOffsetY() * distance, direction.getOffsetZ() * distance));
     }
-    public boolean shrink(Direction direction, int distance) {
-        return shrink(new BlockPos(direction.getOffsetX() * distance, direction.getOffsetY() * distance, direction.getOffsetZ() * distance));
+    public void shrink(Direction direction, int distance) {
+        shrink(new BlockPos(direction.getOffsetX() * distance, direction.getOffsetY() * distance, direction.getOffsetZ() * distance));
     }
     public int getArea() {
         return getSize().getX() * (Config.claims2d ? 1 : getSize().getY()) * getSize().getZ();
@@ -214,6 +280,42 @@ public class Claim {
                 children.forEach(it -> subzoneList.add(it.toTag()));
                 tag.put("subzones", subzoneList);
             }
+        }
+        {
+            CompoundTag rent1 = new CompoundTag();
+            {
+                CompoundTag rented = new CompoundTag();
+                if(rent.getTenant() != null) rented.putUuidNew("tenant", rent.getTenant());
+                if(rent.getRentedUntil() != 0) rented.putInt("rentedUntil", rent.getRentedUntil());
+
+                {
+                    if(rent.getRevenue() != null){
+                        CompoundTag revenue = new CompoundTag();
+                        int i = 0;
+                        for(ItemStack itemStack : rent.getRevenue()){
+                            CompoundTag revenueTag = new CompoundTag();
+                            itemStack.toTag(revenueTag);
+                            i++;
+                            revenue.put(String.valueOf(i), revenueTag);
+                            rent1.put("revenue", revenue);
+                        }
+                    }
+                }
+                rent1.put("rented", rented);
+            }
+            {
+                CompoundTag rentable = new CompoundTag();
+                rentable.putBoolean("rentable", rent.isRentable());
+                CompoundTag currency = new CompoundTag();
+                if(rent.getCurrency() != ItemStack.EMPTY) rent.getCurrency().toTag(currency);
+                if(rent.getRentAbleTime() != 0) rentable.putInt("rentTime", rent.getRentAbleTime());
+                if(rent.getMaxrentAbleTime() != 0) rentable.putInt("maxrentTime", rent.getMaxrentAbleTime());
+
+                rent1.put("rentable", rentable);
+                rentable.put("currency", currency);
+            }
+            tag.put("rent", rent1);
+
         }
         {
             tag.put("settings", settings.toTag());
@@ -263,6 +365,31 @@ public class Claim {
             }
         }
         {
+            CompoundTag rent1 = tag.getCompound("rent");
+            {
+                CompoundTag rented = rent1.getCompound("rented");
+                if (containsUUID(rented, "tenant")) rent.setTenant(getUUID(rented,"tenant"));
+                if(rented.contains("rentedUntil")) rent.setRentedUntil(rented.getInt("rentedUntil"));
+            }
+            {
+                CompoundTag rentable = rent1.getCompound("rentable");
+                CompoundTag currency = rentable.getCompound("currency");
+                if(rentable.contains("rentable")) rent.setRentable(rentable.getBoolean("rentable"));
+                if(currency != null) rent.setCurrency(ItemStack.fromTag(currency));
+                if(rentable.contains("rentTime")) rent.setRentAbleTime(rentable.getInt("rentTime"));
+                if(rentable.contains("maxrentTime")) rent.setMaxrentAbleTime(rentable.getInt("maxrentTime"));
+            }
+            {
+                CompoundTag revenue = rent1.getCompound("revenue");
+                if(!revenue.isEmpty()){
+                 for(int i = 1; i <= revenue.getSize(); i++){
+                     CompoundTag revenueTag = revenue.getCompound(String.valueOf(i));
+                     rent.addRevenue(ItemStack.fromTag(revenueTag));
+                 }
+                }
+            }
+        }
+        {
             this.settings = new ClaimSettings(tag.getCompound("settings"));
             permissionManager = new PermissionManager();
             permissionManager.fromNBT(tag.getCompound("permissions"));
@@ -282,6 +409,12 @@ public class Claim {
         return min.getY() == 0 && max.getY() == 255;
     }
 
+    public void endRent(){
+        permissionManager.playerPermissions.put(rent.getTenant(), new Claim.DefaultPermissionMap());
+        rent.setRentedUntil(0);
+        rent.setTenant(null);
+    }
+
     public enum Permission {
         //Admin
         REMOVE_CLAIM("remove_claim", "Remove Claim"),
@@ -290,6 +423,8 @@ public class Claim {
         MODIFY_PERMISSIONS("modify.permissions", "Change Permissions"),
         //Normal
         MODIFY_PROPERTIES("modify.properties", "Modify Claim Properties"),
+        MODIFY_SUBZONE("modify.subzone", "Add subzones"),
+        MOVE("move", "Move inside claim"),
         BUILD("build", "Place/Break Blocks"),
         INTERACT_BLOCKS("interact_blocks", "Interact With Blocks"),
         USE_ITEMS_ON_BLOCKS("use_items_on_blocks", "Use Block Modifying items"),
@@ -310,7 +445,8 @@ public class Claim {
         SPAWN_BOAT("spawn.boat", "Spawn Boats");
 
 
-        String id, name;
+        public String id;
+        public String name;
         Permission(String id, String name) {
             this.id = id;
             this.name =  name;
@@ -322,10 +458,92 @@ public class Claim {
             return null;
         }
     }
+
+    public class Rent {
+
+        public UUID tenant = null;
+        public boolean rentable = false;
+
+        public int rentTime = 0;
+        public int maxrentTime = 0;
+        public ArrayList<ItemStack> revenue = new ArrayList<>();
+
+
+        public ArrayList<ItemStack> getRevenue() {
+            return revenue;
+        }
+
+        public void addRevenue(ItemStack revenue) {
+            this.revenue.add(revenue);
+        }
+
+        public void clearRevenue() {
+            revenue.clear();
+        }
+
+        //Payement
+        public ItemStack currency = ItemStack.EMPTY;
+
+        public int rentedUntil = 0;
+
+        public void setRentTime(int rentTime) { this.rentTime = rentTime; }
+
+        //Max rent time
+        public int getMaxrentAbleTime() { return maxrentTime; }
+        public boolean isRented() { return rentedUntil != 0; }
+
+        public void setMaxrentAbleTime(int maxrentTime) { this.maxrentTime = maxrentTime; }
+
+        public int getRentedUntil() {
+            return rentedUntil;
+        }
+
+        public void setRentedUntil(int rentedUntil) {
+            this.rentedUntil = rentedUntil;
+        }
+
+        public int getRentTimeLeft(){
+            return rentedUntil - getUnixTime();
+        }
+
+        public int getRentAbleTime() { return rentTime; }
+
+        public void setRentAbleTime(int rentTime) { this.rentTime = rentTime; }
+
+        //Returns seconds passed (Unix time)
+        public int getUnixTime(){
+            return (int) (System.currentTimeMillis() / 1000);
+        }
+
+        public void addRentTimeLeft(int rent){
+            rentedUntil = rentedUntil + rent;
+        }
+
+        public void removeRentTimeLeft(int rent){ addRentTimeLeft(-rent); }
+
+        public void setRentTimeLeft(int time) { rentedUntil = getUnixTime() + time; }
+
+        public UUID getTenant() { return tenant; }
+
+        public void setTenant(UUID tenant) { this.tenant = tenant; }
+
+        public boolean isRentable() { return rentable; }
+
+        public void setRentable(boolean rentable) { this.rentable = rentable; }
+
+        public int getAmount() { return currency.getCount(); }
+
+        public void setAmount(int amount) { currency.setCount(amount); }
+
+        public ItemStack getCurrency() { return currency; }
+
+        public void setCurrency(ItemStack currency) { this.currency = currency; }
+    }
+
     public static class PermissionManager {
         public ClaimPermissionMap defaults = new DefaultPermissionMap();
-        protected Map<UUID, ClaimPermissionMap> playerPermissions = new HashMap<>();
-        protected Map<String, ClaimPermissionMap> groupPermissions = new HashMap<>();
+        public Map<UUID, ClaimPermissionMap> playerPermissions = new HashMap<>();
+        public Map<String, ClaimPermissionMap> groupPermissions = new HashMap<>();
         public boolean isPermissionSet(UUID player, Permission permission) {
             return playerPermissions.get(player) != null && playerPermissions.get(player).isPermissionSet(permission);
         }
@@ -534,7 +752,7 @@ public class Claim {
             ENTER_SOUND("enter_sound", "Enter Sound", false),
             BREAK_FARMLANDS("break_farmlands", "Break Farmlands", false);
 
-            String id, name;
+            public String id, name;
             boolean defaultValue;
             Setting(String id, String name, boolean defaultValue) {
                 this.id = id;
@@ -577,7 +795,7 @@ public class Claim {
         ENTER_CLAIM("enter", Config.msg_enter_default),
         LEAVE_CLAIM("leave", Config.msg_leave_default);
 
-        String id;
+        public String id;
         String defaultValue;
         Event(String id, String defaultValue) {
             this.id = id;
@@ -601,9 +819,9 @@ public class Claim {
         COMMAND("commands", Messages.HELP, "Claim Commands"),
         PERMS_AND_SETTINGS("perms_and_settings", Messages.SETTINGS_AND_PERMISSIONS, "Claim Permissions and Settings");
 
-        String id;
-        String title;
-        Text[] texts;
+        public String id;
+        public String title;
+        public Text[] texts;
         HelpBook(String id, Text[] texts, String title) {
             this.id = id;
             this.title = title;

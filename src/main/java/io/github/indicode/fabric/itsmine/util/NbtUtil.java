@@ -1,11 +1,11 @@
-package io.github.indicode.fabric.itsmine;
+package io.github.indicode.fabric.itsmine.util;
 
 
 import net.minecraft.nbt.CompoundTag;
 
 import java.util.UUID;
 
-public class NBTUtil {
+public class NbtUtil {
 
     public static UUID getUUID(CompoundTag tag, String key){
         if (tag.contains(key + "Least") && tag.contains(key + "Most")) {

@@ -1,56 +1,68 @@
-package io.github.indicode.fabric.itsmine;
+package io.github.indicode.fabric.itsmine.command.subzone;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import io.github.indicode.fabric.itsmine.Claim;
+import io.github.indicode.fabric.itsmine.ClaimManager;
+import io.github.indicode.fabric.itsmine.Config;
+import io.github.indicode.fabric.itsmine.Messages;
+import io.github.indicode.fabric.itsmine.util.ArgumentUtil;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
-import net.minecraft.text.Style;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
 
-import java.text.Format;
 import java.util.UUID;
 
-public class SubzoneCommand {
-    private static final String SUB_ZONE_NAME_FORMAT = "%s.%s";
+import static io.github.indicode.fabric.itsmine.command.ShowCommand.executeShowClaim;
 
-    public static void register(LiteralArgumentBuilder<ServerCommandSource> command, boolean admin) {
-        LiteralArgumentBuilder<ServerCommandSource> builder = CommandManager.literal("subzone");
+public class CreateCommand {
+
+    public static void register(LiteralArgumentBuilder<ServerCommandSource> command) {
         {
-            LiteralArgumentBuilder<ServerCommandSource> add = CommandManager.literal("add");
+            LiteralArgumentBuilder<ServerCommandSource> create = CommandManager.literal("create");
 
             RequiredArgumentBuilder<ServerCommandSource, String> name = CommandManager.argument("name", StringArgumentType.word())
-                    .executes(ctx -> addZone(ctx.getSource(), StringArgumentType.getString(ctx, "name"), null, admin));
+                    .executes(ctx -> addZone(ctx.getSource(), StringArgumentType.getString(ctx, "name"), null, false));
 
-            RequiredArgumentBuilder<ServerCommandSource, String> claim = CommandManager.argument("claim", StringArgumentType.word())
-                    .suggests(ClaimCommand.CLAIM_PROVIDER)
-                    .executes(ctx -> addZone(ctx.getSource(), StringArgumentType.getString(ctx, "name"), StringArgumentType.getString(ctx, "claim"), admin));
+            RequiredArgumentBuilder<ServerCommandSource, String> claim = ArgumentUtil.getClaims()
+                    .executes(ctx -> addZone(ctx.getSource(), StringArgumentType.getString(ctx, "name"), StringArgumentType.getString(ctx, "claim"), false));
 
             name.then(claim);
-            add.then(name);
-            builder.then(add);
+            create.then(name);
+            command.then(create);
         }
-
-        command.then(builder);
     }
 
     private static int addZone(ServerCommandSource source, String name, @Nullable String claimName, boolean admin) throws CommandSyntaxException {
-        if (name.length() > ClaimCommand.MAX_NAME_LENGTH) {
+        if (name.length() > 30) {
             source.sendError(Messages.MSG_LONG_NAME);
             return -1;
         }
 
         ServerPlayerEntity player = source.getPlayer();
-        Claim claim = validateAndGet(source, claimName);
+        Claim claim = validateAndGet(source, claimName, admin);
         Claim subZone = null;
 
+        if (!admin && !claim.permissionManager.hasPermission(player.getGameProfile().getId(), Claim.Permission.MODIFY_SUBZONE)) {
+            throw new SimpleCommandExceptionType(Messages.NO_PERMISSION).create();
+        }
+        if(!name.matches("[A-Za-z0-9]+")){
+            source.sendError(new LiteralText("Invalid claim name"));
+            return -1;
+        }
+
+        if (ClaimManager.INSTANCE.claimsByName.containsKey(name)) {
+            source.sendFeedback(new LiteralText("The name \"" + name + "\" is already taken.").formatted(Formatting.RED), false);
+            return -1;
+        }
         Pair<BlockPos, BlockPos> selectedPositions = ClaimManager.INSTANCE.stickPositions.get(player);
         if (selectedPositions == null) {
             source.sendFeedback(new LiteralText("You need to specify block positions or select them with a stick.").formatted(Formatting.RED), false);
@@ -59,14 +71,14 @@ public class SubzoneCommand {
         } else if (selectedPositions.getRight() == null) {
             source.sendFeedback(new LiteralText("You need to specify block positions or select position #2(Left Click) with a stick.").formatted(Formatting.RED), false);
         } else {
-                name = claim.name + "." + name;
-                subZone = createSubzone(source, name, selectedPositions.getLeft(), selectedPositions.getRight(), admin);
+            name = claim.name + "." + name;
+            subZone = createSubzone(source, name, selectedPositions.getLeft(), selectedPositions.getRight(), admin);
             if (subZone.dimension == claim.dimension && claim.includesPosition(subZone.min) && claim.includesPosition(subZone.max) && !claim.isChild){
                 if (!ClaimManager.INSTANCE.wouldSubzoneIntersect((subZone))){
                     claim.addSubzone(subZone);
                     ClaimManager.INSTANCE.addClaim(subZone);
                     subZone.permissionManager = claim.permissionManager;
-//                    subZone.permissionManager.playerPermissions.put(subZone.claimBlockOwner, new Claim.InvertedPermissionMap());
+                    executeShowClaim(source, claim, false);
                     source.sendFeedback(new LiteralText("").append(new LiteralText("Your subzone was created.").formatted(Formatting.GREEN)), false);
                 }else{
                     player.sendMessage(new LiteralText("Your subzone would overlap with another subzone").formatted(Formatting.RED));
@@ -80,7 +92,6 @@ public class SubzoneCommand {
                 player.sendMessage(new LiteralText("Subzone must be inside the original claim, in the same dimension").formatted(Formatting.RED));
             }
         }
-
         return 0;
     }
 
@@ -117,7 +128,7 @@ public class SubzoneCommand {
         return new Claim(name, admin ? null : ownerID, min, max, source.getWorld().getDimension().getType(), source.getPlayer().getBlockPos(), true);
     }
 
-    private static Claim validateAndGet(ServerCommandSource source, @Nullable String  claimName) throws CommandSyntaxException {
+    private static Claim validateAndGet(ServerCommandSource source, @Nullable String  claimName, boolean admin) throws CommandSyntaxException {
         ServerPlayerEntity player = source.getPlayer();
         Claim claim = claimName == null ? ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.dimension) :
                 ClaimManager.INSTANCE.claimsByName.get(claimName);
@@ -125,8 +136,10 @@ public class SubzoneCommand {
         if (claim == null) {
             throw new SimpleCommandExceptionType(Messages.INVALID_CLAIM).create();
         }
+        if (!admin && !claim.permissionManager.hasPermission(player.getGameProfile().getId(), Claim.Permission.MODIFY_SUBZONE)) {
+            throw new SimpleCommandExceptionType(Messages.NO_PERMISSION).create();
+        }
 
         return claim;
     }
-
 }

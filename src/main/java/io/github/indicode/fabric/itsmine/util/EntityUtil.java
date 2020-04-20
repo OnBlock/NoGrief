@@ -1,10 +1,11 @@
-package io.github.indicode.fabric.itsmine;
+package io.github.indicode.fabric.itsmine.util;
 
+import io.github.indicode.fabric.itsmine.Claim;
 import net.minecraft.entity.Entity;
 
 import java.util.UUID;
 
-public class EntityUtils {
+public class EntityUtil {
 
     public static boolean canAttack(UUID player, Claim claim, Entity entity) {
         return claim.hasPermission(player, Claim.Permission.DAMAGE_ENTITY) ||
@@ -19,4 +20,7 @@ public class EntityUtils {
     public static boolean isHostile(Entity entity) {
         return !isPassive(entity);
     }
+
+
+
 }

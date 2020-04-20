@@ -1,6 +1,7 @@
 package io.github.indicode.fabric.itsmine.mixin;
 
 import io.github.indicode.fabric.itsmine.*;
+import io.github.indicode.fabric.itsmine.util.ClaimUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.s2c.play.PlaySoundIdS2CPacket;
@@ -107,7 +108,7 @@ public abstract class EntityMixin {
 
                     World world = player.getEntityWorld();
                     if (world.getBlockState(player.getBlockPos().down(5)).isAir() && !player.isOnGround()) {
-                        BlockPos pos = Functions.getPosOnGround(player.getBlockPos(), world);
+                        BlockPos pos = ClaimUtil.getPosOnGround(player.getBlockPos(), world);
                         player.teleport(pos.getX(), pos.getY(), pos.getZ());
                     }
                 } else if (
