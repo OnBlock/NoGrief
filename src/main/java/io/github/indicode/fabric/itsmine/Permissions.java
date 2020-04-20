@@ -1,7 +1,6 @@
-package io.github.indicode.fabric.itsmine.util;
+package io.github.indicode.fabric.itsmine;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import io.github.indicode.fabric.itsmine.Config;
 import io.github.indicode.fabric.permissions.PermChangeBehavior;
 import io.github.indicode.fabric.permissions.Thimble;
 import net.fabricmc.loader.api.FabricLoader;
@@ -18,11 +17,11 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Locale;
 import java.util.UUID;
 
-public class PermissionUtil {
+public class Permissions {
     private Manager manager;
     private boolean present;
 
-    public PermissionUtil() {
+    public Permissions() {
         Logger logger = (Logger) LogManager.getLogger("ItsMine");
         logger.info("Setting up Permissions...");
         this.manager = Manager.fromString(Config.permissionManager);

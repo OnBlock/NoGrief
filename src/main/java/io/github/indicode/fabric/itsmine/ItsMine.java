@@ -1,24 +1,24 @@
 package io.github.indicode.fabric.itsmine;
 
-import io.github.indicode.fabric.itsmine.util.PermissionUtil;
 import net.fabricmc.api.ModInitializer;
+import net.minecraft.SharedConstants;
 
 /**
  * @author Indigo Amann
  */
 public class ItsMine implements ModInitializer {
-    private static PermissionUtil permissionUtil;
+    private static Permissions permissions;
 
     @Override
     public void onInitialize() {
         Config.sync();
-        permissionUtil = new PermissionUtil();
+        permissions = new Permissions();
 
         //TODO: Enable when developing
         //SharedConstants.isDevelopment = true;
     }
-    public static PermissionUtil permissions() {
-        return permissionUtil;
+    public static Permissions permissions() {
+        return permissions;
     }
     public static String blocksToAreaString3d(int blocks) {
         int base = (int) Math.floor(Math.cbrt(blocks));

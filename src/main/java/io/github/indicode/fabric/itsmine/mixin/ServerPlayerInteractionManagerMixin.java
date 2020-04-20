@@ -1,7 +1,6 @@
 package io.github.indicode.fabric.itsmine.mixin;
 
 import io.github.indicode.fabric.itsmine.*;
-import io.github.indicode.fabric.itsmine.util.BlockUtil;
 import net.minecraft.block.*;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
@@ -42,7 +41,7 @@ public abstract class ServerPlayerInteractionManagerMixin {
             if (!Functions.canInteractWith(claim, blockState.getBlock(), player.getUuid())) {
                 if (!itemStack.isEmpty() && !(itemStack.getItem() instanceof BlockItem)) {
                     player.sendMessage(Messages.MSG_INTERACT_BLOCK);
-                } else if (BlockUtil.isContainer(blockState.getBlock())) {
+                } else if (BlockUtils.isContainer(blockState.getBlock())) {
                     player.addMessage(Messages.MSG_OPEN_CONTAINER, true);
                 }
 

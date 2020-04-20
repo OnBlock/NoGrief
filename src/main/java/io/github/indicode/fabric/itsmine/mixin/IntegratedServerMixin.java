@@ -24,9 +24,9 @@ import java.io.IOException;
 @Mixin(IntegratedServer.class)
 public class IntegratedServerMixin {
     @Inject(method = "loadWorld", at = @At("RETURN"))
-    private void loadClaims(java.lang.String name, long l, LevelGeneratorOptions levelGeneratorOptions, CallbackInfo ci) {
-        File claims = new File(((MinecraftServer)(Object)this).getRunDirectory() + "/" + name + "/claims.dat");
-        File claims_old = new File(((MinecraftServer)(Object)this).getRunDirectory() + "/" + name + "/claims.dat_old");
+    private void loadClaims(String name, String serverName, long seed, LevelGeneratorOptions arg, CallbackInfo ci) {
+        File claims = new File(((MinecraftServer)(Object)this).getLevelStorage().getSavesDirectory() + "/" + name + "/claims.dat");
+        File claims_old = new File(((MinecraftServer)(Object)this).getLevelStorage().getSavesDirectory() + "/" + name + "/claims.dat_old");
         ClaimManager.INSTANCE = new ClaimManager();
         if (!claims.exists()) {
             if (claims_old.exists()) {}

@@ -1,14 +1,17 @@
 package io.github.indicode.fabric.itsmine.mixin;
 
 import io.github.indicode.fabric.itsmine.*;
-import io.github.indicode.fabric.itsmine.util.EntityUtil;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityCategory;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.screen.PlayerScreenHandler;
+import net.minecraft.text.LiteralText;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -49,13 +52,11 @@ public abstract class PlayerEntityMixin extends LivingEntity implements ClaimSho
         PlayerEntity playerEntity_1 = (PlayerEntity)(Object)this;
         Claim claim = ClaimManager.INSTANCE.getClaimAt(entity.getBlockPos(), entity.world.getDimension().getType());
 
-        if (claim != null && !EntityUtil.canAttack(((PlayerEntity) (Object) this).getUuid(), claim, entity)) {
+        if (claim != null && !EntityUtils.canAttack(((PlayerEntity) (Object) this).getUuid(), claim, entity)) {
             playerEntity_1.sendMessage(Messages.MSG_DAMAGE_ENTITY);
             ci.cancel();
         }
     }
-
-
 
 //    @Redirect(method = "dropInventory", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/GameRules;getBoolean(Lnet/minecraft/world/GameRules$RuleKey;)Z"))
 //    private boolean dontTakeMyThingies(GameRules gameRules, GameRules.RuleKey<GameRules.BooleanRule> rule) {

@@ -3,7 +3,6 @@ package io.github.indicode.fabric.itsmine;
 import io.github.indicode.fabric.itsmine.mixin.BlockActionPacketMixin;
 import io.github.indicode.fabric.itsmine.mixin.BucketItemMixin;
 import io.github.indicode.fabric.itsmine.mixin.projectile.OwnedProjectile;
-import io.github.indicode.fabric.itsmine.util.BlockUtil;
 import net.minecraft.block.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -20,7 +19,9 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
+import net.minecraft.world.dimension.DimensionType;
 
 import java.util.*;
 
@@ -78,14 +79,14 @@ public class Functions {
 
     public static boolean canInteractWith(Claim claim, Block block, UUID player) {
         return claim.hasPermission(player, Claim.Permission.INTERACT_BLOCKS) ||
-                (BlockUtil.isButton(block) && claim.hasPermission(player, Claim.Permission.USE_BUTTONS)) ||
-                (BlockUtil.isLever(block) && claim.hasPermission(player, Claim.Permission.USE_LEVERS)) ||
-                (BlockUtil.isDoor(block) && claim.hasPermission(player, Claim.Permission.INTERACT_DOORS)) ||
-                (BlockUtil.isContainer(block) && claim.hasPermission(player, Claim.Permission.CONTAINER)) ||
-                (BlockUtil.isChest(block) && claim.hasPermission(player, Claim.Permission.CONTAINER_CHEST)) ||
-                (BlockUtil.isEnderchest(block) && claim.hasPermission(player, Claim.Permission.CONTAINER_ENDERCHEST)) ||
-                (BlockUtil.isShulkerBox(block) && claim.hasPermission(player, Claim.Permission.CONTAINER_SHULKERBOX)) ||
-                (BlockUtil.isLectern(block) && claim.hasPermission(player, Claim.Permission.INTERACT_LECTERN));
+                (BlockUtils.isButton(block) && claim.hasPermission(player, Claim.Permission.USE_BUTTONS)) ||
+                (BlockUtils.isLever(block) && claim.hasPermission(player, Claim.Permission.USE_LEVERS)) ||
+                (BlockUtils.isDoor(block) && claim.hasPermission(player, Claim.Permission.INTERACT_DOORS)) ||
+                (BlockUtils.isContainer(block) && claim.hasPermission(player, Claim.Permission.CONTAINER)) ||
+                (BlockUtils.isChest(block) && claim.hasPermission(player, Claim.Permission.CONTAINER_CHEST)) ||
+                (BlockUtils.isEnderchest(block) && claim.hasPermission(player, Claim.Permission.CONTAINER_ENDERCHEST)) ||
+                (BlockUtils.isShulkerBox(block) && claim.hasPermission(player, Claim.Permission.CONTAINER_SHULKERBOX)) ||
+                (BlockUtils.isLectern(block) && claim.hasPermission(player, Claim.Permission.INTERACT_LECTERN));
     }
 
     public static boolean canInteractUsingItem(Claim claim, Item item, UUID player) {
@@ -113,18 +114,6 @@ public class Functions {
         return false;
     }
 
-    public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
-        List<Map.Entry<K, V>> list = new ArrayList<>(map.entrySet());
-        list.sort(Map.Entry.comparingByValue());
-
-        Map<K, V> result = new LinkedHashMap<>();
-        for (Map.Entry<K, V> entry : list) {
-            result.put(entry.getKey(), entry.getValue());
-        }
-
-        return result;
-    }
-
     public static boolean checkCanDamageWithProjectile(Entity entity, MinecraftServer server, UUID uuid) {
         if (entity.world.isClient)
             return true;
@@ -140,6 +129,15 @@ public class Functions {
         return true;
     }
 
+    public static BlockPos getPosOnGround(BlockPos pos, World world) {
+        BlockPos blockPos = new BlockPos(pos.getX(), pos.getY(), pos.getZ());
+
+        do {
+            blockPos = blockPos.down();
+        } while (world.getBlockState(blockPos).isAir());
+
+        return blockPos.up();
+    }
 
 
 }
