@@ -3,6 +3,7 @@ package io.github.indicode.fabric.itsmine.command.subzone;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.github.indicode.fabric.itsmine.command.*;
+import io.github.indicode.fabric.itsmine.util.ArgumentUtil;
 import net.minecraft.server.command.ServerCommandSource;
 
 import static net.minecraft.server.command.CommandManager.literal;
@@ -16,7 +17,7 @@ public class SubzoneCommand {
 
     public static void registerSubzone(LiteralArgumentBuilder<ServerCommandSource> command, CommandDispatcher dispatcher) {
         CreateCommand.register(command);
-        ExceptionCommand.register(command, false, true);
+        ExceptionCommand.register(command, false, ArgumentUtil.getSubzones());
         ExpandCommand.register(command);
         InfoCommand.register(command);
         PermissionsCommand.register(command, false);

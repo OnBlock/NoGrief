@@ -29,10 +29,10 @@ public class StickClaimItemMixin {
                 if (posPair == null) return;
                 else posPair = new Pair<>(context.getBlockPos(), posPair.getRight());
                 ClaimManager.INSTANCE.stickPositions.put(context.getPlayer(), posPair);
-                context.getPlayer().sendMessage(new LiteralText("Position #1 set: " + context.getBlockPos().getX() + (Config.claims2d ? "" : " " + context.getBlockPos().getY()) + " " + context.getBlockPos().getZ()).formatted(Formatting.GREEN));
+                context.getPlayer().sendSystemMessage(new LiteralText("Position #1 set: " + context.getBlockPos().getX() + (Config.claims2d ? "" : " " + context.getBlockPos().getY()) + " " + context.getBlockPos().getZ()).formatted(Formatting.GREEN));
                 if (posPair.getRight() != null) {
-                    context.getPlayer().sendMessage(new LiteralText("Area Selected. Type /claim create <name> to create your claim!").formatted(Formatting.GOLD));
-                    if (!Config.claims2d) context.getPlayer().sendMessage(new LiteralText("Remember that claims are three dimensional. Don't forget to expand up/down or select a big enough area...").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC));
+                    context.getPlayer().sendSystemMessage(new LiteralText("Area Selected. Type /claim create <name> to create your claim!").formatted(Formatting.GOLD));
+                    if (!Config.claims2d) context.getPlayer().sendSystemMessage(new LiteralText("Remember that claims are three dimensional. Don't forget to expand up/down or select a big enough area...").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC));
                 }
                 cir.setReturnValue(ActionResult.SUCCESS);
             }

@@ -6,6 +6,7 @@ import io.github.indicode.fabric.itsmine.ItsMine;
 import io.github.indicode.fabric.itsmine.command.ExceptionCommand;
 import io.github.indicode.fabric.itsmine.command.PermissionsCommand;
 import io.github.indicode.fabric.itsmine.command.SettingsCommand;
+import io.github.indicode.fabric.itsmine.util.ArgumentUtil;
 import net.minecraft.server.command.ServerCommandSource;
 
 import java.util.function.Predicate;
@@ -26,7 +27,7 @@ public class AdminCommand {
         ClaimsCommand.register(admin, dispatcher);
         CreateCommand.register(admin);
         EntitiesCommand.register(admin);
-        ExceptionCommand.register(admin, true, false);
+        ExceptionCommand.register(admin, true, ArgumentUtil.getClaims());
         ExpandCommand.register(admin);
         IgnoreCommand.register(admin);
         ListAllCommand.register(admin);

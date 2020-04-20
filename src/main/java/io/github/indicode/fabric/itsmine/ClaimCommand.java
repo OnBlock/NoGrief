@@ -1124,7 +1124,7 @@ package io.github.indicode.fabric.itsmine;
 //                    checkPlayer(owner, owner.getPlayer().getGameProfile().getId());
 //                    showClaim(owner, claim, false);
 //                    if (admin)
-//                        owner.getMinecraftServer().sendMessage(new LiteralText(owner.getPlayer().getGameProfile().getName() + " Has created a new claim(" + claim.name + ") using the admin command."));
+//                        owner.getMinecraftServer().sendSystemMessage(new LiteralText(owner.getPlayer().getGameProfile().getName() + " Has created a new claim(" + claim.name + ") using the admin command."));
 //                    return 1;
 //                } else {
 //                    owner.sendFeedback(new LiteralText("You don't have enough claim blocks. You have " + ClaimManager.INSTANCE.getClaimBlocks(ownerID) + ", you need " + subInt + "(" + (subInt - ClaimManager.INSTANCE.getClaimBlocks(ownerID)) + " more)").formatted(Formatting.RED), false);
@@ -1252,7 +1252,7 @@ package io.github.indicode.fabric.itsmine;
 //
 //        GameProfile profile = sender.getWorld().getServer().getUserCache().getByUuid(claim.claimBlockOwner);
 //        sender.sendFeedback(new LiteralText("Transferring ownership of the claim \"" + claim.name + "\" to " + player.getGameProfile().getName() + " if they accept").formatted(Formatting.GREEN), claim.claimBlockOwner != player.getGameProfile().getId());
-//        player.sendMessage(new LiteralText("").append(new LiteralText("Do you want to accept ownership of the claim \"" + claim.name + "\" from " + profile == null ? "Not Present" : profile.getName() + "? ").formatted(Formatting.GOLD))
+//        player.sendSystemMessage(new LiteralText("").append(new LiteralText("Do you want to accept ownership of the claim \"" + claim.name + "\" from " + profile == null ? "Not Present" : profile.getName() + "? ").formatted(Formatting.GOLD))
 //                .append(new LiteralText("[ACCEPT]").setStyle(new Style()
 //                        .setColor(Formatting.GREEN)
 //                        .setBold(true)
@@ -1267,7 +1267,7 @@ package io.github.indicode.fabric.itsmine;
 //            return 0;
 //        }
 //        if (sender.getMinecraftServer().getPlayerManager().getPlayer(claim.claimBlockOwner) != null) {
-//            sender.getMinecraftServer().getPlayerManager().getPlayer(claim.claimBlockOwner).sendMessage(new LiteralText("").append(new LiteralText(sender.getPlayer().getGameProfile().getName() + " has taken ownership of the claim \"" + claim.name + "\"").formatted(Formatting.YELLOW)));
+//            sender.getMinecraftServer().getPlayerManager().getPlayer(claim.claimBlockOwner).sendSystemMessage(new LiteralText("").append(new LiteralText(sender.getPlayer().getGameProfile().getName() + " has taken ownership of the claim \"" + claim.name + "\"").formatted(Formatting.YELLOW)));
 //        }
 //        Claim.ClaimPermissionMap op = claim.permissionManager.playerPermissions.get(claim.claimBlockOwner);
 //        claim.permissionManager.playerPermissions.put(claim.claimBlockOwner, claim.permissionManager.playerPermissions.get(sender.getPlayer().getGameProfile().getId()));

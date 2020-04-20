@@ -33,7 +33,7 @@ public class ServerPlayNetworkHandlerMixin {
         Claim claim = ClaimManager.INSTANCE.getClaimAt(entity.getBlockPos(), entity.world.getDimension().getType());
         if (claim != null) {
             if (!claim.hasPermission(playerEntity_1.getGameProfile().getId(), Claim.Permission.INTERACT_ENTITY)) {
-//                playerEntity_1.sendMessage(Messages.MSG_INTERACT_ENTITY);
+//                playerEntity_1.sendSystemMessage(Messages.MSG_INTERACT_ENTITY);
                 return ActionResult.FAIL;
             }
         }

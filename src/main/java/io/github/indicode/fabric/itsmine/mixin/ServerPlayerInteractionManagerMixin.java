@@ -41,9 +41,9 @@ public abstract class ServerPlayerInteractionManagerMixin {
         if (claim != null) {
             if (!Functions.canInteractWith(claim, blockState.getBlock(), player.getUuid())) {
                 if (!itemStack.isEmpty() && !(itemStack.getItem() instanceof BlockItem)) {
-                    player.sendMessage(Messages.MSG_INTERACT_BLOCK);
+                    player.sendSystemMessage(Messages.MSG_INTERACT_BLOCK);
                 } else if (BlockUtil.isContainer(blockState.getBlock())) {
-                    player.addMessage(Messages.MSG_OPEN_CONTAINER, true);
+                    player.sendSystemMessage(Messages.MSG_OPEN_CONTAINER);
                 }
 
                 return ActionResult.FAIL;
@@ -69,7 +69,7 @@ public abstract class ServerPlayerInteractionManagerMixin {
             }
 
             if (stack.getItem() instanceof BlockItem) {
-                player.addMessage(Messages.MSG_PLACE_BLOCK, true);
+                player.sendSystemMessage(Messages.MSG_PLACE_BLOCK);
             }
 
             return true;
@@ -86,11 +86,11 @@ public abstract class ServerPlayerInteractionManagerMixin {
                 if (posPair != null) {
                     posPair = new Pair<>(posPair.getLeft(), pos);
                     ClaimManager.INSTANCE.stickPositions.put(player, posPair);
-                    player.sendMessage(new LiteralText("Position #2 set: " + pos.getX() + (Config.claims2d ? "" : " " + pos.getY()) + " " + pos.getZ()).formatted(Formatting.GREEN));
+                    player.sendSystemMessage(new LiteralText("Position #2 set: " + pos.getX() + (Config.claims2d ? "" : " " + pos.getY()) + " " + pos.getZ()).formatted(Formatting.GREEN));
                     if (posPair.getLeft() != null) {
-                        player.sendMessage(new LiteralText("Area Selected. Type /claim create <name> to create your claim!").formatted(Formatting.GOLD));
+                        player.sendSystemMessage(new LiteralText("Area Selected. Type /claim create <name> to create your claim!").formatted(Formatting.GOLD));
                         if (!Config.claims2d)
-                            player.sendMessage(new LiteralText("Remember that claims are three dimensional. Don't forget to expand up/down or select a big enough area...").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC));
+                            player.sendSystemMessage(new LiteralText("Remember that claims are three dimensional. Don't forget to expand up/down or select a big enough area...").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC));
                     }
                     return false;
                 }
@@ -100,7 +100,7 @@ public abstract class ServerPlayerInteractionManagerMixin {
         if (claim != null) {
             UUID uuid = player.getGameProfile().getId();
             if (!claim.hasPermission(uuid, Claim.Permission.BUILD)) {
-                player.addMessage(Messages.MSG_BREAK_BLOCK, true);
+                player.sendSystemMessage(Messages.MSG_BREAK_BLOCK);
                 return false;
             }
 

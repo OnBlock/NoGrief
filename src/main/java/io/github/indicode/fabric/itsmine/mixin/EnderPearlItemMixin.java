@@ -23,7 +23,7 @@ public class EnderPearlItemMixin {
         Claim claim = ClaimManager.INSTANCE.getClaimAt(user.getBlockPos(), user.dimension);
 
         if (claim != null && !claim.hasPermission(user.getUuid(), Claim.Permission.USE_ENDER_PEARL)) {
-            user.sendMessage(Messages.MSG_CANT_USE);
+            user.sendSystemMessage(Messages.MSG_CANT_USE);
             cir.setReturnValue(TypedActionResult.fail(itemStack));
         }
     }

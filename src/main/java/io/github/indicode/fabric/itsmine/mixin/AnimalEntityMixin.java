@@ -39,7 +39,7 @@ public abstract class AnimalEntityMixin {
             if(claim.getEntities(other.getEntityWorld().getServer().getWorld(other.getEntityWorld().getDimension().getType())) > 50){
                 ServerPlayerEntity player = this.getLovingPlayer();
                 if(player != null){
-                    player.sendMessage(new LiteralText("You reached the entity limit in your claim!").formatted(Formatting.RED));
+                    player.sendSystemMessage(new LiteralText("You reached the entity limit in your claim!").formatted(Formatting.RED));
                 }
                 this.resetLoveTicks();
                 cir.setReturnValue(false);

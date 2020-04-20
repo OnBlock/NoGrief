@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.github.indicode.fabric.itsmine.command.admin.AdminCommand;
 import io.github.indicode.fabric.itsmine.command.subzone.SubzoneCommand;
+import io.github.indicode.fabric.itsmine.util.ArgumentUtil;
 import net.minecraft.server.command.ServerCommandSource;
 
 import static net.minecraft.server.command.CommandManager.literal;
@@ -22,7 +23,7 @@ public class CommandManager {
         AdminCommand.register(command, dispatcher);
         BlockCommand.register(command);
         CreateCommand.register(command);
-        ExceptionCommand.register(command, false, false);
+        ExceptionCommand.register(command, false, ArgumentUtil.getClaims());
         ExpandCommand.register(command);
         FlyCommand.register(command);
         HelpCommand.register(command);

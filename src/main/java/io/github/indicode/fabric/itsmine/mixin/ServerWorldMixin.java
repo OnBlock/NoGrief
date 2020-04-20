@@ -47,7 +47,7 @@ public abstract class ServerWorldMixin implements MonitorableWorld {
 //        Claim claim = ClaimManager.INSTANCE.getClaimAt(blockPos_1, player.getEntityWorld().getDimension().getType());
 //        if (claim != null) {
 //            if (!claim.hasPermission(player.getGameProfile().getId(), Claim.Permission.SPAWN_PROTECTION)) {
-//                player.sendMessage(Messages.NO_PERMISSION);
+//                player.sendSystemMessage(Messages.NO_PERMISSION);
 //                ci.setReturnValue(false);
 //            }
 //        }
@@ -66,7 +66,7 @@ public abstract class ServerWorldMixin implements MonitorableWorld {
                     System.out.println("Rent expired -> method call");
                     this.getPlayers().forEach(serverPlayerEntity -> {
                         if(serverPlayerEntity.getUuid() == claim.rent.getTenant()){
-                            serverPlayerEntity.sendMessage(new LiteralText("Rent expired").formatted(Formatting.RED));
+                            serverPlayerEntity.sendSystemMessage(new LiteralText("Rent expired").formatted(Formatting.RED));
                             claim.endRent();
                         }
                     });

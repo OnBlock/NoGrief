@@ -133,7 +133,7 @@ public class Functions {
         Claim claim = ClaimManager.INSTANCE.getClaimAt(entity.getBlockPos(), entity.world.getDimension().getType());
 
         if (claim != null && owner != null && !claim.hasPermission(owner.getUuid(), Claim.Permission.DAMAGE_ENTITY)) {
-            owner.sendMessage(Messages.MSG_DAMAGE_ENTITY);
+            owner.sendSystemMessage(Messages.MSG_DAMAGE_ENTITY);
             return false;
         }
 

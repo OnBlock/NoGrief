@@ -65,7 +65,7 @@ public class TransferCommand {
             return 0;
         }
         if (sender.getMinecraftServer().getPlayerManager().getPlayer(claim.claimBlockOwner) != null) {
-            sender.getMinecraftServer().getPlayerManager().getPlayer(claim.claimBlockOwner).sendMessage(new LiteralText("").append(new LiteralText(sender.getPlayer().getGameProfile().getName() + " has taken ownership of the claim \"" + claim.name + "\"").formatted(Formatting.YELLOW)));
+            sender.getMinecraftServer().getPlayerManager().getPlayer(claim.claimBlockOwner).sendSystemMessage(new LiteralText("").append(new LiteralText(sender.getPlayer().getGameProfile().getName() + " has taken ownership of the claim \"" + claim.name + "\"").formatted(Formatting.YELLOW)));
         }
         Claim.ClaimPermissionMap op = claim.permissionManager.playerPermissions.get(claim.claimBlockOwner);
         claim.permissionManager.playerPermissions.put(claim.claimBlockOwner, claim.permissionManager.playerPermissions.get(sender.getPlayer().getGameProfile().getId()));
@@ -136,7 +136,7 @@ public class TransferCommand {
         }
         GameProfile profile = sender.getWorld().getServer().getUserCache().getByUuid(claim.claimBlockOwner);
         sender.sendFeedback(new LiteralText("Transferring ownership of the claim \"" + claim.name + "\" to " + player.getGameProfile().getName() + " if they accept").formatted(Formatting.GREEN), claim.claimBlockOwner != player.getGameProfile().getId());
-        player.sendMessage(new LiteralText("").append(new LiteralText("Do you want to accept ownership of the claim \"" + claim.name + "\" from " + profile == null ? "Not Present" : profile.getName() + "? ").formatted(Formatting.GOLD))
+        player.sendSystemMessage(new LiteralText("").append(new LiteralText("Do you want to accept ownership of the claim \"" + claim.name + "\" from " + profile == null ? "Not Present" : profile.getName() + "? ").formatted(Formatting.GOLD))
                 .append(new LiteralText("[ACCEPT]").setStyle(new Style()
                         .setColor(Formatting.GREEN)
                         .setBold(true)

@@ -81,7 +81,7 @@ public class CreateCommand {
                     executeShowClaim(source, claim, false);
                     source.sendFeedback(new LiteralText("").append(new LiteralText("Your subzone was created.").formatted(Formatting.GREEN)), false);
                 }else{
-                    player.sendMessage(new LiteralText("Your subzone would overlap with another subzone").formatted(Formatting.RED));
+                    player.sendSystemMessage(new LiteralText("Your subzone would overlap with another subzone").formatted(Formatting.RED));
                 }
                 if (subZone != null) {
                     ClaimManager.INSTANCE.stickPositions.remove(player);
@@ -89,7 +89,7 @@ public class CreateCommand {
                 }
                 return 0;
             }else{
-                player.sendMessage(new LiteralText("Subzone must be inside the original claim, in the same dimension").formatted(Formatting.RED));
+                player.sendSystemMessage(new LiteralText("Subzone must be inside the original claim, in the same dimension").formatted(Formatting.RED));
             }
         }
         return 0;

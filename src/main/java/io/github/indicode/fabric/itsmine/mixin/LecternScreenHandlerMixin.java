@@ -20,7 +20,7 @@ public abstract class LecternScreenHandlerMixin {
                 if(claim != null){
                     if(claim.isChild) claim = ClaimUtil.getParentClaim(claim);
                     if(!claim.hasPermission(player.getUuid(), Claim.Permission.INTERACT_LECTERN)){
-                        player.sendMessage(Messages.MSG_CANT_DO);
+                        player.sendSystemMessage(Messages.MSG_CANT_DO);
                         cir.setReturnValue(false);
                     }
                 }

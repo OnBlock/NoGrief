@@ -28,7 +28,7 @@ public abstract class ProjectileEntityMixin {
             this.onEntityHit(entityHitResult);
         } else {
             if (this.getOwner() instanceof PlayerEntity) {
-                this.getOwner().sendMessage(Messages.MSG_DAMAGE_ENTITY);
+                this.getOwner().sendSystemMessage(Messages.MSG_DAMAGE_ENTITY);
             }
         }
     }
@@ -41,7 +41,7 @@ public abstract class ProjectileEntityMixin {
 //            Claim claim = ClaimManager.INSTANCE.getClaimAt(entity.getSenseCenterPos(), entity.world.getDimension().getType());
 //            if (claim != null && entity != playerEntity_1) {
 //                if (!claim.hasPermission(playerEntity_1.getGameProfile().getId(), Claim.Permission.DAMAGE_ENTITY)) {
-//                    playerEntity_1.sendMessage(Messages.MSG_DAMAGE_ENTITY);
+//                    playerEntity_1.sendSystemMessage(Messages.MSG_DAMAGE_ENTITY);
 //                    projectile.kill(); // You do not want an arrow bouncing between two armor stands
 //                    return false;
 //                }

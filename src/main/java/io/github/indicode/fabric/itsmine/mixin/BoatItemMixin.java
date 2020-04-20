@@ -37,7 +37,7 @@ public abstract class BoatItemMixin extends Item {
         Claim claim = ClaimManager.INSTANCE.getClaimAt(new BlockPos(pos.getX(), pos.getY(), pos.getZ()), user.dimension);
 
         if (claim != null && !claim.hasPermission(user.getUuid(), Claim.Permission.BUILD) || !claim.hasPermission(user.getUuid(), Claim.Permission.SPAWN_BOAT)) {
-            user.sendMessage(Messages.NO_PERMISSION);
+            user.sendSystemMessage(Messages.NO_PERMISSION);
             cir.setReturnValue(TypedActionResult.fail(itemStack));
         }
 

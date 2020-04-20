@@ -37,7 +37,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements ClaimSho
         Claim claim = ClaimManager.INSTANCE.getClaimAt(entity.getBlockPos(), entity.world.getDimension().getType());
         if (claim != null) {
             if (!claim.hasPermission(playerEntity_1.getGameProfile().getId(), Claim.Permission.INTERACT_ENTITY)) {
-                playerEntity_1.sendMessage(Messages.MSG_INTERACT_ENTITY);
+                playerEntity_1.sendSystemMessage(Messages.MSG_INTERACT_ENTITY);
                 return false;
             }
         }
@@ -50,7 +50,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements ClaimSho
         Claim claim = ClaimManager.INSTANCE.getClaimAt(entity.getBlockPos(), entity.world.getDimension().getType());
 
         if (claim != null && !EntityUtil.canAttack(((PlayerEntity) (Object) this).getUuid(), claim, entity)) {
-            playerEntity_1.sendMessage(Messages.MSG_DAMAGE_ENTITY);
+            playerEntity_1.sendSystemMessage(Messages.MSG_DAMAGE_ENTITY);
             ci.cancel();
         }
     }
@@ -62,7 +62,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements ClaimSho
 //        PlayerEntity playerEntity_1 = (PlayerEntity)(Object)this;
 //        Claim claim = ClaimManager.INSTANCE.getClaimAt(playerEntity_1.getSenseCenterPos(), playerEntity_1.world.getDimension().getType());
 //        if (claim != null) {
-//            playerEntity_1.sendMessage(new LiteralText("keep_inventory: " + claim.settings.getSetting(Claim.ClaimSettings.Setting.KEEP_INVENTORY) + " server: " + gameRules.getBoolean(rule)));
+//            playerEntity_1.sendSystemMessage(new LiteralText("keep_inventory: " + claim.settings.getSetting(Claim.ClaimSettings.Setting.KEEP_INVENTORY) + " server: " + gameRules.getBoolean(rule)));
 //
 //            if (claim.settings.getSetting(Claim.ClaimSettings.Setting.KEEP_INVENTORY))
 //                return true;

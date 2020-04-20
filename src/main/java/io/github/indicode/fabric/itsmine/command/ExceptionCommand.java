@@ -30,15 +30,10 @@ import static net.minecraft.server.command.CommandManager.literal;
 
 public class ExceptionCommand {
 
-    public static void register(LiteralArgumentBuilder<ServerCommandSource> command, boolean admin, boolean subzone) {
+    public static void register(LiteralArgumentBuilder<ServerCommandSource> command, boolean admin, RequiredArgumentBuilder<ServerCommandSource, String> argumentBuilder) {
         {
             LiteralArgumentBuilder<ServerCommandSource> settings = literal("settings");
-            RequiredArgumentBuilder<ServerCommandSource, String> claim;
-            if(subzone){
-                claim = ArgumentUtil.getClaims();
-            } else {
-                claim = ArgumentUtil.getSubzones();
-            }
+            RequiredArgumentBuilder<ServerCommandSource, String> claim = argumentBuilder;
 
             if (!admin) {
                 settings.executes((context) -> sendPage(context.getSource(), Messages.SETTINGS_AND_PERMISSIONS, 1, "Claim Permissions and Settings", "/claim help perms_and_settings %page%"));
