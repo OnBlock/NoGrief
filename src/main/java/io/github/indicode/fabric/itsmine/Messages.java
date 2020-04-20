@@ -56,11 +56,16 @@ public class Messages {
                     .append(line(1, "To set a permission, type ").append(text("/claim permissions <claim> player <player> <permission> [true | false]").formatted(Formatting.GOLD)))
                     .append(line(2, "To check someone's permission, type ").append(text("/claim permissions <claim> player <player> <permission>").formatted(Formatting.GOLD)))
                     .append(line(3, "To see a list of trusted players, type ").append(text("/claim trusted").formatted(Formatting.GOLD))),
-            header("How to resize claim")
+            header("How to Claim (Resizing)")
                     .append(line("You can always change the size of your claim if you aren't happy with it!").formatted(Formatting.LIGHT_PURPLE))
                     .append(line(1, "To expand your claim in a direction, type ").append(text("/claim expand <distance>").formatted(Formatting.GOLD)))
                     .append(line(2, "If you want to specify a direction, you can type ").append(text("/claim expand <distance> <direction>").formatted(Formatting.GOLD)))
-                    .append(line(3, "To shrink a claim you do the same thing but replace \"expand\" with \"shrink\""))
+                    .append(line(3, "To shrink a claim you do the same thing but replace \"expand\" with \"shrink\"")),
+            header("How to Claim (Subzones)")
+                    .append(line("Subzones allow you to have seperate permissions / settings in certain areas of your claim").formatted(Formatting.LIGHT_PURPLE))
+                    .append(line(1, "To create a subzone, you select an area inside your claim the way you would select a normal claim"))
+                    .append(line(2, "Type ").append("/claim subzone add <name>").formatted(Formatting.GOLD).append(" to create a subzone").formatted(Formatting.YELLOW))
+                    .append(line(3,"Done! Everything else works the same way claims work"))
     };
 
     public static final Text[] HELP = new Text[]{

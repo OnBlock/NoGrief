@@ -1,469 +1,439 @@
 package io.github.indicode.fabric.itsmine;
 
-import blue.endless.jankson.annotation.Nullable;
-import com.mojang.authlib.GameProfile;
-import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.BoolArgumentType;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.builder.ArgumentBuilder;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import com.mojang.brigadier.suggestion.SuggestionProvider;
-import io.github.indicode.fabric.itsmine.mixin.BlockUpdatePacketMixin;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.command.EntitySelector;
-import net.minecraft.command.arguments.BlockPosArgumentType;
-import net.minecraft.command.arguments.EntityArgumentType;
-import net.minecraft.command.arguments.GameProfileArgumentType;
-import net.minecraft.command.arguments.PosArgument;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.CommandSource;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.*;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Pair;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.dimension.DimensionType;
-
-import java.lang.reflect.Array;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Predicate;
-
-import static net.minecraft.server.command.CommandManager.argument;
-import static net.minecraft.server.command.CommandManager.literal;
-
 /**
  * @author Indigo Amann
  */
-public class ClaimCommand {
-    public static final int MAX_NAME_LENGTH = 30;
-    private static void validateCanAccess(ServerPlayerEntity player, Claim claim, boolean admin) throws CommandSyntaxException {
-        if (claim == null) {
-            throw new SimpleCommandExceptionType(Messages.INVALID_CLAIM).create();
-        }
+//public class ClaimCommand {
+//    public static final int MAX_NAME_LENGTH = 30;
+//    private static void validateCanAccess(ServerPlayerEntity player, Claim claim, boolean admin) throws CommandSyntaxException {
+//        if (claim == null) {
+//            throw new SimpleCommandExceptionType(Messages.INVALID_CLAIM).create();
+//        }
+//
+//        if (!admin && !claim.permissionManager.hasPermission(player.getGameProfile().getId(), Claim.Permission.MODIFY_SETTINGS)) {
+//            throw new SimpleCommandExceptionType(Messages.NO_PERMISSION).create();
+//        }
+//    }
+//
+//    private static void validateClaim(Claim claim) throws CommandSyntaxException {
+//        if (claim == null) throw new SimpleCommandExceptionType(Messages.INVALID_CLAIM).create();
+//    }
+//
+//
+//    private static Predicate<ServerCommandSource> perm(String str) {
+//        return perm(str, 2);
+//    }
+//    private static Predicate<ServerCommandSource> perm(String str, int op) {
+//        return source -> ItsMine.permissions().hasPermission(source, "itsmine." + str, op);
+//    }
+//    private static final Predicate<ServerCommandSource> PERMISSION_CHECK_ADMIN = src -> perm("admin").test(src) || perm("admin.modify_balance").test(src) ||
+//            perm("admin.infinite_blocks").test(src) || perm("admin.modify").test(src) ||
+//            perm("admin.modify_balance").test(src) || perm("admin.ignore_claims").test(src) ||
+//            perm("admin.modify_permissions").test(src);
+//
 
-        if (!admin && !claim.permissionManager.hasPermission(player.getGameProfile().getId(), Claim.Permission.MODIFY_SETTINGS)) {
-            throw new SimpleCommandExceptionType(Messages.NO_PERMISSION).create();
-        }
-    }
+//    public static final SuggestionProvider<ServerCommandSource> PLAYERS_PROVIDER = (source, builder) -> {
+//        List<String> strings = new ArrayList<>();
+//        for (ServerPlayerEntity player : source.getSource().getMinecraftServer().getPlayerManager().getPlayerList()) {
+//            strings.add(player.getEntityName());
+//        }
+//        return CommandSource.suggestMatching(strings, builder);
+//    };
+//    public static final SuggestionProvider<ServerCommandSource> SETTINGS_PROVIDER = (source, builder) -> {
+//        List<String> strings = new ArrayList<>();
+//        for (Claim.ClaimSettings.Setting value : Claim.ClaimSettings.Setting.values()) {
+//            strings.add(value.id);
+//        }
+//        for (Claim.Permission value : Claim.Permission.values()) {
+//            strings.add(value.id);
+//        }
+//        return CommandSource.suggestMatching(strings, builder);
+//    };
+//    public static final SuggestionProvider<ServerCommandSource> PERMISSIONS_PROVIDER = (source, builder) -> {
+//        List<String> strings = new ArrayList<>();
+//        for (Claim.Permission value : Claim.Permission.values()) {
+//            strings.add(value.id);
+//        }
+//        return CommandSource.suggestMatching(strings, builder);
+//    };
+//    public static final SuggestionProvider<ServerCommandSource> MESSAGE_EVENTS_PROVIDER = (source, builder) -> {
+//        List<String> strings = new ArrayList<>();
+//        for (Claim.Event value : Claim.Event.values()) {
+//            strings.add(value.id);
+//        }
+//        return CommandSource.suggestMatching(strings, builder);
+//    };
+//    public static final SuggestionProvider<ServerCommandSource> EVENT_MESSAGE_PROVIDER = (source, builder) -> {
+//        if (!builder.getRemaining().isEmpty())
+//            return builder.buildFuture();
+//
+//        List<String> strings = new ArrayList<>();
+//        strings.add("reset");
+//        try {
+//            Claim claim = ClaimManager.INSTANCE.claimsByName.get(getString(source, "claim"));
+//            Claim.Event eventType = Claim.Event.getById(getString(source, "messageEvent"));
+//
+//            if (eventType != null && claim != null) {
+//                String message = eventType == Claim.Event.ENTER_CLAIM ? claim.enterMessage : claim.leaveMessage;
+//                if (message != null) strings.add(message);
+//            }
+//
+//        } catch (Exception ignored) {
+//        }
+//
+//        return CommandSource.suggestMatching(strings, builder);
+//    };
 
-    private static void validateClaim(Claim claim) throws CommandSyntaxException {
-        if (claim == null) throw new SimpleCommandExceptionType(Messages.INVALID_CLAIM).create();
-    }
+//    public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+//        LiteralArgumentBuilder<ServerCommandSource> main = literal("itsmine");
+//        main.executes((context) -> sendPage(context.getSource(), Messages.GET_STARTED, 1, "Get Started", "/claim help getStarted %page%"));
+//
+//        register(main, dispatcher);
+//
+//        LiteralArgumentBuilder<ServerCommandSource> alias = literal("claim");
+//        alias.executes((context) -> sendPage(context.getSource(), Messages.GET_STARTED, 1, "Get Started", "/claim help getStarted %page%"));
+//
+//        register(alias, dispatcher);
+//
+//        dispatcher.register(main);
+//        dispatcher.register(alias);
+//    }
 
-    private static RequiredArgumentBuilder<ServerCommandSource, String> getClaimArgument() {
-        return argument("claim", StringArgumentType.word()).suggests(CLAIM_PROVIDER);
-    }
+//    private static void register(LiteralArgumentBuilder<ServerCommandSource> command, CommandDispatcher<ServerCommandSource> dispatcher) {
+//        SubzoneCommand.register(command);
 
-    private static Predicate<ServerCommandSource> perm(String str) {
-        return perm(str, 2);
-    }
-    private static Predicate<ServerCommandSource> perm(String str, int op) {
-        return source -> ItsMine.permissions().hasPermission(source, "itsmine." + str, op);
-    }
-    private static final Predicate<ServerCommandSource> PERMISSION_CHECK_ADMIN = src -> perm("admin").test(src) || perm("admin.modify_balance").test(src) ||
-            perm("admin.infinite_blocks").test(src) || perm("admin.modify").test(src) ||
-            perm("admin.modify_balance").test(src) || perm("admin.ignore_claims").test(src) ||
-            perm("admin.modify_permissions").test(src);
-
-    public static final SuggestionProvider<ServerCommandSource> DIRECTION_SUGGESTION_BUILDER = (source, builder) -> {
-        List<String> strings = new ArrayList<>();
-        for (Direction direction: Direction.values()) {
-            if (Config.claims2d && (direction == Direction.DOWN || direction == Direction.UP)) continue;
-            strings.add(direction.getName());
-        };
-        return CommandSource.suggestMatching(strings, builder);
-    };
-    public static final SuggestionProvider<ServerCommandSource> BOOK_SUGGESTIONS = (source, builder) -> {
-        List<String> strings = new ArrayList<>();
-        for (Claim.HelpBook value : Claim.HelpBook.values()) {
-            strings.add(value.id);
-        }
-        return CommandSource.suggestMatching(strings, builder);
-    };
-    public static final SuggestionProvider<ServerCommandSource> CLAIM_PROVIDER = (source, builder) -> {
-        ServerPlayerEntity player = source.getSource().getPlayer();
-        List<String> names = new ArrayList<>();
-        Claim current = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.dimension);
-        if (current != null) names.add(current.name);
-        for (Claim claim : ClaimManager.INSTANCE.getPlayerClaims(player.getGameProfile().getId())) {
-            if (claim != null) {
-                names.add(claim.name);
-            }
-        }
-        return CommandSource.suggestMatching(names, builder);
-    };
-    public static final SuggestionProvider<ServerCommandSource> PLAYERS_PROVIDER = (source, builder) -> {
-        List<String> strings = new ArrayList<>();
-        for (ServerPlayerEntity player : source.getSource().getMinecraftServer().getPlayerManager().getPlayerList()) {
-            strings.add(player.getEntityName());
-        }
-        return CommandSource.suggestMatching(strings, builder);
-    };
-    public static final SuggestionProvider<ServerCommandSource> SETTINGS_PROVIDER = (source, builder) -> {
-        List<String> strings = new ArrayList<>();
-        for (Claim.ClaimSettings.Setting value : Claim.ClaimSettings.Setting.values()) {
-            strings.add(value.id);
-        }
-        for (Claim.Permission value : Claim.Permission.values()) {
-            strings.add(value.id);
-        }
-        return CommandSource.suggestMatching(strings, builder);
-    };
-    public static final SuggestionProvider<ServerCommandSource> PERMISSIONS_PROVIDER = (source, builder) -> {
-        List<String> strings = new ArrayList<>();
-        for (Claim.Permission value : Claim.Permission.values()) {
-            strings.add(value.id);
-        }
-        return CommandSource.suggestMatching(strings, builder);
-    };
-    public static final SuggestionProvider<ServerCommandSource> MESSAGE_EVENTS_PROVIDER = (source, builder) -> {
-        List<String> strings = new ArrayList<>();
-        for (Claim.Event value : Claim.Event.values()) {
-            strings.add(value.id);
-        }
-        return CommandSource.suggestMatching(strings, builder);
-    };
-    public static final SuggestionProvider<ServerCommandSource> EVENT_MESSAGE_PROVIDER = (source, builder) -> {
-        if (!builder.getRemaining().isEmpty())
-            return builder.buildFuture();
-
-        List<String> strings = new ArrayList<>();
-        strings.add("reset");
-        try {
-            Claim claim = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(source, "claim"));
-            Claim.Event eventType = Claim.Event.getById(StringArgumentType.getString(source, "messageEvent"));
-
-            if (eventType != null && claim != null) {
-                String message = eventType == Claim.Event.ENTER_CLAIM ? claim.enterMessage : claim.leaveMessage;
-                if (message != null) strings.add(message);
-            }
-
-        } catch (Exception ignored) {
-        }
-
-        return CommandSource.suggestMatching(strings, builder);
-    };
-
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        LiteralArgumentBuilder<ServerCommandSource> main = literal("itsmine")
-                .executes((context) -> sendPage(context.getSource(), Messages.GET_STARTED, 1, "Get Started", "/claim help getStarted %page%"));
-
-        register(main, dispatcher);
-
-        LiteralArgumentBuilder<ServerCommandSource> alias = literal("claim")
-                .executes((context) -> sendPage(context.getSource(), Messages.GET_STARTED, 1, "Get Started", "/claim help getStarted %page%"));
-
-        register(alias, dispatcher);
-
-        dispatcher.register(main);
-        dispatcher.register(alias);
-    }
-
-    private static void register(LiteralArgumentBuilder<ServerCommandSource> command, CommandDispatcher<ServerCommandSource> dispatcher) {
-        SubzoneCommand.register(command, false);
-        {
-            LiteralArgumentBuilder<ServerCommandSource> help = literal("help");
-            help.executes((context) -> sendPage(context.getSource(), Messages.HELP, 1, "Its Mine!", "/claim help commands %page%"));
-
-            RequiredArgumentBuilder<ServerCommandSource, String> id = argument("id", StringArgumentType.word())
-                    .suggests(BOOK_SUGGESTIONS);
-            RequiredArgumentBuilder<ServerCommandSource, Integer> page = argument("page", IntegerArgumentType.integer(1));
-
-            page.executes((context) -> {
-                Claim.HelpBook book = Claim.HelpBook.getById(StringArgumentType.getString(context, "id"));
-                if (book == null) {
-                    context.getSource().sendError(new LiteralText("Invalid Book!"));
-                    return -1;
-                }
-                int p = IntegerArgumentType.getInteger(context, "page");
-
-                if (p > book.texts.length) p = 1;
-                return sendPage(context.getSource(), book.texts, p, book.title, book.getCommand());
-            });
-
-            id.then(page);
-            help.then(id);
-            command.then(help);
-        }
-        {
-            LiteralArgumentBuilder<ServerCommandSource> create = literal("create");
-            RequiredArgumentBuilder<ServerCommandSource, String> name = argument("name", StringArgumentType.word());
-
-            name.executes(context -> {
-            ServerPlayerEntity player = context.getSource().getPlayer();
-            Pair<BlockPos, BlockPos> selectedPositions = ClaimManager.INSTANCE.stickPositions.get(player);
-                if (selectedPositions == null) {
-                    context.getSource().sendFeedback(new LiteralText("You need to specify block positions or select them with a stick.").formatted(Formatting.RED), false);
-                } else if (selectedPositions.getLeft() == null) {
-                    context.getSource().sendFeedback(new LiteralText("You need to specify block positions or select position #1(Right Click) with a stick.").formatted(Formatting.RED), false);
-                } else if (selectedPositions.getRight() == null) {
-                    context.getSource().sendFeedback(new LiteralText("You need to specify block positions or select position #2(Left Click) with a stick.").formatted(Formatting.RED), false);
-                } else {
-                    String cname = StringArgumentType.getString(context, "name");
-                    if (createClaim(cname, context.getSource(), selectedPositions.getLeft(), selectedPositions.getRight(), false, null) > 0) {
-                        ClaimManager.INSTANCE.stickPositions.remove(player);
-                    }
-                }
-                return 0;
-            });
-
-            ArgumentBuilder<ServerCommandSource, ?> min = argument("min", BlockPosArgumentType.blockPos());
-            RequiredArgumentBuilder<ServerCommandSource, PosArgument> max = argument("max", BlockPosArgumentType.blockPos());
-            max.executes(context -> createClaim(
-                    StringArgumentType.getString(context, "name"),
-                    context.getSource(),
-                    BlockPosArgumentType.getBlockPos(context, "min"),
-                    BlockPosArgumentType.getBlockPos(context, "max"),
-                    false,
-                    null
-            ));
-            min.then(max);
-            name.then(min);
-            create.then(name);
-            command.then(create);
-        }
-        {
-            LiteralArgumentBuilder<ServerCommandSource> fly = literal("fly")
-                    .requires(src -> ItsMine.permissions().hasPermission(src, Permissions.Command.CLAIM_FLY, 2));
-            RequiredArgumentBuilder<ServerCommandSource, Boolean> setArgument = CommandManager.argument("set", BoolArgumentType.bool());
-
-            fly.executes((context) -> setFly(context, !ClaimManager.INSTANCE.flyers.contains(context.getSource().getPlayer().getUuid())));
-            setArgument.executes((context) -> setFly(context, BoolArgumentType.getBool(context, "set")));
-
-            fly.then(setArgument);
-            command.then(fly);
-        }
-        {
-            LiteralArgumentBuilder<ServerCommandSource> rename = literal("rename");
-            RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = getClaimArgument().suggests(CLAIM_PROVIDER);
-            RequiredArgumentBuilder<ServerCommandSource, String> nameArgument = argument("name", StringArgumentType.word());
-            nameArgument.executes((context) -> rename(context, false));
-            claimArgument.then(nameArgument);
-            rename.then(claimArgument);
-            command.then(rename);
-        }
-        {
-            LiteralArgumentBuilder<ServerCommandSource> trusted = literal("trusted");
-            RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = getClaimArgument();
-            trusted.executes((context)-> {
-                ServerPlayerEntity player = context.getSource().getPlayer();
-                Claim claim = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.dimension);
-                if (claim == null) {
-                    context.getSource().sendError(Messages.INVALID_CLAIM);
-                    return -1;
-                }
-                return showTrustedList(context, claim, false);
-            });
-
-            claimArgument.executes((context) -> {
-                Claim claim = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
-                if (claim == null) {
-                    context.getSource().sendError(Messages.INVALID_CLAIM);
-                    return -1;
-                }
-                return showTrustedList(context, claim, false);
-            });
-            trusted.then(claimArgument);
-            command.then(trusted);
-            dispatcher.register(trusted);
-        }
-        {
-            LiteralArgumentBuilder<ServerCommandSource> stick = literal("stick");
-            stick.executes(context -> {
-                Pair<BlockPos, BlockPos> posPair = ClaimManager.INSTANCE.stickPositions.get(context.getSource().getPlayer());
-                context.getSource().sendFeedback(new LiteralText(posPair == null ? "You can now use a stick to create claims. Run this command again to disable" : "Claim stick disabled. Run this command again to enable").formatted(Formatting.DARK_PURPLE), false);
-                if (posPair == null) {
-                    ClaimManager.INSTANCE.stickPositions.put(context.getSource().getPlayer(), new Pair<>(null, null));
-                } else {
-                    ClaimManager.INSTANCE.stickPositions.remove(context.getSource().getPlayer());
-                }
-                return 0;
-            });
-            command.then(stick);
-        }
-        {
-            LiteralArgumentBuilder<ServerCommandSource> show = literal("show");
-            show.executes(context -> showClaim(context.getSource(), ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().dimension.getType()), false));
-            RequiredArgumentBuilder<ServerCommandSource, String> name = argument("name", StringArgumentType.word());
-            name.suggests(CLAIM_PROVIDER);
-            name.executes(context -> showClaim(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "name")), false));
-            show.then(name);
-            command.then(show);
-        }
-        {
-            LiteralArgumentBuilder<ServerCommandSource> hide = literal("hide");
-            hide.executes(context -> showClaim(context.getSource(), null, true));
-            command.then(hide);
-        }
-        {
-            LiteralArgumentBuilder<ServerCommandSource> check = literal("blocks");
-            RequiredArgumentBuilder<ServerCommandSource, EntitySelector> other = argument("player", EntityArgumentType.player());
-            other.requires(source -> ItsMine.permissions().hasPermission(source, Permissions.Command.ADMIN_CHECK_OTHERS, 2));
-            other.executes(ctx -> checkPlayer(ctx.getSource(), EntityArgumentType.getPlayer(ctx, "player").getGameProfile().getId()));
-            check.then(other);
-            check.executes(ctx -> checkPlayer(ctx.getSource(), ctx.getSource().getPlayer().getGameProfile().getId()));
-            command.then(check);
-        }
-        {
-            LiteralArgumentBuilder<ServerCommandSource> delete = literal("remove");
-            RequiredArgumentBuilder<ServerCommandSource, String> claim = getClaimArgument();
-            claim.suggests(CLAIM_PROVIDER);
-            LiteralArgumentBuilder<ServerCommandSource> confirm = literal("confirm");
-            confirm.executes(context -> delete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")), false));
-            claim.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")), false));
-            claim.then(confirm);
-            delete.then(claim);
-            delete.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition()), context.getSource().getWorld().getDimension().getType()), false));
-            command.then(delete);
-        }
-        {
-            {
-                LiteralArgumentBuilder<ServerCommandSource> expand = literal("expand");
-                RequiredArgumentBuilder<ServerCommandSource, Integer> amount = argument("distance", IntegerArgumentType.integer(1, Integer.MAX_VALUE));
-                RequiredArgumentBuilder<ServerCommandSource, String> direction = argument("direction", StringArgumentType.word());
-                direction.suggests(DIRECTION_SUGGESTION_BUILDER);
-
-                direction.executes(context -> expand(
-                        ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
-                        IntegerArgumentType.getInteger(context, "distance"),
-                        directionByName(StringArgumentType.getString(context, "direction")),
-                        context.getSource(),
-                        false
-                ));
-
-                amount.executes(context -> expand(
-                        ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
-                        IntegerArgumentType.getInteger(context, "distance"),
-                        Direction.getEntityFacingOrder(context.getSource().getPlayer())[0],
-                        context.getSource(),
-                        false
-                ));
-
-                amount.then(direction);
-                expand.then(amount);
-                command.then(expand);
-            }
-            {
-                LiteralArgumentBuilder<ServerCommandSource> shrink = literal("shrink");
-                RequiredArgumentBuilder<ServerCommandSource, Integer> amount = argument("distance", IntegerArgumentType.integer(1, Integer.MAX_VALUE));
-                RequiredArgumentBuilder<ServerCommandSource, String> direction = argument("direction", StringArgumentType.word());
-                direction.suggests(DIRECTION_SUGGESTION_BUILDER);
-
-                direction.executes(context -> expand(
-                        ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
-                        -IntegerArgumentType.getInteger(context, "distance"),
-                        directionByName(StringArgumentType.getString(context, "direction")),
-                        context.getSource(),
-                        false
-                ));
-
-                amount.executes(context -> expand(
-                        ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
-                        -IntegerArgumentType.getInteger(context, "distance"),
-                        Direction.getEntityFacingOrder(context.getSource().getPlayer())[0],
-                        context.getSource(),
-                        false
-                ));
-
-                amount.then(direction);
-                shrink.then(amount);
-                command.then(shrink);
-            }
-        }
-        {
-            LiteralArgumentBuilder<ServerCommandSource> delete = literal("remove");
-            RequiredArgumentBuilder<ServerCommandSource, String> claim = getClaimArgument();
-            LiteralArgumentBuilder<ServerCommandSource> confirm = literal("confirm");
-            confirm.executes(context -> delete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")), false));
-            claim.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")), false));
-            claim.then(confirm);
-            delete.then(claim);
-            delete.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition()), context.getSource().getWorld().getDimension().getType()), false));
-            command.then(delete);
-        }
-        {
-            LiteralArgumentBuilder<ServerCommandSource> transfer = literal("transfer");
-            RequiredArgumentBuilder<ServerCommandSource, String> claim = argument("claim", StringArgumentType.word()).suggests(CLAIM_PROVIDER);
-            RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = argument("player", EntityArgumentType.player());
-            LiteralArgumentBuilder<ServerCommandSource> confirm = literal("confirm");
-            confirm.executes(context -> {
-                final String string = "-accept-";
-                ServerPlayerEntity p = EntityArgumentType.getPlayer(context, "player");
-                String input = StringArgumentType.getString(context, "claim");
-                String claimName = input.replace(string, "");
-                Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(claimName);
-                if (claim1 == null) {
-                    context.getSource().sendError(Messages.INVALID_CLAIM);
-                    return -1;
-                }
-
-                if (input.startsWith(string)) {
-                    return acceptTransfer(context.getSource());
-                }
-
-                return transfer(context.getSource(), claim1, p, false);
-            });
-            player.executes(context -> requestTransfer(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")), EntityArgumentType.getPlayer(context, "player"), false));
-            player.then(confirm);
-            claim.then(player);
-            transfer.then(claim);
-            transfer.executes(context -> requestTransfer(context.getSource(), ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition()), context.getSource().getWorld().getDimension().getType()), EntityArgumentType.getPlayer(context, "player"), false));
-            command.then(transfer);
-        }
-        {
-            LiteralArgumentBuilder<ServerCommandSource> info = literal("info");
-            RequiredArgumentBuilder<ServerCommandSource, String> claim = getClaimArgument();
-            info.executes(context -> info(
-                    context.getSource(),
-                    ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition()), context.getSource().getWorld().getDimension().getType())
-            ));
-            claim.executes(context -> info(
-                    context.getSource(),
-                    ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"))
-            ));
-            info.then(claim);
-            command.then(info);
-        }
-        {
-            LiteralArgumentBuilder<ServerCommandSource> list = literal("list");
-            LiteralArgumentBuilder<ServerCommandSource> listall = literal("listall");
-            RequiredArgumentBuilder<ServerCommandSource, String> player = argument("player", StringArgumentType.word());
-            player.requires(source -> ItsMine.permissions().hasPermission(source, Permissions.Command.ADMIN_CHECK_OTHERS, 2));
-            player.suggests(PLAYERS_PROVIDER);
-            list.executes(context -> list(context.getSource(), context.getSource().getName()));
-            listall.executes(context -> listall(context.getSource()));
-            player.executes(context -> list(context.getSource(), StringArgumentType.getString(context, "player")));
-            list.then(player);
-            command.then(list);
-            command.then(listall);
-
-            LiteralArgumentBuilder<ServerCommandSource> claims = literal("claims")
-                    .executes(context -> list(context.getSource(), context.getSource().getName()))
-                    .then(player);
-            dispatcher.register(claims);
-        }
-        {
-            //TODO: FIX THIS
+//        {
+//            LiteralArgumentBuilder<ServerCommandSource> help = literal("help");
+//            help.executes((context) -> sendPage(context.getSource(), Messages.HELP, 1, "Its Mine!", "/claim help commands %page%"));
+//
+//            RequiredArgumentBuilder<ServerCommandSource, String> id = getHelpId();
+//            RequiredArgumentBuilder<ServerCommandSource, Integer> page = argument("page", IntegerArgumentType.integer(1));
+//
+//            page.executes((context) -> {
+//                Claim.HelpBook book = Claim.HelpBook.getById(getString(context, "id"));
+//                if (book == null) {
+//                    context.getSource().sendError(new LiteralText("Invalid Book!"));
+//                    return -1;
+//                }
+//                int p = IntegerArgumentType.getInteger(context, "page");
+//
+//                if (p > book.texts.length) p = 1;
+//                return sendPage(context.getSource(), book.texts, p, book.title, book.getCommand());
+//            });
+//
+//            id.then(page);
+//            help.then(id);
+//            command.then(help);
+//        }
+//        {
+//            LiteralArgumentBuilder<ServerCommandSource> create = literal("create");
+//            RequiredArgumentBuilder<ServerCommandSource, String> name = argument("name", word());
+//
+//            name.executes(context -> {
+//            ServerPlayerEntity player = context.getSource().getPlayer();
+//            Pair<BlockPos, BlockPos> selectedPositions = ClaimManager.INSTANCE.stickPositions.get(player);
+//                if (selectedPositions == null) {
+//                    context.getSource().sendFeedback(new LiteralText("You need to specify block positions or select them with a stick.").formatted(Formatting.RED), false);
+//                } else if (selectedPositions.getLeft() == null) {
+//                    context.getSource().sendFeedback(new LiteralText("You need to specify block positions or select position #1(Right Click) with a stick.").formatted(Formatting.RED), false);
+//                } else if (selectedPositions.getRight() == null) {
+//                    context.getSource().sendFeedback(new LiteralText("You need to specify block positions or select position #2(Left Click) with a stick.").formatted(Formatting.RED), false);
+//                } else {
+//                    String cname = getString(context, "name");
+//                    if (createClaim(cname, context.getSource(), selectedPositions.getLeft(), selectedPositions.getRight(), false, null) > 0) {
+//                        ClaimManager.INSTANCE.stickPositions.remove(player);
+//                    }
+//                }
+//                return 0;
+//            });
+//
+//            ArgumentBuilder<ServerCommandSource, ?> min = argument("min", BlockPosArgumentType.blockPos());
+//            RequiredArgumentBuilder<ServerCommandSource, PosArgument> max = argument("max", BlockPosArgumentType.blockPos());
+//            max.executes(context -> createClaim(
+//                    getString(context, "name"),
+//                    context.getSource(),
+//                    BlockPosArgumentType.getBlockPos(context, "min"),
+//                    BlockPosArgumentType.getBlockPos(context, "max"),
+//                    false,
+//                    null
+//            ));
+//            min.then(max);
+//            name.then(min);
+//            create.then(name);
+//            command.then(create);
+//        }
+//        {
+//            LiteralArgumentBuilder<ServerCommandSource> fly = literal("fly")
+//                    .requires(src -> ItsMine.permissions().hasPermission(src, PermissionUtil.Command.CLAIM_FLY, 2));
+//            RequiredArgumentBuilder<ServerCommandSource, Boolean> setArgument = CommandManager.argument("set", BoolArgumentType.bool());
+//
+//            fly.executes((context) -> setFly(context, !ClaimManager.INSTANCE.flyers.contains(context.getSource().getPlayer().getUuid())));
+//            setArgument.executes((context) -> setFly(context, BoolArgumentType.getBool(context, "set")));
+//
+//            fly.then(setArgument);
+//            command.then(fly);
+//        }
+//        {
+//            LiteralArgumentBuilder<ServerCommandSource> rename = literal("rename");
+//            RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = ArgumentUtil.getClaims();
+//            RequiredArgumentBuilder<ServerCommandSource, String> nameArgument = argument("name", word());
+//            nameArgument.executes((context) -> rename(context, false));
+//            claimArgument.then(nameArgument);
+//            rename.then(claimArgument);
+//            command.then(rename);
+//        }
+//        {
+//            LiteralArgumentBuilder<ServerCommandSource> trusted = literal("trusted");
+//            RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = ArgumentUtil.getClaims();
+//            trusted.executes((context)-> {
+//                ServerPlayerEntity player = context.getSource().getPlayer();
+//                Claim claim = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.dimension);
+//                if (claim == null) {
+//                    context.getSource().sendError(Messages.INVALID_CLAIM);
+//                    return -1;
+//                }
+//                return showTrustedList(context, claim, false);
+//            });
+//
+//            claimArgument.executes((context) -> {
+//                Claim claim = ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim"));
+//                if (claim == null) {
+//                    context.getSource().sendError(Messages.INVALID_CLAIM);
+//                    return -1;
+//                }
+//                return showTrustedList(context, claim, false);
+//            });
+//            trusted.then(claimArgument);
+//            command.then(trusted);
+//            dispatcher.register(trusted);
+//        }
+//        {
+//            LiteralArgumentBuilder<ServerCommandSource> stick = literal("stick");
+//            stick.executes(context -> {
+//                Pair<BlockPos, BlockPos> posPair = ClaimManager.INSTANCE.stickPositions.get(context.getSource().getPlayer());
+//                context.getSource().sendFeedback(new LiteralText(posPair == null ? "You can now use a stick to create claims. Run this command again to disable" : "Claim stick disabled. Run this command again to enable").formatted(Formatting.DARK_PURPLE), false);
+//                if (posPair == null) {
+//                    ClaimManager.INSTANCE.stickPositions.put(context.getSource().getPlayer(), new Pair<>(null, null));
+//                } else {
+//                    ClaimManager.INSTANCE.stickPositions.remove(context.getSource().getPlayer());
+//                }
+//                return 0;
+//            });
+//            command.then(stick);
+//        }
+//        {
+//            LiteralArgumentBuilder<ServerCommandSource> show = literal("show");
+//            show.executes(context -> showClaim(context.getSource(), ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().dimension.getType()), false));
+//            RequiredArgumentBuilder<ServerCommandSource, String> claim = ArgumentUtil.getClaims();
+//            claim.executes(context -> showClaim(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(getString(context, "name")), false));
+//            show.then(claim);
+//            command.then(show);
+//        }
+//        {
+//            LiteralArgumentBuilder<ServerCommandSource> hide = literal("hide");
+//            hide.executes(context -> showClaim(context.getSource(), null, true));
+//            command.then(hide);
+//        }
+//        {
+//            LiteralArgumentBuilder<ServerCommandSource> check = literal("blocks");
+//            RequiredArgumentBuilder<ServerCommandSource, EntitySelector> other = argument("player", EntityArgumentType.player());
+//            other.requires(source -> ItsMine.permissions().hasPermission(source, PermissionUtil.Command.ADMIN_CHECK_OTHERS, 2));
+//            other.executes(ctx -> checkPlayer(ctx.getSource(), EntityArgumentType.getPlayer(ctx, "player").getGameProfile().getId()));
+//            check.then(other);
+//            check.executes(ctx -> checkPlayer(ctx.getSource(), ctx.getSource().getPlayer().getGameProfile().getId()));
+//            command.then(check);
+//        }
+//        {
+//            LiteralArgumentBuilder<ServerCommandSource> delete = literal("remove");
+//            RequiredArgumentBuilder<ServerCommandSource, String> claim = ArgumentUtil.getClaims();
+//            LiteralArgumentBuilder<ServerCommandSource> confirm = literal("confirm");
+//            confirm.executes(context -> delete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim")), false));
+//            claim.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim")), false));
+//            claim.then(confirm);
+//            delete.then(claim);
+//            delete.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition()), context.getSource().getWorld().getDimension().getType()), false));
+//            command.then(delete);
+//        }
+//        {
+//            {
+//                LiteralArgumentBuilder<ServerCommandSource> expand = literal("expand");
+//                RequiredArgumentBuilder<ServerCommandSource, Integer> amount = argument("distance", IntegerArgumentType.integer(1, Integer.MAX_VALUE));
+//                RequiredArgumentBuilder<ServerCommandSource, String> direction = getDirections();
+//
+//                direction.executes(context -> expand(
+//                        ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
+//                        IntegerArgumentType.getInteger(context, "distance"),
+//                        directionByName(getString(context, "direction")),
+//                        context.getSource(),
+//                        false
+//                ));
+//
+//                amount.executes(context -> expand(
+//                        ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
+//                        IntegerArgumentType.getInteger(context, "distance"),
+//                        Direction.getEntityFacingOrder(context.getSource().getPlayer())[0],
+//                        context.getSource(),
+//                        false
+//                ));
+//
+//                amount.then(direction);
+//                expand.then(amount);
+//                command.then(expand);
+//            }
+//            {
+//                LiteralArgumentBuilder<ServerCommandSource> shrink = literal("shrink");
+//                RequiredArgumentBuilder<ServerCommandSource, Integer> amount = argument("distance", IntegerArgumentType.integer(1, Integer.MAX_VALUE));
+//                RequiredArgumentBuilder<ServerCommandSource, String> direction = getDirections();
+//
+//                direction.executes(context -> expand(
+//                        ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
+//                        -IntegerArgumentType.getInteger(context, "distance"),
+//                        directionByName(getString(context, "direction")),
+//                        context.getSource(),
+//                        false
+//                ));
+//
+//                amount.executes(context -> expand(
+//                        ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
+//                        -IntegerArgumentType.getInteger(context, "distance"),
+//                        Direction.getEntityFacingOrder(context.getSource().getPlayer())[0],
+//                        context.getSource(),
+//                        false
+//                ));
+//
+//                amount.then(direction);
+//                shrink.then(amount);
+//                command.then(shrink);
+//            }
+//        }
+//        {
+//            LiteralArgumentBuilder<ServerCommandSource> delete = literal("remove");
+//            RequiredArgumentBuilder<ServerCommandSource, String> claim = ArgumentUtil.getClaims();
+//            LiteralArgumentBuilder<ServerCommandSource> confirm = literal("confirm");
+//            confirm.executes(context -> delete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim")), false));
+//            claim.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim")), false));
+//            claim.then(confirm);
+//            delete.then(claim);
+//            delete.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition()), context.getSource().getWorld().getDimension().getType()), false));
+//            command.then(delete);
+//        }
+//        {
+//            LiteralArgumentBuilder<ServerCommandSource> transfer = literal("transfer");
+//            RequiredArgumentBuilder<ServerCommandSource, String> claim = ArgumentUtil.getClaims();
+//            RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = argument("player", EntityArgumentType.player());
+//            LiteralArgumentBuilder<ServerCommandSource> confirm = literal("confirm");
+//            confirm.executes(context -> {
+//                final String string = "-accept-";
+//                ServerPlayerEntity p = EntityArgumentType.getPlayer(context, "player");
+//                String input = getString(context, "claim");
+//                String claimName = input.replace(string, "");
+//                Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(claimName);
+//                if (claim1 == null) {
+//                    context.getSource().sendError(Messages.INVALID_CLAIM);
+//                    return -1;
+//                }
+//
+//                if (input.startsWith(string)) {
+//                    return acceptTransfer(context.getSource());
+//                }
+//
+//                return transfer(context.getSource(), claim1, p, false);
+//            });
+//            player.executes(context -> requestTransfer(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim")), EntityArgumentType.getPlayer(context, "player"), false));
+//            player.then(confirm);
+//            claim.then(player);
+//            transfer.then(claim);
+//            transfer.executes(context -> requestTransfer(context.getSource(), ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition()), context.getSource().getWorld().getDimension().getType()), EntityArgumentType.getPlayer(context, "player"), false));
+//            command.then(transfer);
+//        }
+//        {
+//            ///claim rentable <claim> <currency> <amount> <days> [<maxdays>]
+//            LiteralArgumentBuilder<ServerCommandSource> rentable = literal("rentable");
+//            RequiredArgumentBuilder<ServerCommandSource, String> claim = ArgumentUtil.getClaims();
+//
+//            RequiredArgumentBuilder<ServerCommandSource, ItemStackArgument> currency = CommandManager.argument("item", ItemStackArgumentType.itemStack()).suggests(ClaimCommand::itemsSuggestion);
+//            RequiredArgumentBuilder<ServerCommandSource, Integer> amount = CommandManager.argument("count", IntegerArgumentType.integer(1));
+//            RequiredArgumentBuilder<ServerCommandSource, String> days = CommandManager.argument("days", StringArgumentType.string()
+//            );
+//            RequiredArgumentBuilder<ServerCommandSource, String> maxdays = CommandManager.argument("maxdays", string());
+//            maxdays.executes(context -> makeRentable(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim")), ItemStackArgumentType.getItemStackArgument(context, "item").createStack(1, false), IntegerArgumentType.getInteger(context, "count"), getString(context, "days"), getString(context, "maxdays")));
+//            claim.executes(context -> {
+//                Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim"));
+//                if(claim1.rent.getCurrency() !=null || claim1.rent.getAmount() != 0 || claim1.rent.getRentAbleTime() != 0 || claim1.rent.getMaxrentAbleTime() != 0 && claim1.rent.isRentable()) {
+//                    context.getSource().sendFeedback(new LiteralText("Can't enable rent for " + claim1.name + ", because no values are set").formatted(Formatting.RED), true);
+//                    return 0;
+//                }
+//                if(claim1.rent.getTenant() == null){
+//                    String state = claim1.rent.isRentable() ? "disabled" : "enabled";
+//                    claim1.rent.setRentable(!claim1.rent.isRentable());
+//                    context.getSource().sendFeedback(new LiteralText("Renting for " + claim1.name + " has been " + state).formatted(Formatting.GREEN), true);
+//                    return 1;
+//                } else {
+//                    context.getSource().sendFeedback(new LiteralText("Can't disable rent for " + claim1.name + ", because it is currently being rented").formatted(Formatting.RED), true);
+//                    return 0;
+//                }
+//            });
+//
+//            days.then(maxdays);
+//            amount.then(days);
+//            currency.then(amount);
+//            claim.then(currency);
+//            rentable.then(claim);
+//            command.then(rentable);
+//        }
+//        {
+//            LiteralArgumentBuilder<ServerCommandSource> rent = literal("rent");
+//            RequiredArgumentBuilder<ServerCommandSource, String> claim = ArgumentUtil.getClaims();
+//            RequiredArgumentBuilder<ServerCommandSource, String> days = CommandManager.argument("days", string());
+//            days.executes(context -> rent(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim")), getString(context, "days")));
+//
+//            claim.then(days);
+//            rent.then(claim);
+//            command.then(rent);
+//        }
+//        {
+//            LiteralArgumentBuilder<ServerCommandSource> info = literal("info");
+//            RequiredArgumentBuilder<ServerCommandSource, String> claim = ArgumentUtil.getClaims();
+//            info.executes(context -> info(
+//                    context.getSource(),
+//                    ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition()), context.getSource().getWorld().getDimension().getType())
+//            ));
+//            claim.executes(context -> info(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim"))
+//            ));
+//            info.then(claim);
+//            command.then(info);
+//        }
+//        {
+//            LiteralArgumentBuilder<ServerCommandSource> revenue = literal("revenue");
+//            RequiredArgumentBuilder<ServerCommandSource, String> claim = ArgumentUtil.getClaims();
+//            RequiredArgumentBuilder<ServerCommandSource, Boolean> claimRevenue = argument("claimRevenue", BoolArgumentType.bool());
+//            revenue.executes(context -> revenue(context.getSource(), ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition()), context.getSource().getWorld().getDimension().getType()), false));
+//            claim.executes(context -> revenue(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim")), false));
+//            claimRevenue.executes(context -> revenue(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim")), true));
+//            claim.then(claimRevenue);
+//            revenue.then(claim);
+//            command.then(revenue);
+//        }
+//        {
+//            LiteralArgumentBuilder<ServerCommandSource> list = literal("list");
+//            LiteralArgumentBuilder<ServerCommandSource> listall = literal("listall");
+//            RequiredArgumentBuilder<ServerCommandSource, String> player = argument("player", word());
+//            player.requires(source -> ItsMine.permissions().hasPermission(source, PermissionUtil.Command.ADMIN_CHECK_OTHERS, 2));
+//            player.suggests(PLAYERS_PROVIDER);
+//            list.executes(context -> list(context.getSource(), context.getSource().getName()));
+//            listall.executes(context -> listall(context.getSource()));
+//            player.executes(context -> list(context.getSource(), getString(context, "player")));
+//            list.then(player);
+//            command.then(list);
+//            command.then(listall);
+//
+//            LiteralArgumentBuilder<ServerCommandSource> claims = literal("claims")
+//                    .executes(context -> list(context.getSource(), context.getSource().getName()))
+//                    .then(player);
+//            dispatcher.register(claims);
+//        }
+//        {
+//            //TODO: FIX THIS
 //            LiteralArgumentBuilder<ServerCommandSource> listall = literal("listall");
 //            RequiredArgumentBuilder<ServerCommandSource, Integer> page = argument("page", IntegerArgumentType.integer(1));
 //
@@ -471,1211 +441,1466 @@ public class ClaimCommand {
 //            page.executes(context -> listAll(context.getSource(), IntegerArgumentType.getInteger(context, "page")));
 //            listall.then(page);
 //            command.then(listall);
-        }
-        {
-            LiteralArgumentBuilder<ServerCommandSource> trust = literal("trust");
-            RequiredArgumentBuilder<ServerCommandSource, EntitySelector> playerArgument = argument("player", EntityArgumentType.player());
-            RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = getClaimArgument();
+//        }
+//        {
+//            LiteralArgumentBuilder<ServerCommandSource> trust = literal("trust");
+//            RequiredArgumentBuilder<ServerCommandSource, GameProfileArgumentType.GameProfileArgument> playerArgument = argument("player", GameProfileArgumentType.gameProfile());
+//            RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = ArgumentUtil.getClaims();
+//            playerArgument.executes((context -> executeTrust(context, GameProfileArgumentType.getProfileArgument(context, "player"), true, null)));
+//            claimArgument.executes((context -> executeTrust(context, GameProfileArgumentType.getProfileArgument(context, "player"), true, getString(context, "claim"))));
+//
+//            playerArgument.then(claimArgument);
+//            trust.then(playerArgument);
+//            command.then(trust);
+//            dispatcher.register(trust);
+//        }
+//        {
+//            LiteralArgumentBuilder<ServerCommandSource> distrust = literal("distrust");
+//            RequiredArgumentBuilder<ServerCommandSource, GameProfileArgumentType.GameProfileArgument> playerArgument = argument("player", GameProfileArgumentType.gameProfile());
+//            RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = ArgumentUtil.getClaims();
+//
+//            playerArgument.executes((context -> executeTrust(context, GameProfileArgumentType.getProfileArgument(context, "player"), false, null)));
+//            claimArgument.executes((context -> executeTrust(context, GameProfileArgumentType.getProfileArgument(context, "player"), false, getString(context, "claim"))));
+//
+//            playerArgument.then(claimArgument);
+//            distrust.then(playerArgument);
+//            command.then(distrust);
+//            dispatcher.register(distrust);
+//        }
 
-            playerArgument.executes((context -> executeTrust(context, EntityArgumentType.getPlayer(context, "player"), true, null)));
-            claimArgument.executes((context -> executeTrust(context, EntityArgumentType.getPlayer(context, "player"), true, StringArgumentType.getString(context, "claim"))));
+//        createExceptionCommand(command, false);
+//
+//        {
+//            LiteralArgumentBuilder<ServerCommandSource> admin = literal("admin");
+//            admin.requires(PERMISSION_CHECK_ADMIN);
+//            {
+//                LiteralArgumentBuilder<ServerCommandSource> entity = literal("entities");
+//                entity.requires(source -> ItsMine.permissions().hasPermission(source, PermissionUtil.Command.ADMIN_MODIFY, 2));
+//                RequiredArgumentBuilder<ServerCommandSource, String> claim = ArgumentUtil.getClaims();
+//                entity.executes(context -> {
+//                    Claim claim1 = ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getPlayer().dimension);
+//                    context.getSource().sendFeedback(new LiteralText("Entities (" + claim1.name + "): ").formatted(Formatting.GOLD).append(new LiteralText(String.valueOf(claim1.getEntities(context.getSource().getWorld()))).formatted(Formatting.AQUA)), true);
+//                    claim1.getEntitySorted(claim1.getEntityMap(claim1, context.getSource().getWorld())).forEach((entityType, integer) -> {
+//                        context.getSource().sendFeedback(new LiteralText(entityType.getName().asFormattedString() + ": ").formatted(Formatting.YELLOW).append(new LiteralText(String.valueOf(integer)).formatted(Formatting.GOLD)), true);
+//                    });
+//                    return 1;
+//                });
+//                claim.executes(context -> {
+//                    Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim"));
+//                        context.getSource().sendFeedback(new LiteralText("Entities (" + claim1.name + "): ").formatted(Formatting.GOLD).append(new LiteralText(String.valueOf(claim1.getEntities(context.getSource().getWorld()))).formatted(Formatting.AQUA)), true);
+//                    claim1.getEntitySorted(claim1.getEntityMap(claim1, context.getSource().getWorld())).forEach((entityType, integer) -> {
+//                        context.getSource().sendFeedback(new LiteralText(entityType.getName().asFormattedString() + ": ").formatted(Formatting.YELLOW).append(new LiteralText(String.valueOf(integer)).formatted(Formatting.GOLD)), true);
+//                    });
+//                    return 1;
+//                });
+//                entity.then(claim);
+//                admin.then(entity);
+//            }
+//            {
+//                LiteralArgumentBuilder<ServerCommandSource> add = literal("addBlocks");
+//                add.requires(source -> ItsMine.permissions().hasPermission(source, PermissionUtil.Command.ADMIN_MODIFY_BALANCE, 2));
+//                RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = argument("player", EntityArgumentType.players());
+//                RequiredArgumentBuilder<ServerCommandSource, Integer> amount = argument("amount", IntegerArgumentType.integer());
+//                amount.executes(context -> {
+//                    ClaimManager.INSTANCE.addClaimBlocks(EntityArgumentType.getPlayers(context, "player"), IntegerArgumentType.getInteger(context, "amount"));
+//                    context.getSource().sendFeedback(new LiteralText("Gave " + IntegerArgumentType.getInteger(context, "amount") + " claim blocks").formatted(Formatting.GREEN), true);
+//                    return 0;
+//                });
+//                player.then(amount);
+//                add.then(player);
+//                admin.then(add);
+//            }
+//            {
+//                LiteralArgumentBuilder<ServerCommandSource> set = literal("setOwner");
+//                RequiredArgumentBuilder<ServerCommandSource, GameProfileArgumentType.GameProfileArgument> newOwner = argument("newOwner", GameProfileArgumentType.gameProfile());
+//                RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = ArgumentUtil.getClaims();
+//
+//                newOwner.executes((context) -> {
+//                    Claim claim = ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getPlayer().dimension);
+//                    if (claim == null) {
+//                        context.getSource().sendError(Messages.INVALID_CLAIM);
+//                        return -1;
+//                    }
+//
+//                    Collection<GameProfile> profiles = GameProfileArgumentType.getProfileArgument(context, "newOwner");
+//
+//                    if (profiles.size() > 1) {
+//                        context.getSource().sendError(Messages.TOO_MANY_SELECTIONS);
+//                        return -1;
+//                    }
+//                    return setOwner(context.getSource(), claim, profiles.iterator().next());
+//                });
+//
+//                claimArgument.executes((context) -> {
+//                    Claim claim = ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim"));
+//                    if (claim == null) {
+//                        context.getSource().sendError(Messages.INVALID_CLAIM);
+//                        return -1;
+//                    }
+//
+//                    Collection<GameProfile> profiles = GameProfileArgumentType.getProfileArgument(context, "newOwner");
+//
+//                    if (profiles.size() > 1) {
+//                        context.getSource().sendError(Messages.TOO_MANY_SELECTIONS);
+//                        return -1;
+//                    }
+//                    return setOwner(context.getSource(), claim, profiles.iterator().next());
+//                });
+//
+//                newOwner.then(claimArgument);
+//                set.then(newOwner);
+//                admin.then(set);
+//            }
+//            {
+//                LiteralArgumentBuilder<ServerCommandSource> set = literal("setOwnerName");
+//                RequiredArgumentBuilder<ServerCommandSource, String> nameArgument = argument("newName", word());
+//                RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = ArgumentUtil.getClaims();
+//
+//                nameArgument.executes((context) -> {
+//                   Claim claim = ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getPlayer().dimension);
+//                   if (claim == null) {
+//                       context.getSource().sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
+//                       return -1;
+//                   }
+//                    return setOwnerName(context.getSource(), claim, getString(context, "newName"));
+//                });
+//
+//                claimArgument.executes((context) -> {
+//                    Claim claim = ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim"));
+//                    if (claim == null) {
+//                        context.getSource().sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
+//                        return -1;
+//                    }
+//                    return setOwnerName(context.getSource(), claim, getString(context, "newName"));
+//                });
+//
+//                nameArgument.then(claimArgument);
+//                set.then(nameArgument);
+//                admin.then(set);
+//            }
+//            {
+//                LiteralArgumentBuilder<ServerCommandSource> rename = literal("rename");
+//                RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = ArgumentUtil.getClaimsSubzones();
+//                RequiredArgumentBuilder<ServerCommandSource, String> nameArgument = argument("name", word());
+//                nameArgument.executes((context) -> rename(context, true));
+//                claimArgument.then(nameArgument);
+//                rename.then(claimArgument);
+//                admin.then(rename);
+//            }
+//            {
+//                LiteralArgumentBuilder<ServerCommandSource> remove = literal("removeBlocks");
+//                remove.requires(source ->ItsMine.permissions().hasPermission(source, PermissionUtil.Command.ADMIN_MODIFY_BALANCE, 2));
+//                RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = argument("player", EntityArgumentType.players());
+//                RequiredArgumentBuilder<ServerCommandSource, Integer> amount = argument("amount", IntegerArgumentType.integer());
+//                amount.executes(context -> {
+//                    ClaimManager.INSTANCE.addClaimBlocks(EntityArgumentType.getPlayers(context, "player"), -IntegerArgumentType.getInteger(context, "amount"));
+//                    context.getSource().sendFeedback(new LiteralText("Took " + IntegerArgumentType.getInteger(context, "amount") + " claim blocks").formatted(Formatting.GREEN), true);
+//                    return 0;
+//                });
+//                player.then(amount);
+//                remove.then(player);
+//                admin.then(remove);
+//            }
+//            {
+//                LiteralArgumentBuilder<ServerCommandSource> set = literal("setBlocks");
+//                set.requires(source -> ItsMine.permissions().hasPermission(source, PermissionUtil.Command.ADMIN_MODIFY_BALANCE, 2));
+//                RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = argument("player", EntityArgumentType.players());
+//                RequiredArgumentBuilder<ServerCommandSource, Integer> amount = argument("amount", IntegerArgumentType.integer());
+//                amount.executes(context -> {
+//                    ClaimManager.INSTANCE.setClaimBlocks(EntityArgumentType.getPlayers(context, "player"), IntegerArgumentType.getInteger(context, "amount"));
+//                    context.getSource().sendFeedback(new LiteralText("Set claim block amount to " + IntegerArgumentType.getInteger(context, "amount")).formatted(Formatting.GREEN), true);
+//                    return 0;
+//                });
+//                player.then(amount);
+//                set.then(player);
+//                admin.then(set);
+//            }
+//            {
+//                LiteralArgumentBuilder<ServerCommandSource> delete = literal("remove");
+//                delete.requires(source -> ItsMine.permissions().hasPermission(source, PermissionUtil.Command.ADMIN_MODIFY, 2));
+//                RequiredArgumentBuilder<ServerCommandSource, String> claim = ArgumentUtil.getClaims();
+//                LiteralArgumentBuilder<ServerCommandSource> confirm = literal("confirm");
+//                confirm.executes(context -> delete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim")), true));
+//                claim.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim")), true));
+//                claim.then(confirm);
+//                delete.then(claim);
+//                delete.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition()), context.getSource().getWorld().getDimension().getType()), true));
+//                admin.then(delete);
+//            }
+//            {
+//                LiteralArgumentBuilder<ServerCommandSource> create = literal("create");
+//                create.requires(source -> ItsMine.permissions().hasPermission(source, PermissionUtil.Command.ADMIN_INFINITE_CLAIM, 2));
+//                ArgumentBuilder<ServerCommandSource, ?> name = argument("name", word());
+//                ArgumentBuilder<ServerCommandSource, ?> customOwner = argument("customOwnerName", word());
+//                ArgumentBuilder<ServerCommandSource, ?> min = argument("min", BlockPosArgumentType.blockPos());
+//                RequiredArgumentBuilder<ServerCommandSource, PosArgument> max = argument("max", BlockPosArgumentType.blockPos());
+//                max.executes(context -> createClaim(
+//                        getString(context, "name"),
+//                        context.getSource(),
+//                        BlockPosArgumentType.getBlockPos(context, "min"),
+//                        BlockPosArgumentType.getBlockPos(context, "max"),
+//                        true,
+//                        null
+//                ));
+//                name.executes(context ->  {
+//                    ServerPlayerEntity player = context.getSource().getPlayer();
+//                    Pair<BlockPos, BlockPos> selectedPositions = ClaimManager.INSTANCE.stickPositions.get(player);
+//                    if (selectedPositions == null) {
+//                        context.getSource().sendFeedback(new LiteralText("You need to specify block positions or select them with a stick.").formatted(Formatting.RED), false);
+//                    } else if (selectedPositions.getLeft() == null) {
+//                        context.getSource().sendFeedback(new LiteralText("You need to specify block positions or select position #1(Right Click) with a stick.").formatted(Formatting.RED), false);
+//                    } else if (selectedPositions.getRight() == null) {
+//                        context.getSource().sendFeedback(new LiteralText("You need to specify block positions or select position #2(Left Click) with a stick.").formatted(Formatting.RED), false);
+//                    } else {
+//                        String cname = getString(context, "name");
+//                        if (createClaim(cname, context.getSource(), selectedPositions.getLeft(), selectedPositions.getRight(), true, null) > 0) {
+//                            ClaimManager.INSTANCE.stickPositions.remove(player);
+//                        }
+//                    }
+//                    return 0;
+//                });
+//                customOwner.executes(context ->  {
+//                    ServerPlayerEntity player = context.getSource().getPlayer();
+//                    Pair<BlockPos, BlockPos> selectedPositions = ClaimManager.INSTANCE.stickPositions.get(player);
+//                    if (selectedPositions == null) {
+//                        context.getSource().sendFeedback(new LiteralText("You need to specify block positions or select them with a stick.").formatted(Formatting.RED), false);
+//                    } else if (selectedPositions.getLeft() == null) {
+//                        context.getSource().sendFeedback(new LiteralText("You need to specify block positions or select position #1(Right Click) with a stick.").formatted(Formatting.RED), false);
+//                    } else if (selectedPositions.getRight() == null) {
+//                        context.getSource().sendFeedback(new LiteralText("You need to specify block positions or select position #2(Left Click) with a stick.").formatted(Formatting.RED), false);
+//                    } else {
+//                        String cname = getString(context, "name");
+//                        if (createClaim(cname, context.getSource(), selectedPositions.getLeft(), selectedPositions.getRight(), true, getString(context, "customOwnerName")) > 0) {
+//                            ClaimManager.INSTANCE.stickPositions.remove(player);
+//                        }
+//                    }
+//                    return 0;
+//                });
+//                min.then(max);
+//                name.then(customOwner);
+//                name.then(min);
+//                create.then(name);
+//                admin.then(create);
+//            }
+//            {
+//                LiteralArgumentBuilder<ServerCommandSource> ignore = literal("ignoreClaims");
+//                ignore.requires(source -> ItsMine.permissions().hasPermission(source, PermissionUtil.Command.ADMIN_IGNORE_CLAIMS, 2));
+//                ignore.executes(context -> {
+//                    UUID id = context.getSource().getPlayer().getGameProfile().getId();
+//                    boolean isIgnoring = ClaimManager.INSTANCE.ignoringClaims.contains(id);
+//                    if (isIgnoring) ClaimManager.INSTANCE.ignoringClaims.remove(id);
+//                    else ClaimManager.INSTANCE.ignoringClaims.add(id);
+//                    context.getSource().sendFeedback(new LiteralText("You are " + (isIgnoring ? "no longer" : "now") + " ignoring claims.").formatted(Formatting.GREEN), false);
+//                    return 0;
+//                });
+//                admin.then(ignore);
+//            }
+//            {
+//                {
+//                    LiteralArgumentBuilder<ServerCommandSource> expand = literal("expand");
+//                    expand.requires(source -> ItsMine.permissions().hasPermission(source, PermissionUtil.Command.ADMIN_INFINITE_CLAIM, 2) && ItsMine.permissions().hasPermission(source, PermissionUtil.Command.ADMIN_MODIFY, 2));
+//                    RequiredArgumentBuilder<ServerCommandSource, Integer> amount = argument("distance", IntegerArgumentType.integer(1, Integer.MAX_VALUE));
+//                    RequiredArgumentBuilder<ServerCommandSource, String> direction = getDirections();
+//
+//                    direction.executes(context -> expand(
+//                            ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
+//                            IntegerArgumentType.getInteger(context, "distance"),
+//                            directionByName(getString(context, "direction")),
+//                            context.getSource(),
+//                            true
+//                    ));
+//
+//                    amount.executes(context -> expand(
+//                            ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
+//                            IntegerArgumentType.getInteger(context, "distance"),
+//                            Direction.getEntityFacingOrder(context.getSource().getPlayer())[0],
+//                            context.getSource(),
+//                            true
+//                    ));
+//
+//                    amount.then(direction);
+//                    expand.then(amount);
+//                    admin.then(expand);
+//                }
+//                {
+//                    LiteralArgumentBuilder<ServerCommandSource> shrink = literal("shrink");
+//                    shrink.requires(source -> ItsMine.permissions().hasPermission(source, PermissionUtil.Command.ADMIN_INFINITE_CLAIM, 2) && ItsMine.permissions().hasPermission(source, PermissionUtil.Command.ADMIN_MODIFY, 2));
+//                    RequiredArgumentBuilder<ServerCommandSource, Integer> amount = argument("distance", IntegerArgumentType.integer(1, Integer.MAX_VALUE));
+//                    RequiredArgumentBuilder<ServerCommandSource, String> direction = getDirections();
+//
+//                    direction.executes(context -> expand(
+//                            ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
+//                            -IntegerArgumentType.getInteger(context, "distance"),
+//                            directionByName(getString(context, "direction")),
+//                            context.getSource(),
+//                            true
+//                    ));
+//
+//                    amount.executes(context -> expand(
+//                            ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
+//                            -IntegerArgumentType.getInteger(context, "distance"),
+//                            Direction.getEntityFacingOrder(context.getSource().getPlayer())[0],
+//                            context.getSource(),
+//                            true
+//                    ));
+//
+//                    amount.then(direction);
+//                    shrink.then(amount);
+//                    admin.then(shrink);
+//                }
+//            }
+//            createExceptionCommand(admin, true);
+//            command.then(admin);
+//        }
+//    }
 
-            playerArgument.then(claimArgument);
-            trust.then(playerArgument);
-            command.then(trust);
-            dispatcher.register(trust);
-        }
-        {
-            LiteralArgumentBuilder<ServerCommandSource> distrust = literal("distrust");
-            RequiredArgumentBuilder<ServerCommandSource, EntitySelector> playerArgument = argument("player", EntityArgumentType.entity());
-            RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = getClaimArgument();
+//    private static int sendPage(ServerCommandSource source, Text[] text, int page, String title, String command) {
+//        int prevPage = page - 2;
+//        int thisPage = page - 1;
+//        int nextPage = page + 1;
+//        final String SEPARATOR = "-----------------------------------------------------";
+//        Text header =  new LiteralText("")
+//                .append(new LiteralText("- [ ").formatted(Formatting.GRAY))
+//                .append(new LiteralText(title).formatted(Formatting.GOLD))
+//                .append(" ] ")
+//                .append(SEPARATOR.substring(ChatColor.removeAlternateColorCodes('&', title).length() + 4))
+//                .formatted(Formatting.GRAY);
+//
+//        Text button_prev = new LiteralText("")
+//                .append(new LiteralText("<-").formatted(Formatting.WHITE, Formatting.BOLD))
+//                .append(" ").append(new LiteralText("Prev").formatted(Formatting.GOLD))
+//                .styled((style) -> {
+//                    style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText((prevPage >= 0) ? "<<<" : "|<").formatted(Formatting.GRAY)));
+//                    if (prevPage >= 0)
+//                        style.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command.replace("%page%",  String.valueOf(page - 1))));
+//                });
+//
+//        Text button_next = new LiteralText("")
+//                .append(new LiteralText("Next").formatted(Formatting.GOLD))
+//                .append(" ").append(new LiteralText("->").formatted(Formatting.WHITE, Formatting.BOLD)).append(" ")
+//                .styled((style) -> {
+//                    style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText((nextPage <= text.length) ? ">>>" : ">|").formatted(Formatting.GRAY)));
+//                    if (nextPage <= text.length)
+//                        style.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command.replace("%page%",  String.valueOf(nextPage))));
+//                });
+//
+//        Text buttons = new LiteralText("")
+//                .append(new LiteralText("[ ").formatted(Formatting.GRAY))
+//                .append(button_prev)
+//                .append(" ")
+//                .append(
+//                        new LiteralText(String.valueOf(page)).formatted(Formatting.GREEN)
+//                        .append(new LiteralText("/").formatted(Formatting.GRAY))
+//                        .append(new LiteralText(String.valueOf(text.length)).formatted(Formatting.GREEN))
+//                )
+//                .append(" ")
+//                .append(button_next)
+//                .append(new LiteralText("] ").formatted(Formatting.GRAY));
+//
+//        Text footer = new LiteralText("- ")
+//                .formatted(Formatting.GRAY)
+//                .append(buttons).append(new LiteralText(" ------------------------------").formatted(Formatting.GRAY));
+//
+//        header.append("\n").append(text[thisPage]).append("\n").append(footer);
+//        source.sendFeedback(header, false);
+//        return 1;
+//    }
 
-            playerArgument.executes((context -> executeTrust(context, EntityArgumentType.getEntity(context, "player"), false, null)));
-            claimArgument.executes((context -> executeTrust(context, EntityArgumentType.getEntity(context, "player"), false, StringArgumentType.getString(context, "claim"))));
+//    private static void createExceptionCommand(LiteralArgumentBuilder<ServerCommandSource> command, boolean admin) {
+//        {
+//            LiteralArgumentBuilder<ServerCommandSource> settings = literal("settings");
+//            RequiredArgumentBuilder<ServerCommandSource, String> claim = ArgumentUtil.getClaims();
+//
+//            if (!admin) {
+//                settings.executes((context) -> sendPage(context.getSource(), Messages.SETTINGS_AND_PERMISSIONS, 1, "Claim Permissions and Settings", "/claim help perms_and_settings %page%"));
+//
+//                claim.executes((context) -> {
+//                    Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim"));
+//                    if (claim1 == null) {
+//                        context.getSource().sendError(Messages.INVALID_CLAIM);
+//                        return -1;
+//                    }
+//                    return querySettings(context.getSource(), claim1);
+//                });
+//            }
+//
+//            RequiredArgumentBuilder<ServerCommandSource, String> id = argument("setting", word()).suggests(SETTINGS_PROVIDER);
+//            RequiredArgumentBuilder<ServerCommandSource, Boolean> set = argument("set", BoolArgumentType.bool());
+//
+//            id.executes((context) -> executeSetting(context.getSource(), getString(context, "setting"), getString(context, "claim"), true, false, admin));
+//            set.executes((context) -> executeSetting(context.getSource(), getString(context, "setting"), null, false, BoolArgumentType.getBool(context, "set"), admin));
+//
+//            id.then(set);
+//            claim.then(id);
+//            settings.then(claim);
+//            command.then(settings);
+//        }
+//
+//        LiteralArgumentBuilder<ServerCommandSource> exceptions = literal("permissions");
+//        if (admin) exceptions.requires(source -> ItsMine.permissions().hasPermission(source, PermissionUtil.Command.ADMIN_MODIFY_PERMISSIONS, 2));
+//        RequiredArgumentBuilder<ServerCommandSource, String> claim = ArgumentUtil.getClaims();
+//        if (!admin) {
+//            exceptions.executes((context) -> sendPage(context.getSource(), Messages.SETTINGS_AND_PERMISSIONS, 1, "Claim Permissions and Settings", "/claim help perms_and_settings %page%"));
+//
+//            claim.executes((context) -> {
+//                Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim"));
+//                if (claim1 == null) {
+//                    context.getSource().sendError(Messages.INVALID_CLAIM);
+//                    return -1;
+//                }
+//                return showTrustedList(context, claim1, false);
+//            });
+//        }
+//
+//        if (!admin) {
+//            claim.executes((context) -> {
+//                Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim"));
+//                if (claim1 == null) {
+//                    context.getSource().sendError(new LiteralText("That claim does not exist"));
+//                    return -1;
+//                }
+//                return showTrustedList(context, claim1, true);
+//            });
+//        }
+//
+//        {
+//            RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = argument("player", EntityArgumentType.player());
+//            LiteralArgumentBuilder<ServerCommandSource> remove = literal("remove");
+//            remove.executes(context -> {
+//                Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim"));
+//                if (verifyPermission(claim1, Claim.Permission.MODIFY_PERMISSIONS, context, admin)) {
+//                    ServerPlayerEntity player1 = EntityArgumentType.getPlayer(context, "player");
+//                    claim1.permissionManager.resetPermissions(player1.getGameProfile().getId());
+//                    context.getSource().sendFeedback(new LiteralText(player1.getGameProfile().getName() + " no longer has an exception in the claim").formatted(Formatting.YELLOW), false);
+//                }
+//                return 0;
+//            });
+//            player.then(remove);
+//            LiteralArgumentBuilder<ServerCommandSource> all = literal("*");
+//            RequiredArgumentBuilder<ServerCommandSource, Boolean> allstate = argument("allow", BoolArgumentType.bool());
+//            allstate.executes(context -> {
+//                Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim"));
+//                ServerPlayerEntity player1 = EntityArgumentType.getPlayer(context, "player");
+//                validateClaim(claim1);
+//                return setTrust(context, claim1, player1.getGameProfile(), BoolArgumentType.getBool(context, "allow"), admin);
+//            });
+//            all.then(allstate);
+//            player.then(all);
+//            for (Claim.Permission value : Claim.Permission.values()) {
+//                LiteralArgumentBuilder<ServerCommandSource> permNode = literal(value.id);
+//                RequiredArgumentBuilder<ServerCommandSource, Boolean> allow = argument("allow", BoolArgumentType.bool());
+//                allow.executes(context -> {
+//                    Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim"));
+//                    if (verifyPermission(claim1, Claim.Permission.MODIFY_PERMISSIONS, context, admin)) {
+//                        ServerPlayerEntity player1 = EntityArgumentType.getPlayer(context, "player");
+//                        boolean permission = BoolArgumentType.getBool(context, "allow");
+//                        modifyException(claim1, player1, value, permission);
+//                        context.getSource().sendFeedback(new LiteralText(player1.getGameProfile().getName() + (permission ? " now" : " no longer") + " has the permission " + value.name).formatted(Formatting.YELLOW), false);
+//                    }
+//                    return 0;
+//                });
+//                permNode.executes(context -> {
+//                    Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim"));
+//                    if (verifyPermission(claim1, Claim.Permission.MODIFY_PERMISSIONS, context, admin)) {
+//                        ServerPlayerEntity player1 = EntityArgumentType.getPlayer(context, "player");
+//                        boolean permission = hasPermission(claim1, player1, value);
+//                        context.getSource().sendFeedback(new LiteralText(player1.getGameProfile().getName() + (permission ? " has" : " does not have") + " the permission " + value.name).formatted(Formatting.YELLOW), false);
+//                    }
+//                    return 0;
+//                });
+//                permNode.then(allow);
+//                player.then(permNode);
+//            }
+//            claim.then(player);
+//        }
+//        {
+//            LiteralArgumentBuilder<ServerCommandSource> message = literal("message");
+//            RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = ArgumentUtil.getClaims();
+//            RequiredArgumentBuilder<ServerCommandSource, String> messageEvent = argument("messageEvent", word())
+//                    .suggests(MESSAGE_EVENTS_PROVIDER);
+//            RequiredArgumentBuilder<ServerCommandSource, String> messageArgument = argument("message", greedyString())
+//                    .suggests(EVENT_MESSAGE_PROVIDER);
+//
+//            messageArgument.executes(context -> {
+//                Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim"));
+//                if (verifyPermission(claim1, Claim.Permission.MODIFY_PROPERTIES, context, admin)) {
+//                    Claim.Event event = Claim.Event.getById(getString(context, "messageEvent"));
+//
+//                    if (event == null) {
+//                        context.getSource().sendError(Messages.INVALID_MESSAGE_EVENT);
+//                        return -1;
+//                    }
+//
+//                    return setEventMessage(context.getSource(), claim1, event, getString(context, "message"));
+//                }
+//
+//                return -1;
+//            });
+//
+//            messageEvent.then(messageArgument);
+//            claimArgument.then(messageEvent);
+//            message.then(claimArgument);
+//            command.then(message);
+//        }
+//
+//
+//        exceptions.then(claim);
+//        command.then(exceptions);
+//    }
+//    private static boolean verifyPermission(Claim claim, Claim.Permission permission, CommandContext<ServerCommandSource> context, boolean admin) throws CommandSyntaxException {
+//        if (verifyExists(claim, context)) {
+//            if (claim.permissionManager.hasPermission(context.getSource().getPlayer().getGameProfile().getId(), permission)) {
+//                return true;
+//            } else {
+//                context.getSource().sendFeedback(new LiteralText(admin ? "You are modifying a claim using admin privileges" : "You cannot modify exceptions for this claim").formatted(admin ? Formatting.DARK_RED : Formatting.RED), false);
+//                return admin;
+//            }
+//        } else {
+//            return false;
+//        }
+//    }
+//    private static boolean verifyExists(Claim claim, CommandContext<ServerCommandSource> context) {
+//        if (claim == null) {
+//            context.getSource().sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
+//            return false;
+//        } else {
+//            return true;
+//        }
+//    }
 
-            playerArgument.then(claimArgument);
-            distrust.then(playerArgument);
-            command.then(distrust);
-            dispatcher.register(distrust);
-        }
+//    private static int makeRentable(ServerCommandSource source, Claim claim, ItemStack item, int amount, String rentString, String maxrentString) throws CommandSyntaxException {
+//        int rentTime = TimeUtil.convertStringtoSeconds(rentString);
+//        int maxrentTime = TimeUtil.convertStringtoSeconds(maxrentString);
+//        if(claim != null){
+//            if(rentTime <= maxrentTime){
+//                Claim.Rent rent = claim.rent;
+//                rent.setRentable(true);
+//                item.setCount(amount);
+//                rent.setCurrency(item);
+//                rent.setRentAbleTime(rentTime);
+//                if(maxrentTime > Config.rent_maxseconds) maxrentTime = Config.rent_maxseconds;
+//                rent.setMaxrentAbleTime(maxrentTime);
+//                source.sendFeedback(new LiteralText("Claim " + claim.name + " can now be rented for " + amount + " " + item.getName().asString() + " every " + TimeUtil.convertSecondsToString(rentTime, '2', 'a')).formatted(Formatting.GREEN), true);
+//                return 1;
+//            }
+//        }
+//        return 0;
+//    }
 
-        createExceptionCommand(command, false);
-
-        {
-            LiteralArgumentBuilder<ServerCommandSource> admin = literal("admin");
-            admin.requires(PERMISSION_CHECK_ADMIN);
-            {
-                LiteralArgumentBuilder<ServerCommandSource> add = literal("addBlocks");
-                add.requires(source -> ItsMine.permissions().hasPermission(source, Permissions.Command.ADMIN_MODIFY_BALANCE, 2));
-                RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = argument("player", EntityArgumentType.players());
-                RequiredArgumentBuilder<ServerCommandSource, Integer> amount = argument("amount", IntegerArgumentType.integer());
-                amount.executes(context -> {
-                    ClaimManager.INSTANCE.addClaimBlocks(EntityArgumentType.getPlayers(context, "player"), IntegerArgumentType.getInteger(context, "amount"));
-                    context.getSource().sendFeedback(new LiteralText("Gave " + IntegerArgumentType.getInteger(context, "amount") + " claim blocks").formatted(Formatting.GREEN), true);
-                    return 0;
-                });
-                player.then(amount);
-                add.then(player);
-                admin.then(add);
-            }
-            {
-                LiteralArgumentBuilder<ServerCommandSource> set = literal("setOwner");
-                RequiredArgumentBuilder<ServerCommandSource, GameProfileArgumentType.GameProfileArgument> newOwner = argument("newOwner", GameProfileArgumentType.gameProfile());
-                RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = getClaimArgument();
-
-                newOwner.executes((context) -> {
-                    Claim claim = ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getPlayer().dimension);
-                    if (claim == null) {
-                        context.getSource().sendError(Messages.INVALID_CLAIM);
-                        return -1;
-                    }
-
-                    Collection<GameProfile> profiles = GameProfileArgumentType.getProfileArgument(context, "newOwner");
-
-                    if (profiles.size() > 1) {
-                        context.getSource().sendError(Messages.TOO_MANY_SELECTIONS);
-                        return -1;
-                    }
-                    return setOwner(context.getSource(), claim, profiles.iterator().next());
-                });
-
-                claimArgument.executes((context) -> {
-                    Claim claim = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
-                    if (claim == null) {
-                        context.getSource().sendError(Messages.INVALID_CLAIM);
-                        return -1;
-                    }
-
-                    Collection<GameProfile> profiles = GameProfileArgumentType.getProfileArgument(context, "newOwner");
-
-                    if (profiles.size() > 1) {
-                        context.getSource().sendError(Messages.TOO_MANY_SELECTIONS);
-                        return -1;
-                    }
-                    return setOwner(context.getSource(), claim, profiles.iterator().next());
-                });
-
-                newOwner.then(claimArgument);
-                set.then(newOwner);
-                admin.then(set);
-            }
-            {
-                LiteralArgumentBuilder<ServerCommandSource> set = literal("setOwnerName");
-                RequiredArgumentBuilder<ServerCommandSource, String> nameArgument = argument("newName", StringArgumentType.word());
-                RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = getClaimArgument();
-
-                nameArgument.executes((context) -> {
-                   Claim claim = ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getPlayer().dimension);
-                   if (claim == null) {
-                       context.getSource().sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
-                       return -1;
-                   }
-                    return setOwnerName(context.getSource(), claim, StringArgumentType.getString(context, "newName"));
-                });
-
-                claimArgument.executes((context) -> {
-                    Claim claim = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
-                    if (claim == null) {
-                        context.getSource().sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
-                        return -1;
-                    }
-                    return setOwnerName(context.getSource(), claim, StringArgumentType.getString(context, "newName"));
-                });
-
-                nameArgument.then(claimArgument);
-                set.then(nameArgument);
-                admin.then(set);
-            }
-            {
-                LiteralArgumentBuilder<ServerCommandSource> rename = literal("rename");
-                RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = argument("claim", StringArgumentType.word())
-                        .suggests(CLAIM_PROVIDER);
-                RequiredArgumentBuilder<ServerCommandSource, String> nameArgument = argument("name", StringArgumentType.word());
-                nameArgument.executes((context) -> rename(context, true));
-                claimArgument.then(nameArgument);
-                rename.then(claimArgument);
-                admin.then(rename);
-            }
-            {
-                LiteralArgumentBuilder<ServerCommandSource> remove = literal("removeBlocks");
-                remove.requires(source ->ItsMine.permissions().hasPermission(source, Permissions.Command.ADMIN_MODIFY_BALANCE, 2));
-                RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = argument("player", EntityArgumentType.players());
-                RequiredArgumentBuilder<ServerCommandSource, Integer> amount = argument("amount", IntegerArgumentType.integer());
-                amount.executes(context -> {
-                    ClaimManager.INSTANCE.addClaimBlocks(EntityArgumentType.getPlayers(context, "player"), -IntegerArgumentType.getInteger(context, "amount"));
-                    context.getSource().sendFeedback(new LiteralText("Took " + IntegerArgumentType.getInteger(context, "amount") + " claim blocks").formatted(Formatting.GREEN), true);
-                    return 0;
-                });
-                player.then(amount);
-                remove.then(player);
-                admin.then(remove);
-            }
-            {
-                LiteralArgumentBuilder<ServerCommandSource> set = literal("setBlocks");
-                set.requires(source -> ItsMine.permissions().hasPermission(source, Permissions.Command.ADMIN_MODIFY_BALANCE, 2));
-                RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = argument("player", EntityArgumentType.players());
-                RequiredArgumentBuilder<ServerCommandSource, Integer> amount = argument("amount", IntegerArgumentType.integer());
-                amount.executes(context -> {
-                    ClaimManager.INSTANCE.setClaimBlocks(EntityArgumentType.getPlayers(context, "player"), IntegerArgumentType.getInteger(context, "amount"));
-                    context.getSource().sendFeedback(new LiteralText("Set claim block amount to " + IntegerArgumentType.getInteger(context, "amount")).formatted(Formatting.GREEN), true);
-                    return 0;
-                });
-                player.then(amount);
-                set.then(player);
-                admin.then(set);
-            }
-            {
-                LiteralArgumentBuilder<ServerCommandSource> delete = literal("remove");
-                delete.requires(source -> ItsMine.permissions().hasPermission(source, Permissions.Command.ADMIN_MODIFY, 2));
-                RequiredArgumentBuilder<ServerCommandSource, String> claim = getClaimArgument();
-                LiteralArgumentBuilder<ServerCommandSource> confirm = literal("confirm");
-                confirm.executes(context -> delete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")), true));
-                claim.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim")), true));
-                claim.then(confirm);
-                delete.then(claim);
-                delete.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition()), context.getSource().getWorld().getDimension().getType()), true));
-                admin.then(delete);
-            }
-            {
-                LiteralArgumentBuilder<ServerCommandSource> create = literal("create");
-                create.requires(source -> ItsMine.permissions().hasPermission(source, Permissions.Command.ADMIN_INFINITE_CLAIM, 2));
-                ArgumentBuilder<ServerCommandSource, ?> name = argument("name", StringArgumentType.word());
-                ArgumentBuilder<ServerCommandSource, ?> customOwner = argument("customOwnerName", StringArgumentType.word());
-                ArgumentBuilder<ServerCommandSource, ?> min = argument("min", BlockPosArgumentType.blockPos());
-                RequiredArgumentBuilder<ServerCommandSource, PosArgument> max = argument("max", BlockPosArgumentType.blockPos());
-                max.executes(context -> createClaim(
-                        StringArgumentType.getString(context, "name"),
-                        context.getSource(),
-                        BlockPosArgumentType.getBlockPos(context, "min"),
-                        BlockPosArgumentType.getBlockPos(context, "max"),
-                        true,
-                        null
-                ));
-                name.executes(context ->  {
-                    ServerPlayerEntity player = context.getSource().getPlayer();
-                    Pair<BlockPos, BlockPos> selectedPositions = ClaimManager.INSTANCE.stickPositions.get(player);
-                    if (selectedPositions == null) {
-                        context.getSource().sendFeedback(new LiteralText("You need to specify block positions or select them with a stick.").formatted(Formatting.RED), false);
-                    } else if (selectedPositions.getLeft() == null) {
-                        context.getSource().sendFeedback(new LiteralText("You need to specify block positions or select position #1(Right Click) with a stick.").formatted(Formatting.RED), false);
-                    } else if (selectedPositions.getRight() == null) {
-                        context.getSource().sendFeedback(new LiteralText("You need to specify block positions or select position #2(Left Click) with a stick.").formatted(Formatting.RED), false);
-                    } else {
-                        String cname = StringArgumentType.getString(context, "name");
-                        if (createClaim(cname, context.getSource(), selectedPositions.getLeft(), selectedPositions.getRight(), true, null) > 0) {
-                            ClaimManager.INSTANCE.stickPositions.remove(player);
-                        }
-                    }
-                    return 0;
-                });
-                customOwner.executes(context ->  {
-                    ServerPlayerEntity player = context.getSource().getPlayer();
-                    Pair<BlockPos, BlockPos> selectedPositions = ClaimManager.INSTANCE.stickPositions.get(player);
-                    if (selectedPositions == null) {
-                        context.getSource().sendFeedback(new LiteralText("You need to specify block positions or select them with a stick.").formatted(Formatting.RED), false);
-                    } else if (selectedPositions.getLeft() == null) {
-                        context.getSource().sendFeedback(new LiteralText("You need to specify block positions or select position #1(Right Click) with a stick.").formatted(Formatting.RED), false);
-                    } else if (selectedPositions.getRight() == null) {
-                        context.getSource().sendFeedback(new LiteralText("You need to specify block positions or select position #2(Left Click) with a stick.").formatted(Formatting.RED), false);
-                    } else {
-                        String cname = StringArgumentType.getString(context, "name");
-                        if (createClaim(cname, context.getSource(), selectedPositions.getLeft(), selectedPositions.getRight(), true, StringArgumentType.getString(context, "customOwnerName")) > 0) {
-                            ClaimManager.INSTANCE.stickPositions.remove(player);
-                        }
-                    }
-                    return 0;
-                });
-                min.then(max);
-                name.then(customOwner);
-                name.then(min);
-                create.then(name);
-                admin.then(create);
-            }
-            {
-                LiteralArgumentBuilder<ServerCommandSource> ignore = literal("ignoreClaims");
-                ignore.requires(source -> ItsMine.permissions().hasPermission(source, Permissions.Command.ADMIN_IGNORE_CLAIMS, 2));
-                ignore.executes(context -> {
-                    UUID id = context.getSource().getPlayer().getGameProfile().getId();
-                    boolean isIgnoring = ClaimManager.INSTANCE.ignoringClaims.contains(id);
-                    if (isIgnoring) ClaimManager.INSTANCE.ignoringClaims.remove(id);
-                    else ClaimManager.INSTANCE.ignoringClaims.add(id);
-                    context.getSource().sendFeedback(new LiteralText("You are " + (isIgnoring ? "no longer" : "now") + " ignoring claims.").formatted(Formatting.GREEN), false);
-                    return 0;
-                });
-                admin.then(ignore);
-            }
-            {
-                {
-                    LiteralArgumentBuilder<ServerCommandSource> expand = literal("expand");
-                    expand.requires(source -> ItsMine.permissions().hasPermission(source, Permissions.Command.ADMIN_INFINITE_CLAIM, 2) && ItsMine.permissions().hasPermission(source, Permissions.Command.ADMIN_MODIFY, 2));
-                    RequiredArgumentBuilder<ServerCommandSource, Integer> amount = argument("distance", IntegerArgumentType.integer(1, Integer.MAX_VALUE));
-                    RequiredArgumentBuilder<ServerCommandSource, String> direction = argument("direction", StringArgumentType.word());
-                    direction.suggests(DIRECTION_SUGGESTION_BUILDER);
-
-                    direction.executes(context -> expand(
-                            ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
-                            IntegerArgumentType.getInteger(context, "distance"),
-                            directionByName(StringArgumentType.getString(context, "direction")),
-                            context.getSource(),
-                            true
-                    ));
-
-                    amount.executes(context -> expand(
-                            ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
-                            IntegerArgumentType.getInteger(context, "distance"),
-                            Direction.getEntityFacingOrder(context.getSource().getPlayer())[0],
-                            context.getSource(),
-                            true
-                    ));
-
-                    amount.then(direction);
-                    expand.then(amount);
-                    admin.then(expand);
-                }
-                {
-                    LiteralArgumentBuilder<ServerCommandSource> shrink = literal("shrink");
-                    shrink.requires(source -> ItsMine.permissions().hasPermission(source, Permissions.Command.ADMIN_INFINITE_CLAIM, 2) && ItsMine.permissions().hasPermission(source, Permissions.Command.ADMIN_MODIFY, 2));
-                    RequiredArgumentBuilder<ServerCommandSource, Integer> amount = argument("distance", IntegerArgumentType.integer(1, Integer.MAX_VALUE));
-                    RequiredArgumentBuilder<ServerCommandSource, String> direction = argument("direction", StringArgumentType.word());
-                    direction.suggests(DIRECTION_SUGGESTION_BUILDER);
-
-                    direction.executes(context -> expand(
-                            ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
-                            -IntegerArgumentType.getInteger(context, "distance"),
-                            directionByName(StringArgumentType.getString(context, "direction")),
-                            context.getSource(),
-                            true
-                    ));
-
-                    amount.executes(context -> expand(
-                            ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
-                            -IntegerArgumentType.getInteger(context, "distance"),
-                            Direction.getEntityFacingOrder(context.getSource().getPlayer())[0],
-                            context.getSource(),
-                            true
-                    ));
-
-                    amount.then(direction);
-                    shrink.then(amount);
-                    admin.then(shrink);
-                }
-            }
-            createExceptionCommand(admin, true);
-            command.then(admin);
-        }
-    }
-
-    private static int sendPage(ServerCommandSource source, Text[] text, int page, String title, String command) {
-        int prevPage = page - 2;
-        int thisPage = page - 1;
-        int nextPage = page + 1;
-        final String SEPARATOR = "-----------------------------------------------------";
-        Text header =  new LiteralText("")
-                .append(new LiteralText("- [ ").formatted(Formatting.GRAY))
-                .append(new LiteralText(title).formatted(Formatting.GOLD))
-                .append(" ] ")
-                .append(SEPARATOR.substring(ChatColor.removeAlternateColorCodes('&', title).length() + 4))
-                .formatted(Formatting.GRAY);
-
-        Text button_prev = new LiteralText("")
-                .append(new LiteralText("<-").formatted(Formatting.WHITE, Formatting.BOLD))
-                .append(" ").append(new LiteralText("Prev").formatted(Formatting.GOLD))
-                .styled((style) -> {
-                    style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText((prevPage >= 0) ? "<<<" : "|<").formatted(Formatting.GRAY)));
-                    if (prevPage >= 0)
-                        style.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command.replace("%page%",  String.valueOf(page - 1))));
-                });
-
-        Text button_next = new LiteralText("")
-                .append(new LiteralText("Next").formatted(Formatting.GOLD))
-                .append(" ").append(new LiteralText("->").formatted(Formatting.WHITE, Formatting.BOLD)).append(" ")
-                .styled((style) -> {
-                    style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText((nextPage <= text.length) ? ">>>" : ">|").formatted(Formatting.GRAY)));
-                    if (nextPage <= text.length)
-                        style.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command.replace("%page%",  String.valueOf(nextPage))));
-                });
-
-        Text buttons = new LiteralText("")
-                .append(new LiteralText("[ ").formatted(Formatting.GRAY))
-                .append(button_prev)
-                .append(" ")
-                .append(
-                        new LiteralText(String.valueOf(page)).formatted(Formatting.GREEN)
-                        .append(new LiteralText("/").formatted(Formatting.GRAY))
-                        .append(new LiteralText(String.valueOf(text.length)).formatted(Formatting.GREEN))
-                )
-                .append(" ")
-                .append(button_next)
-                .append(new LiteralText("] ").formatted(Formatting.GRAY));
-
-        Text footer = new LiteralText("- ")
-                .formatted(Formatting.GRAY)
-                .append(buttons).append(new LiteralText(" ------------------------------").formatted(Formatting.GRAY));
-
-        header.append("\n").append(text[thisPage]).append("\n").append(footer);
-        source.sendFeedback(header, false);
-        return 1;
-    }
-
-    private static void createExceptionCommand(LiteralArgumentBuilder<ServerCommandSource> command, boolean admin) {
-        {
-            LiteralArgumentBuilder<ServerCommandSource> settings = literal("settings");
-            RequiredArgumentBuilder<ServerCommandSource, String> claim = getClaimArgument();
-
-            if (!admin) {
-                settings.executes((context) -> sendPage(context.getSource(), Messages.SETTINGS_AND_PERMISSIONS, 1, "Claim Permissions and Settings", "/claim help perms_and_settings %page%"));
-
-                claim.executes((context) -> {
-                    Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
-                    if (claim1 == null) {
-                        context.getSource().sendError(Messages.INVALID_CLAIM);
-                        return -1;
-                    }
-                    return querySettings(context.getSource(), claim1);
-                });
-            }
-
-            RequiredArgumentBuilder<ServerCommandSource, String> id = argument("setting", StringArgumentType.word()).suggests(SETTINGS_PROVIDER);
-            RequiredArgumentBuilder<ServerCommandSource, Boolean> set = argument("set", BoolArgumentType.bool());
-
-            id.executes((context) -> executeSetting(context.getSource(), StringArgumentType.getString(context, "setting"), StringArgumentType.getString(context, "claim"), true, false, admin));
-            set.executes((context) -> executeSetting(context.getSource(), StringArgumentType.getString(context, "setting"), null, false, BoolArgumentType.getBool(context, "set"), admin));
-
-            id.then(set);
-            claim.then(id);
-            settings.then(claim);
-            command.then(settings);
-        }
-
-        LiteralArgumentBuilder<ServerCommandSource> exceptions = literal("permissions");
-        if (admin) exceptions.requires(source -> ItsMine.permissions().hasPermission(source, Permissions.Command.ADMIN_MODIFY_PERMISSIONS, 2));
-        RequiredArgumentBuilder<ServerCommandSource, String> claim = getClaimArgument();
-        if (!admin) {
-            exceptions.executes((context) -> sendPage(context.getSource(), Messages.SETTINGS_AND_PERMISSIONS, 1, "Claim Permissions and Settings", "/claim help perms_and_settings %page%"));
-
-            claim.executes((context) -> {
-                Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
-                if (claim1 == null) {
-                    context.getSource().sendError(Messages.INVALID_CLAIM);
-                    return -1;
-                }
-                return showTrustedList(context, claim1, false);
-            });
-        }
-
-        if (!admin) {
-            claim.executes((context) -> {
-                Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
-                if (claim1 == null) {
-                    context.getSource().sendError(new LiteralText("That claim does not exist"));
-                    return -1;
-                }
-                return showTrustedList(context, claim1, true);
-            });
-        }
-
-        {
-            RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = argument("player", EntityArgumentType.player());
-            LiteralArgumentBuilder<ServerCommandSource> remove = literal("remove");
-            remove.executes(context -> {
-                Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
-                if (verifyPermission(claim1, Claim.Permission.MODIFY_PERMISSIONS, context, admin)) {
-                    ServerPlayerEntity player1 = EntityArgumentType.getPlayer(context, "player");
-                    claim1.permissionManager.resetPermissions(player1.getGameProfile().getId());
-                    context.getSource().sendFeedback(new LiteralText(player1.getGameProfile().getName() + " no longer has an exception in the claim").formatted(Formatting.YELLOW), false);
-                }
-                return 0;
-            });
-            player.then(remove);
-            LiteralArgumentBuilder<ServerCommandSource> all = literal("*");
-            RequiredArgumentBuilder<ServerCommandSource, Boolean> allstate = argument("allow", BoolArgumentType.bool());
-            allstate.executes(context -> {
-                Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
-                ServerPlayerEntity player1 = EntityArgumentType.getPlayer(context, "player");
-                validateClaim(claim1);
-                return setTrust(context, claim1, player1, BoolArgumentType.getBool(context, "allow"), admin);
-            });
-            all.then(allstate);
-            player.then(all);
-            for (Claim.Permission value : Claim.Permission.values()) {
-                LiteralArgumentBuilder<ServerCommandSource> permNode = literal(value.id);
-                RequiredArgumentBuilder<ServerCommandSource, Boolean> allow = argument("allow", BoolArgumentType.bool());
-                allow.executes(context -> {
-                    Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
-                    if (verifyPermission(claim1, Claim.Permission.MODIFY_PERMISSIONS, context, admin)) {
-                        ServerPlayerEntity player1 = EntityArgumentType.getPlayer(context, "player");
-                        boolean permission = BoolArgumentType.getBool(context, "allow");
-                        modifyException(claim1, player1, value, permission);
-                        context.getSource().sendFeedback(new LiteralText(player1.getGameProfile().getName() + (permission ? " now" : " no longer") + " has the permission " + value.name).formatted(Formatting.YELLOW), false);
-                    }
-                    return 0;
-                });
-                permNode.executes(context -> {
-                    Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
-                    if (verifyPermission(claim1, Claim.Permission.MODIFY_PERMISSIONS, context, admin)) {
-                        ServerPlayerEntity player1 = EntityArgumentType.getPlayer(context, "player");
-                        boolean permission = hasPermission(claim1, player1, value);
-                        context.getSource().sendFeedback(new LiteralText(player1.getGameProfile().getName() + (permission ? " has" : " does not have") + " the permission " + value.name).formatted(Formatting.YELLOW), false);
-                    }
-                    return 0;
-                });
-                permNode.then(allow);
-                player.then(permNode);
-            }
-            claim.then(player);
-        }
-        {
-            LiteralArgumentBuilder<ServerCommandSource> message = literal("message");
-            RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = getClaimArgument();
-            RequiredArgumentBuilder<ServerCommandSource, String> messageEvent = argument("messageEvent", StringArgumentType.word())
-                    .suggests(MESSAGE_EVENTS_PROVIDER);
-            RequiredArgumentBuilder<ServerCommandSource, String> messageArgument = argument("message", StringArgumentType.greedyString())
-                    .suggests(EVENT_MESSAGE_PROVIDER);
-
-            messageArgument.executes(context -> {
-                Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(StringArgumentType.getString(context, "claim"));
-                if (verifyPermission(claim1, Claim.Permission.MODIFY_PROPERTIES, context, admin)) {
-                    Claim.Event event = Claim.Event.getById(StringArgumentType.getString(context, "messageEvent"));
-
-                    if (event == null) {
-                        context.getSource().sendError(Messages.INVALID_MESSAGE_EVENT);
-                        return -1;
-                    }
-
-                    return setEventMessage(context.getSource(), claim1, event, StringArgumentType.getString(context, "message"));
-                }
-
-                return -1;
-            });
-
-            messageEvent.then(messageArgument);
-            claimArgument.then(messageEvent);
-            message.then(claimArgument);
-            command.then(message);
-        }
-
-
-        exceptions.then(claim);
-        command.then(exceptions);
-    }
-    private static boolean verifyPermission(Claim claim, Claim.Permission permission, CommandContext<ServerCommandSource> context, boolean admin) throws CommandSyntaxException {
-        if (verifyExists(claim, context)) {
-            if (claim.permissionManager.hasPermission(context.getSource().getPlayer().getGameProfile().getId(), permission)) {
-                return true;
-            } else {
-                context.getSource().sendFeedback(new LiteralText(admin ? "You are modifying a claim using admin privileges" : "You cannot modify exceptions for this claim").formatted(admin ? Formatting.DARK_RED : Formatting.RED), false);
-                return admin;
-            }
-        } else {
-            return false;
-        }
-    }
-    private static boolean verifyExists(Claim claim, CommandContext<ServerCommandSource> context) {
-        if (claim == null) {
-            context.getSource().sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-
-    private static int showClaim(ServerCommandSource source, Claim claim, boolean reset) throws CommandSyntaxException {
-        ServerPlayerEntity player = source.getPlayer();
-        if (!reset && ((ClaimShower)player).getShownClaim() != null && !(!Config.claims2d &&((ClaimShower)player).getShownClaim() != claim)) showClaim(source, ((ClaimShower)player).getShownClaim(), true);
-        if (reset && ((ClaimShower)player).getShownClaim() != null) claim = ((ClaimShower)player).getShownClaim();
-        if (claim != null) {
-            if (!claim.dimension.equals(source.getWorld().getDimension().getType())) {
-                if (claim == ((ClaimShower)player).getShownClaim()) ((ClaimShower)player).setShownClaim(null); // just so we dont have extra packets on this
-                source.sendFeedback(new LiteralText("That claim is not in this dimension").formatted(Formatting.RED), false);
-                return 0;
-            }
-            source.sendFeedback(new LiteralText((!reset ? "Showing" : "Hiding") + " claim: " + claim.name).formatted(Formatting.GREEN), false);
-            silentHideShow(player, claim, reset, true);
-
-        } else {
-            source.sendFeedback(new LiteralText("That is not a valid claim").formatted(Formatting.RED), false);
-        }
-        return 0;
-    }
-    private static void silentHideShow(ServerPlayerEntity player, Claim claim, boolean hide, boolean updateStatus) {
-        if (updateStatus) {
-            if (!hide) ((ClaimShower) player).setShownClaim(claim);
-            else ((ClaimShower) player).setShownClaim(null);
-        }
-        BlockState block = hide ? null : Blocks.GOLD_BLOCK.getDefaultState();
-        showCorners(player, claim, hide, block);
-        if(!claim.isChild){
-            block = hide ? null : Blocks.DIAMOND_BLOCK.getDefaultState();
-            for(Claim subzone : claim.children){
-                showCorners(player, subzone, hide, block);
-            }
-        }
-
-    }
-
-    private static void showCorners(ServerPlayerEntity player, Claim claim, boolean hide, BlockState state){
-        state = hide ? null : state;
-        sendBlockPacket(player, new BlockPos(Functions.getPosOnGround(new BlockPos(claim.min.getX(), 256, claim.min.getZ()), player.getEntityWorld())).down(), state);
-        sendBlockPacket(player, new BlockPos(Functions.getPosOnGround(new BlockPos(claim.min.getX(), 256, claim.max.getZ()), player.getEntityWorld())).down(), state);
-        sendBlockPacket(player, new BlockPos(Functions.getPosOnGround(new BlockPos(claim.max.getX(), 256, claim.min.getZ()), player.getEntityWorld())).down(), state);
-        sendBlockPacket(player, new BlockPos(Functions.getPosOnGround(new BlockPos(claim.max.getX(), 256, claim.max.getZ()), player.getEntityWorld())).down(), state);
-
-        sendBlockPacket(player, new BlockPos(Functions.getPosOnGround(new BlockPos(claim.min.getX(), 256, claim.min.getZ()), player.getEntityWorld())).down().south(), state);
-        sendBlockPacket(player, new BlockPos(Functions.getPosOnGround(new BlockPos(claim.min.getX(), 256, claim.max.getZ()), player.getEntityWorld())).down().east(), state);
-        sendBlockPacket(player, new BlockPos(Functions.getPosOnGround(new BlockPos(claim.max.getX(), 256, claim.min.getZ()), player.getEntityWorld())).down().south(), state);
-        sendBlockPacket(player, new BlockPos(Functions.getPosOnGround(new BlockPos(claim.max.getX(), 256, claim.max.getZ()), player.getEntityWorld())).down().north(), state);
-
-        sendBlockPacket(player, new BlockPos(Functions.getPosOnGround(new BlockPos(claim.min.getX(), 256, claim.min.getZ()), player.getEntityWorld())).down().east(), state);
-        sendBlockPacket(player, new BlockPos(Functions.getPosOnGround(new BlockPos(claim.min.getX(), 256, claim.max.getZ()), player.getEntityWorld())).down().north(), state);
-        sendBlockPacket(player, new BlockPos(Functions.getPosOnGround(new BlockPos(claim.max.getX(), 256, claim.min.getZ()), player.getEntityWorld())).down().west(), state);
-        sendBlockPacket(player, new BlockPos(Functions.getPosOnGround(new BlockPos(claim.max.getX(), 256, claim.max.getZ()), player.getEntityWorld())).down().west(), state);
-    }
-
-    private static void sendBlockPacket(ServerPlayerEntity player, BlockPos pos, BlockState state) {
-        BlockUpdateS2CPacket packet =  new BlockUpdateS2CPacket(player.world, pos);
-        if (state != null) ((BlockUpdatePacketMixin)packet).setState(state);
-        player.networkHandler.sendPacket(packet);
-    }
-    private static int createClaim(String name, ServerCommandSource owner, BlockPos posA, BlockPos posB, boolean admin, @Nullable String cOwnerName) throws CommandSyntaxException {
-        if (name.length() > MAX_NAME_LENGTH) {
-            owner.sendError(Messages.MSG_LONG_NAME);
-            return -1;
-        }
-        UUID ownerID = owner.getPlayer().getGameProfile().getId();
-        int x, y = 0, z, mx, my = 255, mz;
-        if (posA.getX() > posB.getX()) {
-            x = posB.getX();
-            mx = posA.getX();
-        } else {
-            x =  posA.getX();
-            mx = posB.getX();
-        }
-        if (!Config.claims2d) {
-            if (posA.getY() > posB.getY()) {
-                y = posB.getY();
-                my = posA.getY();
-            } else {
-                y = posA.getY();
-                my = posB.getY();
-            }
-        }
-        if (posA.getZ() > posB.getZ()) {
-            z = posB.getZ();
-            mz = posA.getZ();
-        } else {
-            z =  posA.getZ();
-            mz = posB.getZ();
-        }
-        BlockPos min = new BlockPos(x, y, z);
-        BlockPos max = new BlockPos(mx, my, mz);
-        BlockPos sub = max.subtract(min);
-        sub = sub.add(1, Config.claims2d ? 0 : 1,1);
-        int subInt = sub.getX() * (Config.claims2d ? 1 : sub.getY()) * sub.getZ();
-
-        Claim claim = new Claim(name, admin ? null : ownerID, min, max, owner.getWorld().getDimension().getType(), owner.getPlayer().getBlockPos(), false);
-        if (cOwnerName != null) claim.customOwnerName = cOwnerName;
-        claim.permissionManager.playerPermissions.put(ownerID, new Claim.InvertedPermissionMap());
-        if (!ClaimManager.INSTANCE.claimsByName.containsKey(name)) {
-            if (!ClaimManager.INSTANCE.wouldIntersect(claim)) {
-                // works because only the first statement is evaluated if true
-                if ((admin && ItsMine.permissions().hasPermission(owner, Permissions.Command.INFINITE_BLOCKS, 2)) || ClaimManager.INSTANCE.useClaimBlocks(ownerID, subInt)) {
-                    ClaimManager.INSTANCE.addClaim(claim);
-                    owner.sendFeedback(new LiteralText("").append(new LiteralText("Your claim was created").formatted(Formatting.GREEN)).append(new LiteralText("(Area: " + sub.getX() + "x" + sub.getY() + "x" + sub.getZ() + ")").setStyle(new Style()
-                            .setColor(Formatting.GREEN).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(subInt + " blocks").formatted(Formatting.YELLOW))))), false);
-                    checkPlayer(owner, owner.getPlayer().getGameProfile().getId());
-                    showClaim(owner, claim, false);
-                    if (admin)
-                        owner.getMinecraftServer().sendMessage(new LiteralText(owner.getPlayer().getGameProfile().getName() + " Has created a new claim(" + claim.name + ") using the admin command."));
-                    return 1;
-                } else {
-                    owner.sendFeedback(new LiteralText("You don't have enough claim blocks. You have " + ClaimManager.INSTANCE.getClaimBlocks(ownerID) + ", you need " + subInt + "(" + (subInt - ClaimManager.INSTANCE.getClaimBlocks(ownerID)) + " more)").formatted(Formatting.RED), false);
-                }
-            } else {
-                owner.sendFeedback(new LiteralText("Your claim would overlap with another claim").formatted(Formatting.RED), false);
-            }
-        } else {
-            owner.sendFeedback(new LiteralText("The name \"" + name + "\" is already taken.").formatted(Formatting.RED), false);
-        }
-        return 0;
-    }
-    private static int checkPlayer(ServerCommandSource ret, UUID player) throws CommandSyntaxException {
-        int blocks = ClaimManager.INSTANCE.getClaimBlocks(player);
-        ret.sendFeedback(new LiteralText((ret.getPlayer().getGameProfile().getId().equals(player) ? "You have " : "They have ") + blocks + " blocks left").setStyle(new Style()
-                .setColor(Formatting.YELLOW)), false);
-        return 0;
-    }
-    private static int requestDelete(ServerCommandSource sender, Claim claim, boolean admin) throws CommandSyntaxException {
-        if (claim == null) {
-            sender.sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
-            return 0;
-        }
-        if (!claim.permissionManager.hasPermission(sender.getPlayer().getGameProfile().getId(), Claim.Permission.REMOVE_CLAIM)) {
-            if (admin && ItsMine.permissions().hasPermission(sender, Permissions.Command.ADMIN_MODIFY, 2)) {
-                sender.sendFeedback(new LiteralText("WARNING: This is not your claim...").formatted(Formatting.DARK_RED, Formatting.BOLD), false);
-            } else {
-                sender.sendFeedback(new LiteralText("You cannot delete that claim").formatted(Formatting.RED), false);
-                return 0;
-            }
-        }
-        sender.sendFeedback(new LiteralText("").append(new LiteralText("Are you sure you want to delete the claim \"" + claim.name + "\"? ").formatted(Formatting.GOLD))
-                .append(new LiteralText("[I'M SURE]").setStyle(new Style()
-                        .setColor(Formatting.DARK_RED)
-                        .setBold(true)
-                        .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, (admin ? "/claim admin" : "/claim") + " remove " + claim.name + " confirm")))), false);
-        return 0;
-    }
-    private static int delete(ServerCommandSource sender, Claim claim, boolean admin) throws CommandSyntaxException {
-        if (claim == null) {
-            sender.sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
-            return 0;
-        }
-        if (!claim.permissionManager.hasPermission(sender.getPlayer().getGameProfile().getId(), Claim.Permission.REMOVE_CLAIM)) {
-            if (admin && ItsMine.permissions().hasPermission(sender, Permissions.Command.ADMIN_MODIFY, 2)) {
-                sender.sendFeedback(new LiteralText("Deleting a claim belonging to somebody else").formatted(Formatting.DARK_RED, Formatting.BOLD), false);
-            } else {
-                sender.sendFeedback(new LiteralText("You cannot delete that claim").formatted(Formatting.RED), false);
-                return 0;
-            }
-        }
-        if(!claim.isChild){
-            ClaimManager.INSTANCE.releaseBlocksToOwner(claim);
-            ClaimManager.INSTANCE.claimsByName.remove(claim.name);
-            for(Claim subzone : claim.children){
-                ClaimManager.INSTANCE.claimsByName.remove(subzone.name);
-            }
-        }else{
-            claim.getParentClaim(claim).removeSubzone(claim);
-            ClaimManager.INSTANCE.claimsByName.remove(claim.name);
-        }
-        sender.getWorld().getPlayers().forEach(playerEntity -> {
-            if (((ClaimShower)playerEntity).getShownClaim() != null && ((ClaimShower)playerEntity).getShownClaim().name.equals(claim.name)) silentHideShow(playerEntity, claim, true, true);
-        });
-        sender.sendFeedback(new LiteralText("Deleted the claim \"" + claim.name + "\"").formatted(Formatting.GREEN), !claim.permissionManager.hasPermission(sender.getPlayer().getGameProfile().getId(), Claim.Permission.REMOVE_CLAIM));
-        return 0;
-    }
+//    private static int rent(ServerCommandSource source, Claim claim, String rentString) throws CommandSyntaxException {
+//        if(claim == null){
+//            source.sendFeedback(Messages.INVALID_CLAIM, true);
+//            return 0;
+//        }
+//        int rentTime = (int) TimeUtil.convertStringtoSeconds(rentString);
+//        int rentAbleTime = claim.rent.getRentAbleTime();
+//        int maxrentAbleTime = claim.rent.getMaxrentAbleTime();
+//        ItemStack currency = claim.rent.getCurrency();
+//        ItemStack handItem = source.getPlayer().inventory.getMainHandStack();
+//        ItemStack revenue = handItem.copy();
+//        if(rentTime % claim.rent.getRentAbleTime() != 0){
+//            source.sendFeedback(new LiteralText("You have to rent this claim for a time by a multiple of " + TimeUtil.convertSecondsToString(rentAbleTime, 'c', 'c')).formatted(Formatting.RED), true);
+//            return 0;
+//        }
+//        int rentAmount = rentTime / claim.rent.getRentAbleTime();
+//        if(currency.getItem() != handItem.getItem() || handItem.getCount() < claim.rent.getAmount() * rentAmount){
+//            source.sendFeedback(new LiteralText("You don't have enough " + currency.getName().asString()).formatted(Formatting.RED), true);
+//            return 0;
+//        }
+//        if (!claim.rent.isRentable()) {
+//            source.sendFeedback(new LiteralText(claim.name + " is not for rent").formatted(Formatting.RED), true);
+//            return 0;
+//        }
+//        if (rentTime > claim.rent.getMaxrentAbleTime()) {
+//            source.sendFeedback(new LiteralText("You can't rent this claim for longer than " + TimeUtil.convertSecondsToString(maxrentAbleTime, 'c', 'c')).formatted(Formatting.RED), true);
+//            return 0;
+//        }
+//        if(claim.rent.getTenant() == null){
+//            //Setup for claim rent
+//            claim.rent.setTenant(source.getPlayer().getUuid());
+//            claim.rent.setRentedUntil(claim.rent.getUnixTime() + rentTime);
+//            //Remove items from player
+//            handItem.setCount(handItem.getCount() - claim.rent.getAmount() * rentAmount);
+//            revenue.setCount(claim.rent.getAmount() * rentAmount);
+//            claim.rent.addRevenue(revenue);
+//            //Give Permissions to Tenant
+//            claim.permissionManager.playerPermissions.put(source.getPlayer().getUuid(), new Claim.InvertedPermissionMap());
+//            source.sendFeedback(new LiteralText("Renting " + claim.name + " for " + claim.rent.getAmount() * rentAmount + " " + claim.rent.getCurrency().getName().asString() + " for " + TimeUtil.convertSecondsToString(rentTime, '2', 'a')).formatted(Formatting.GREEN), true);
+//            return 1;
+//        } else if(claim.rent.getTenant().toString().equalsIgnoreCase(source.getPlayer().getUuid().toString())){
+//            if (claim.rent.getRentTimeLeft() + rentTime <= maxrentAbleTime) {
+//                //Setup for claim rent
+//                claim.rent.setRentedUntil(claim.rent.getUnixTime() + rentTime + claim.rent.getRentTimeLeft());
+//                //Remove items from player
+//                handItem.setCount(handItem.getCount() - claim.rent.getAmount() * rentAmount);
+//
+//                revenue.setCount(claim.rent.getAmount() * rentAmount);
+//                claim.rent.addRevenue(revenue);
+//                //Give Permissions to Tenant
+//                source.sendFeedback(new LiteralText("Extended rent " + claim.name + " by " + TimeUtil.convertSecondsToString(rentTime, '2', 'a') + "for " + claim.rent.getAmount() * rentAmount + " " + claim.rent.getCurrency().getName().asString()).formatted(Formatting.GREEN), true);
+//                return 1;
+//            } else {
+//                source.sendFeedback(new LiteralText("Rent would exceed the limit by " + TimeUtil.convertSecondsToString(claim.rent.getRentTimeLeft() + rentTime - maxrentAbleTime, 'c', 'c')).formatted(Formatting.RED), true);
+//                return 0;
+//            }
+//        } else {
+//            source.sendFeedback(new LiteralText("This claim is already rented").formatted(Formatting.RED), true);
+//            return 0;
+//        }
+//    }
 
 
-    private static int requestTransfer(ServerCommandSource sender, Claim claim, ServerPlayerEntity player, boolean admin) throws CommandSyntaxException {
-        if (claim == null) {
-            sender.sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
-            return 0;
-        }
-        if (!claim.claimBlockOwner.equals(sender.getPlayer().getGameProfile().getId())) {
-            if (admin && ItsMine.permissions().hasPermission(sender, Permissions.Command.ADMIN_MODIFY, 2)) {
-                sender.sendFeedback(new LiteralText("WARNING: This is not your claim...").formatted(Formatting.DARK_RED, Formatting.BOLD), false);
-            } else {
-                sender.sendFeedback(new LiteralText("You cannot transfer ownership that claim").formatted(Formatting.RED), false);
-                return 0;
-            }
-        }
-        sender.sendFeedback(new LiteralText("").append(new LiteralText("Are you sure you want to transfer ownership of \"" + claim.name + "\" to " + player.getGameProfile().getName() + "? ").formatted(Formatting.GOLD))
-                .append(new LiteralText("[YES]").setStyle(new Style()
-                        .setColor(Formatting.DARK_RED)
-                        .setBold(true)
-                        .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, (admin ? "/claim admin" : "/claim") + " transfer " + claim.name + " " + player.getGameProfile().getName() + " confirm")))), false);
-        return 0;
-    }
-    private static Map<UUID, String> pendingClaimTransfers = new HashMap<>();
-    private static int transfer(ServerCommandSource sender, Claim claim, ServerPlayerEntity player, boolean admin) throws CommandSyntaxException {
-        if (claim == null) {
-            sender.sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
-            return 0;
-        }
-        if (!claim.claimBlockOwner.equals(sender.getPlayer().getGameProfile().getId())) {
-            if (admin && ItsMine.permissions().hasPermission(sender, Permissions.Command.ADMIN_MODIFY, 2)) {
-                sender.sendFeedback(new LiteralText("Transfering ownership of a claim belonging to somebody else").formatted(Formatting.DARK_RED, Formatting.BOLD), false);
-            } else {
-                sender.sendFeedback(new LiteralText("You cannot transfer ownership that claim").formatted(Formatting.RED), false);
-                return 0;
-            }
-        }
 
-        GameProfile profile = sender.getWorld().getServer().getUserCache().getByUuid(claim.claimBlockOwner);
-        sender.sendFeedback(new LiteralText("Transferring ownership of the claim \"" + claim.name + "\" to " + player.getGameProfile().getName() + " if they accept").formatted(Formatting.GREEN), claim.claimBlockOwner != player.getGameProfile().getId());
-        player.sendMessage(new LiteralText("").append(new LiteralText("Do you want to accept ownership of the claim \"" + claim.name + "\" from " + profile == null ? "Not Present" : profile.getName() + "? ").formatted(Formatting.GOLD))
-                .append(new LiteralText("[ACCEPT]").setStyle(new Style()
-                        .setColor(Formatting.GREEN)
-                        .setBold(true)
-                        .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/claim transfer -accept-" + claim.name + " " + player.getEntityName() + " confirm")))));
-        pendingClaimTransfers.put(player.getGameProfile().getId(), claim.name);
-        return 0;
-    }
-    public static int acceptTransfer(ServerCommandSource sender) throws CommandSyntaxException {
-        Claim claim = ClaimManager.INSTANCE.claimsByName.get(pendingClaimTransfers.get(sender.getPlayer().getGameProfile().getId()));
-        if (claim == null) {
-            sender.sendFeedback(new LiteralText("You have no pending claim transfers").formatted(Formatting.RED), false);
-            return 0;
-        }
-        if (sender.getMinecraftServer().getPlayerManager().getPlayer(claim.claimBlockOwner) != null) {
-            sender.getMinecraftServer().getPlayerManager().getPlayer(claim.claimBlockOwner).sendMessage(new LiteralText("").append(new LiteralText(sender.getPlayer().getGameProfile().getName() + " has taken ownership of the claim \"" + claim.name + "\"").formatted(Formatting.YELLOW)));
-        }
-        Claim.ClaimPermissionMap op = claim.permissionManager.playerPermissions.get(claim.claimBlockOwner);
-        claim.permissionManager.playerPermissions.put(claim.claimBlockOwner, claim.permissionManager.playerPermissions.get(sender.getPlayer().getGameProfile().getId()));
-        claim.permissionManager.playerPermissions.put(sender.getPlayer().getGameProfile().getId(), op);
-        claim.claimBlockOwner = sender.getPlayer().getGameProfile().getId();
-        return 0;
-    }
-    private static int modifyException(Claim claim, ServerPlayerEntity exception, Claim.Permission permission, boolean allowed) {
-        claim.permissionManager.setPermission(exception.getGameProfile().getId(), permission, allowed);
-        return 0;
-    }
-    private static int modifyException(Claim claim, String exception, Claim.Permission permission, boolean allowed) {
-        claim.permissionManager.setPermission(exception, permission, allowed);
-        return 0;
-    }
-    private static boolean hasPermission(Claim claim, ServerPlayerEntity exception, Claim.Permission permission) {
-        return claim.permissionManager.hasPermission(exception.getGameProfile().getId(), permission);
-    }
+//    public static int showClaim(ServerCommandSource source, Claim claim, boolean reset) throws CommandSyntaxException {
+//        ServerPlayerEntity player = source.getPlayer();
+//        if (!reset && ((ClaimShower)player).getShownClaim() != null && !(!Config.claims2d &&((ClaimShower)player).getShownClaim() != claim)) showClaim(source, ((ClaimShower)player).getShownClaim(), true);
+//        if (reset && ((ClaimShower)player).getShownClaim() != null) claim = ((ClaimShower)player).getShownClaim();
+//        if (claim != null) {
+//            if (!claim.dimension.equals(source.getWorld().getDimension().getType())) {
+//                if (claim == ((ClaimShower)player).getShownClaim()) ((ClaimShower)player).setShownClaim(null); // just so we dont have extra packets on this
+//                source.sendFeedback(new LiteralText("That claim is not in this dimension").formatted(Formatting.RED), false);
+//                return 0;
+//            }
+//            source.sendFeedback(new LiteralText((!reset ? "Showing" : "Hiding") + " claim: " + claim.name).formatted(Formatting.GREEN), false);
+//            if(claim.isChild) silentHideShow(player, ClaimUtil.getParentClaim(claim), reset, true);
+//            else silentHideShow(player, claim, reset, true);
+//
+//        } else {
+//            source.sendFeedback(new LiteralText("That is not a valid claim").formatted(Formatting.RED), false);
+//        }
+//        return 0;
+//    }
+
+//    private static int createClaim(String name, ServerCommandSource owner, BlockPos posA, BlockPos posB, boolean admin, @Nullable String cOwnerName) throws CommandSyntaxException {
+//        if (name.length() > MAX_NAME_LENGTH) {
+//            owner.sendError(Messages.MSG_LONG_NAME);
+//            return -1;
+//        }
+//        if(!name.matches("[A-Za-z0-9]+")){
+//            owner.sendError(new LiteralText("Invalid claim name"));
+//            return -1;
+//        }
+//        UUID ownerID = owner.getPlayer().getGameProfile().getId();
+//        int x, y = 0, z, mx, my = 255, mz;
+//        if (posA.getX() > posB.getX()) {
+//            x = posB.getX();
+//            mx = posA.getX();
+//        } else {
+//            x =  posA.getX();
+//            mx = posB.getX();
+//        }
+//        if (!Config.claims2d) {
+//            if (posA.getY() > posB.getY()) {
+//                y = posB.getY();
+//                my = posA.getY();
+//            } else {
+//                y = posA.getY();
+//                my = posB.getY();
+//            }
+//        }
+//        if (posA.getZ() > posB.getZ()) {
+//            z = posB.getZ();
+//            mz = posA.getZ();
+//        } else {
+//            z =  posA.getZ();
+//            mz = posB.getZ();
+//        }
+//        BlockPos min = new BlockPos(x, y, z);
+//        BlockPos max = new BlockPos(mx, my, mz);
+//        BlockPos sub = max.subtract(min);
+//        sub = sub.add(1, Config.claims2d ? 0 : 1,1);
+//        int subInt = sub.getX() * (Config.claims2d ? 1 : sub.getY()) * sub.getZ();
+//
+//        Claim claim = new Claim(name, admin ? null : ownerID, min, max, owner.getWorld().getDimension().getType(), owner.getPlayer().getBlockPos(), false);
+//        if (cOwnerName != null) claim.customOwnerName = cOwnerName;
+//        claim.permissionManager.playerPermissions.put(ownerID, new Claim.InvertedPermissionMap());
+//        if (!ClaimManager.INSTANCE.claimsByName.containsKey(name)) {
+//            if (!ClaimManager.INSTANCE.wouldIntersect(claim)) {
+//                // works because only the first statement is evaluated if true
+//                if ((admin && ItsMine.permissions().hasPermission(owner, PermissionUtil.Command.INFINITE_BLOCKS, 2)) || ClaimManager.INSTANCE.useClaimBlocks(ownerID, subInt)) {
+//                    ClaimManager.INSTANCE.addClaim(claim);
+//                    owner.sendFeedback(new LiteralText("").append(new LiteralText("Your claim was created").formatted(Formatting.GREEN)).append(new LiteralText("(Area: " + sub.getX() + "x" + sub.getY() + "x" + sub.getZ() + ")").setStyle(new Style()
+//                            .setColor(Formatting.GREEN).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(subInt + " blocks").formatted(Formatting.YELLOW))))), false);
+//                    checkPlayer(owner, owner.getPlayer().getGameProfile().getId());
+//                    showClaim(owner, claim, false);
+//                    if (admin)
+//                        owner.getMinecraftServer().sendMessage(new LiteralText(owner.getPlayer().getGameProfile().getName() + " Has created a new claim(" + claim.name + ") using the admin command."));
+//                    return 1;
+//                } else {
+//                    owner.sendFeedback(new LiteralText("You don't have enough claim blocks. You have " + ClaimManager.INSTANCE.getClaimBlocks(ownerID) + ", you need " + subInt + "(" + (subInt - ClaimManager.INSTANCE.getClaimBlocks(ownerID)) + " more)").formatted(Formatting.RED), false);
+//                }
+//            } else {
+//                owner.sendFeedback(new LiteralText("Your claim would overlap with another claim").formatted(Formatting.RED), false);
+//            }
+//        } else {
+//            owner.sendFeedback(new LiteralText("The name \"" + name + "\" is already taken.").formatted(Formatting.RED), false);
+//        }
+//        return 0;
+//    }
+//    private static int checkPlayer(ServerCommandSource ret, UUID player) throws CommandSyntaxException {
+//        int blocks = ClaimManager.INSTANCE.getClaimBlocks(player);
+//        ret.sendFeedback(new LiteralText((ret.getPlayer().getGameProfile().getId().equals(player) ? "You have " : "They have ") + blocks + " blocks left").setStyle(new Style()
+//                .setColor(Formatting.YELLOW)), false);
+//        return 0;
+//    }
+//    private static int requestDelete(ServerCommandSource sender, Claim claim, boolean admin) throws CommandSyntaxException {
+//        if (claim == null) {
+//            sender.sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
+//            return 0;
+//        }
+//        if (!claim.permissionManager.hasPermission(sender.getPlayer().getGameProfile().getId(), Claim.Permission.REMOVE_CLAIM)) {
+//            if (admin && ItsMine.permissions().hasPermission(sender, PermissionUtil.Command.ADMIN_MODIFY, 2)) {
+//                sender.sendFeedback(new LiteralText("WARNING: This is not your claim...").formatted(Formatting.DARK_RED, Formatting.BOLD), false);
+//            } else {
+//                sender.sendFeedback(new LiteralText("You cannot delete that claim").formatted(Formatting.RED), false);
+//                return 0;
+//            }
+//        }
+//        sender.sendFeedback(new LiteralText("").append(new LiteralText("Are you sure you want to delete the claim \"" + claim.name + "\"? ").formatted(Formatting.GOLD))
+//                .append(new LiteralText("[I'M SURE]").setStyle(new Style()
+//                        .setColor(Formatting.DARK_RED)
+//                        .setBold(true)
+//                        .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, (admin ? "/claim admin" : "/claim") + " remove " + claim.name + " confirm")))), false);
+//        return 0;
+//    }
+//    private static int delete(ServerCommandSource source, Claim claim, boolean admin) throws CommandSyntaxException {
+//        ServerWorld world = source.getWorld();
+//        if (claim == null) {
+//            source.sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
+//            return 0;
+//        }
+//        if (!claim.permissionManager.hasPermission(source.getPlayer().getGameProfile().getId(), Claim.Permission.REMOVE_CLAIM)) {
+//            if (admin && ItsMine.permissions().hasPermission(source, PermissionUtil.Command.ADMIN_MODIFY, 2)) {
+//                source.sendFeedback(new LiteralText("Deleting a claim belonging to somebody else").formatted(Formatting.DARK_RED, Formatting.BOLD), false);
+//            } else {
+//                source.sendFeedback(new LiteralText("You cannot delete that claim").formatted(Formatting.RED), false);
+//                return 0;
+//            }
+//        }
+//        if(!claim.isChild){
+//            ClaimManager.INSTANCE.releaseBlocksToOwner(claim);
+//            ShowerUtil.update(claim, world, true);
+//            ClaimManager.INSTANCE.claimsByName.remove(claim.name);
+//            for(Claim subzone : claim.children){
+//                ClaimManager.INSTANCE.claimsByName.remove(subzone.name);
+//            }
+//        }else{
+//            Claim parent = ClaimUtil.getParentClaim(claim);
+//            ShowerUtil.update(parent, world, true);
+//            ClaimUtil.getParentClaim(claim).removeSubzone(claim);
+//            ClaimManager.INSTANCE.claimsByName.remove(claim.name);
+//            ShowerUtil.update(parent, world, false);
+//        }
+//        source.getWorld().getPlayers().forEach(playerEntity -> {
+//            if (((ClaimShower)playerEntity).getShownClaim() != null && ((ClaimShower)playerEntity).getShownClaim().name.equals(claim.name)) silentHideShow(playerEntity, claim, true, true);
+//        });
+//        source.sendFeedback(new LiteralText("Deleted the claim \"" + claim.name + "\"").formatted(Formatting.GREEN), !claim.permissionManager.hasPermission(source.getPlayer().getGameProfile().getId(), Claim.Permission.REMOVE_CLAIM));
+//        return 0;
+//    }
+
+
+//    private static int requestTransfer(ServerCommandSource sender, Claim claim, ServerPlayerEntity player, boolean admin) throws CommandSyntaxException {
+//        if (claim == null) {
+//            sender.sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
+//            return 0;
+//        }
+//        if(claim.isChild){
+//            sender.sendFeedback(new LiteralText("You can't transfer ownership of subzones").formatted(Formatting.RED), false);
+//            return 0;
+//        }
+//        if(sender.getPlayer().getUuidAsString().equalsIgnoreCase(player.getUuidAsString())){
+//            sender.sendFeedback(new LiteralText("Huh? That makes no sence").formatted(Formatting.RED), true);
+//            return 0;
+//        }
+//        if (!claim.claimBlockOwner.equals(sender.getPlayer().getGameProfile().getId())) {
+//            if (admin && ItsMine.permissions().hasPermission(sender, PermissionUtil.Command.ADMIN_MODIFY, 2)) {
+//                sender.sendFeedback(new LiteralText("WARNING: This is not your claim...").formatted(Formatting.DARK_RED, Formatting.BOLD), false);
+//            } else {
+//                sender.sendFeedback(new LiteralText("You can't transfer ownership of that claim").formatted(Formatting.RED), false);
+//                return 0;
+//            }
+//        }
+//        sender.sendFeedback(new LiteralText("").append(new LiteralText("Are you sure you want to transfer ownership of \"" + claim.name + "\" to " + player.getGameProfile().getName() + "? ").formatted(Formatting.GOLD))
+//                .append(new LiteralText("[YES]").setStyle(new Style()
+//                        .setColor(Formatting.DARK_RED)
+//                        .setBold(true)
+//                        .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, (admin ? "/claim admin" : "/claim") + " transfer " + claim.name + " " + player.getGameProfile().getName() + " confirm")))), false);
+//        return 0;
+//    }
+//    private static Map<UUID, String> pendingClaimTransfers = new HashMap<>();
+//    private static int transfer(ServerCommandSource sender, Claim claim, ServerPlayerEntity player, boolean admin) throws CommandSyntaxException {
+//        if (claim == null) {
+//            sender.sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
+//            return 0;
+//        }
+//        if(claim.isChild){
+//            sender.sendFeedback(new LiteralText("You can't transfer ownership of subzones").formatted(Formatting.RED), false);
+//            return 0;
+//        }
+//        if(sender.getPlayer().getUuidAsString().equalsIgnoreCase(player.getUuidAsString())){
+//            sender.sendFeedback(new LiteralText("Huh? That makes no sence").formatted(Formatting.RED), true);
+//            return 0;
+//        }
+//        if (!claim.claimBlockOwner.equals(sender.getPlayer().getGameProfile().getId())) {
+//            if (admin && ItsMine.permissions().hasPermission(sender, PermissionUtil.Command.ADMIN_MODIFY, 2)) {
+//                sender.sendFeedback(new LiteralText("Transfering ownership of a claim belonging to somebody else").formatted(Formatting.DARK_RED, Formatting.BOLD), false);
+//            } else {
+//                sender.sendFeedback(new LiteralText("You can't transfer ownership of that claim").formatted(Formatting.RED), false);
+//                return 0;
+//            }
+//        }
+//
+//        GameProfile profile = sender.getWorld().getServer().getUserCache().getByUuid(claim.claimBlockOwner);
+//        sender.sendFeedback(new LiteralText("Transferring ownership of the claim \"" + claim.name + "\" to " + player.getGameProfile().getName() + " if they accept").formatted(Formatting.GREEN), claim.claimBlockOwner != player.getGameProfile().getId());
+//        player.sendMessage(new LiteralText("").append(new LiteralText("Do you want to accept ownership of the claim \"" + claim.name + "\" from " + profile == null ? "Not Present" : profile.getName() + "? ").formatted(Formatting.GOLD))
+//                .append(new LiteralText("[ACCEPT]").setStyle(new Style()
+//                        .setColor(Formatting.GREEN)
+//                        .setBold(true)
+//                        .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/claim transfer -accept-" + claim.name + " " + player.getEntityName() + " confirm")))));
+//        pendingClaimTransfers.put(player.getGameProfile().getId(), claim.name);
+//        return 0;
+//    }
+//    public static int acceptTransfer(ServerCommandSource sender) throws CommandSyntaxException {
+//        Claim claim = ClaimManager.INSTANCE.claimsByName.get(pendingClaimTransfers.get(sender.getPlayer().getGameProfile().getId()));
+//        if (claim == null) {
+//            sender.sendFeedback(new LiteralText("You have no pending claim transfers").formatted(Formatting.RED), false);
+//            return 0;
+//        }
+//        if (sender.getMinecraftServer().getPlayerManager().getPlayer(claim.claimBlockOwner) != null) {
+//            sender.getMinecraftServer().getPlayerManager().getPlayer(claim.claimBlockOwner).sendMessage(new LiteralText("").append(new LiteralText(sender.getPlayer().getGameProfile().getName() + " has taken ownership of the claim \"" + claim.name + "\"").formatted(Formatting.YELLOW)));
+//        }
+//        Claim.ClaimPermissionMap op = claim.permissionManager.playerPermissions.get(claim.claimBlockOwner);
+//        claim.permissionManager.playerPermissions.put(claim.claimBlockOwner, claim.permissionManager.playerPermissions.get(sender.getPlayer().getGameProfile().getId()));
+//        claim.permissionManager.playerPermissions.put(sender.getPlayer().getGameProfile().getId(), op);
+//        claim.claimBlockOwner = sender.getPlayer().getGameProfile().getId();
+//        claim.children.forEach(subzone -> {
+//            try {
+//                Claim.ClaimPermissionMap op1 = subzone.permissionManager.playerPermissions.get(subzone.claimBlockOwner);
+//                subzone.permissionManager.playerPermissions.put(subzone.claimBlockOwner, subzone.permissionManager.playerPermissions.get(sender.getPlayer().getGameProfile().getId()));
+//                subzone.permissionManager.playerPermissions.put(sender.getPlayer().getGameProfile().getId(), op1);
+//                subzone.claimBlockOwner = sender.getPlayer().getGameProfile().getId();
+//            } catch (CommandSyntaxException e) {
+//                e.printStackTrace();
+//            }
+//        });
+//        return 0;
+//    }
+//    private static int modifyException(Claim claim, ServerPlayerEntity exception, Claim.Permission permission, boolean allowed) {
+//        claim.permissionManager.setPermission(exception.getGameProfile().getId(), permission, allowed);
+//        return 0;
+//    }
+//    private static int modifyException(Claim claim, String exception, Claim.Permission permission, boolean allowed) {
+//        claim.permissionManager.setPermission(exception, permission, allowed);
+//        return 0;
+//    }
+//    private static boolean hasPermission(Claim claim, ServerPlayerEntity exception, Claim.Permission permission) {
+//        return claim.permissionManager.hasPermission(exception.getGameProfile().getId(), permission);
+//    }
 //    private static boolean hasPermission(Claim claim, String exception, Claim.Permission permission) {
 //        return claim.permissionManager.hasPermission(exception, permission);
 //    }
-    private static Direction directionByName(String name) {
-        for (Direction direction : Direction.values()) {
-            if (name.equals(direction.getName())) return direction;
-        }
-        return null;
-    }
-    private static int expand(Claim claim, int amount, Direction direction, ServerCommandSource source, boolean admin) throws CommandSyntaxException {
-        UUID ownerID = source.getPlayer().getGameProfile().getId();
-        if (claim == null) {
-            source.sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
-            return 0;
-        }
-        if (direction == null) {
-            source.sendFeedback(new LiteralText("That is not a valid direction").formatted(Formatting.RED), false);
-            return 0;
-        }
-        if (!claim.permissionManager.hasPermission(ownerID, Claim.Permission.MODIFY_SIZE)) {
-            source.sendFeedback(new LiteralText("You do not have border change permissions in that claim").formatted(Formatting.RED), false);
-            if (!admin) return 0;
-        }
-        int oldArea = claim.getArea();
-        if (amount > 0) claim.expand(direction, amount);
-        else {
-            if (!claim.shrink(direction, amount)) {
-                source.sendFeedback(new LiteralText("You can't shrink your claim that far. It would pass its opposite wall.").formatted(Formatting.RED), false);
-                return 0;
-            }
-        }
-        if (ClaimManager.INSTANCE.wouldIntersect(claim)) {
-            if (amount < 0) claim.expand(direction, amount);
-            else claim.shrink(direction, amount);
-            source.sendFeedback(new LiteralText("Expansion would result in hitting another claim").formatted(Formatting.RED), false);
-            return 0;
-        }
-        int newArea = claim.getArea() - oldArea;
-        if (!admin && claim.claimBlockOwner != null && ClaimManager.INSTANCE.getClaimBlocks(ownerID) < newArea) {
-            if (amount < 0) claim.expand(direction, amount);
-            else claim.shrink(direction, amount);
-            source.sendFeedback(new LiteralText("You don't have enough claim blocks. You have " + ClaimManager.INSTANCE.getClaimBlocks(ownerID) + ", you need " + newArea + "(" + (newArea - ClaimManager.INSTANCE.getClaimBlocks(ownerID)) + " more)").formatted(Formatting.RED), false);
-            checkPlayer(source, ownerID);
-            return 0;
-        } else {
-            if (!admin && claim.claimBlockOwner != null) ClaimManager.INSTANCE.useClaimBlocks(ownerID, newArea);
-            source.sendFeedback(new LiteralText("Your claim was " + (amount > 0 ? "expanded" : "shrunk") + " by " + (amount < 0 ? -amount : amount) + " blocks " + direction.getName()).formatted(Formatting.GREEN), false);
-            checkPlayer(source, ownerID);
-            if (amount < 0) claim.expand(direction, amount);
-            else claim.shrink(direction, amount);
-            source.getWorld().getPlayers().forEach(playerEntity -> {
-                if (((ClaimShower)playerEntity).getShownClaim() != null && ((ClaimShower)playerEntity).getShownClaim().name.equals(claim.name)) silentHideShow(playerEntity, claim, true, false);
-            });
-            if (amount > 0) claim.expand(direction, amount);
-            else claim.shrink(direction, -amount);
-            source.getWorld().getPlayers().forEach(playerEntity -> {
-                if (((ClaimShower)playerEntity).getShownClaim() != null && ((ClaimShower)playerEntity).getShownClaim().name.equals(claim.name)) silentHideShow(playerEntity, claim, false, false);
-            });
-        }
-        return 0;
-    }
-    private static int info(ServerCommandSource source, Claim claim) {
-        if (claim == null) {
-            source.sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
-            return 0;
-        }
+//    private static Direction directionByName(String name) {
+//        for (Direction direction : Direction.values()) {
+//            if (name.equals(direction.getName())) return direction;
+//        }
+//        return null;
+//    }
 
-        GameProfile owner = claim.claimBlockOwner == null ? null : source.getMinecraftServer().getUserCache().getByUuid(claim.claimBlockOwner);
-        BlockPos size = claim.getSize();
+//    private static CompletableFuture<Suggestions> itemsSuggestion(final CommandContext<ServerCommandSource> ctx, final SuggestionsBuilder builder) {
+//        List<String> strings = new ArrayList<>();
+//        Registry.ITEM.forEach((item) -> {
+//            strings.add(Registry.ITEM.getId(item).getPath());
+//        });
+//
+//        return CommandSource.suggestMatching(strings, builder);
+//    }
 
-        Text text = new LiteralText("\n");
-        text.append(new LiteralText("Claim Info: " + claim.name).formatted(Formatting.GOLD)).append("\n");
-        text.append(newInfoLine("Name", new LiteralText(claim.name).formatted(Formatting.WHITE)));
-        text.append(newInfoLine("Owner",
-                owner != null && claim.customOwnerName == null ? new LiteralText(owner.getName()).formatted(Formatting.GOLD) :
-                        claim.customOwnerName != null ? new LiteralText(claim.customOwnerName).formatted(Formatting.GOLD) :
-                                new LiteralText("No Owner").formatted(Formatting.RED, Formatting.ITALIC)));
-        text.append(newInfoLine("Size", new LiteralText(size.getX() + (claim.is2d() ? "x" : ("x" + size.getY() + "x")) + size.getZ()).formatted(Formatting.GREEN)));
+//    private static void undoExpand(Claim claim, Direction direction, int amount){
+//        if (amount < 0) claim.expand(direction, -amount);
+//        else claim.shrink(direction, amount);
+//    }
+//
+//    private static void sendSize(Claim claim, ServerCommandSource source){
+//        Text min = newPosLine(claim.min, Formatting.AQUA, Formatting.DARK_AQUA);
+//        Text max = newPosLine(claim.max, Formatting.LIGHT_PURPLE, Formatting.DARK_PURPLE);
+//        Text pos = new LiteralText("");
+//        pos.append(newInfoLine("Position", new LiteralText("")
+//                .append(new LiteralText("Min ").formatted(Formatting.WHITE).append(min))
+//                .append(" ")
+//                .append(new LiteralText("Max ").formatted(Formatting.WHITE).append(max))));
+//        source.sendFeedback(pos, true);
+//    }
+//
+//    private static int expand(Claim claim, int amount, Direction direction, ServerCommandSource source, boolean admin) throws CommandSyntaxException {
+//        UUID ownerID = source.getPlayer().getGameProfile().getId();
+//        if (claim == null) {
+//            source.sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
+//            return 0;
+//        }
+//        if (direction == null) {
+//            source.sendFeedback(new LiteralText("That is not a valid direction").formatted(Formatting.RED), false);
+//            return 0;
+//        }
+//        if (!claim.permissionManager.hasPermission(ownerID, Claim.Permission.MODIFY_SIZE)) {
+//            source.sendFeedback(new LiteralText("You do not have border change permissions in that claim").formatted(Formatting.RED), false);
+//            if (!admin) return 0;
+//        }
+//        int oldArea = claim.getArea();
+//        System.out.println("Area1 " + claim.getArea());
+//        sendSize(claim, source);
+//
+//        if (amount > 0) {
+//            claim.expand(direction, amount);
+//        }
+//        else {
+//            claim.shrink(direction, -amount);
+//        }
+//
+//        System.out.println("Area2 " + claim.getArea());
+//        sendSize(claim, source);
+//
+//        if (!claim.canShrinkWithoutHittingOtherSide(new BlockPos(direction.getOffsetX() * amount, direction.getOffsetY() * amount, direction.getOffsetZ() * amount))) {
+//            source.sendFeedback(new LiteralText("You can't shrink your claim that far. It would pass its opposite wall.").formatted(Formatting.RED), false);
+//            undoExpand(claim, direction, amount);
+//            return 0;
+//        }
+//
+//        if(!claim.isChild){
+//            if (ClaimManager.INSTANCE.wouldIntersect(claim)) {
+//                undoExpand(claim, direction, amount);
+//                source.sendFeedback(new LiteralText("Expansion would result in hitting another claim").formatted(Formatting.RED), false);
+//                return 0;
+//            }
+//
+//            //Check if shrinking would reset a subzone to be outside of its parent claim
+//            AtomicBoolean returnValue = new AtomicBoolean();
+//            returnValue.set(false);
+//            claim.children.forEach(claim1 -> {
+////                System.out.println("IsInside2: " + claim1.isInside(claim));
+//                if(!claim1.isInside(claim)){
+//                    System.out.println("Area3 " + claim.getArea());
+//                    sendSize(claim, source);
+//                    undoExpand(claim, direction, amount);
+//                    System.out.println("Area4 " + claim.getArea());
+//                    sendSize(claim, source);
+//                    source.sendFeedback(new LiteralText("Shrinking would result in " + claim1.name + " being outside of " + claim.name).formatted(Formatting.RED), true);
+//                    returnValue.set(true);
+//                }
+//            });
+//            if(returnValue.get()) return 0;
+//
+//            int newArea = claim.getArea() - oldArea;
+//            if (!admin && claim.claimBlockOwner != null && ClaimManager.INSTANCE.getClaimBlocks(ownerID) < newArea) {
+//                undoExpand(claim, direction, amount);
+//                source.sendFeedback(new LiteralText("You don't have enough claim blocks. You have " + ClaimManager.INSTANCE.getClaimBlocks(ownerID) + ", you need " + newArea + "(" + (newArea - ClaimManager.INSTANCE.getClaimBlocks(ownerID)) + " more)").formatted(Formatting.RED), false);
+//                checkPlayer(source, ownerID);
+//                return 0;
+//            } else {
+//                if (!admin && claim.claimBlockOwner != null) ClaimManager.INSTANCE.useClaimBlocks(ownerID, newArea);
+//                source.sendFeedback(new LiteralText("Your claim was " + (amount > 0 ? "expanded" : "shrunk") + " by " + (amount < 0 ? -amount : amount) + " blocks " + direction.getName()).formatted(Formatting.GREEN), false);
+//                checkPlayer(source, ownerID);
+//                undoExpand(claim, direction, amount);
+//                ShowerUtil.update(claim, source.getWorld(), true);
+//                if (amount > 0) claim.expand(direction, amount);
+//                else claim.shrink(direction, -amount);
+//                ShowerUtil.update(claim, source.getWorld(), false);
+//            }
+//            return 0;
+//        }else{
+//            Claim parent = ClaimUtil.getParentClaim(claim);
+//            if(!claim.isInside(parent)) {
+//                source.sendFeedback(new LiteralText("Expansion would result in expanding outside of your main claim").formatted(Formatting.RED), false);
+//                undoExpand(claim, direction, amount);
+//            } else if(ClaimManager.INSTANCE.wouldSubzoneIntersect((claim))){
+//                source.sendFeedback(new LiteralText("Expansion would result in overlapping with another subzone").formatted(Formatting.RED), false);
+//                undoExpand(claim, direction, amount);
+//            }else{
+//                source.sendFeedback(new LiteralText("Your subzone was " + (amount > 0 ? "expanded" : "shrunk") + " by " + (amount < 0 ? -amount : amount) + " blocks " + direction.getName()).formatted(Formatting.GREEN), false);
+//                //The expansion is undone to hide the claimshower
+//                undoExpand(claim, direction, amount);
+//                ShowerUtil.update(parent, source.getWorld(), true);
+//                if (amount > 0) claim.expand(direction, amount);
+//                else claim.shrink(direction, -amount);
+//                ShowerUtil.update(parent, source.getWorld(), false);
+//            }
+//        }
+//        return 0;
+//    }
 
+//    private static int revenue(ServerCommandSource source, Claim claim, boolean claimrevenue) throws CommandSyntaxException {
+//        //Show subzones (so you can just claim everything in one place) maybe just all claims
+//        if(claim == null){
+//            source.sendFeedback(Messages.INVALID_CLAIM,true);
+//            return 0;
+//        }
+//        if(!claim.claimBlockOwner.toString().equalsIgnoreCase(source.getPlayer().getUuid().toString())){
+//            source.sendFeedback(Messages.NO_PERMISSION, true);
+//            return 0;
+//        }
+//
+//        if(claimrevenue){
+//            for(ItemStack itemStack : claim.rent.getRevenue()){
+//                source.getPlayer().inventory.insertStack(itemStack);
+//            }
+//            claim.rent.clearRevenue();
+//            return 1;
+//
+//        } else {
+//            if(claim.rent.getRevenue().isEmpty()){
+//                source.sendFeedback(new LiteralText("No Revenue").formatted(Formatting.RED), true);
+//                return 0;
+//            }
+//            Text text = new LiteralText("Revenue\n").formatted(Formatting.AQUA);
+//            HashMap<Item, Integer> hashMap = new HashMap<>();
+//            for(ItemStack itemStack : claim.rent.getRevenue()){
+//                Item value = itemStack.getItem();
+//                if(hashMap.containsKey(value)){
+//                    hashMap.put(value, hashMap.get(value) + itemStack.getCount());
+//                } else {
+//                    hashMap.put(value, + itemStack.getCount());
+//                }
+//
+//                hashMap.forEach((item, integer) -> {
+//                    boolean color = true;
+//                    text.append(new LiteralText(String.valueOf(integer)).append(" ").append(new TranslatableText(item.getTranslationKey())).append(" ").formatted(color ? Formatting.GOLD : Formatting.YELLOW)).styled(style -> {
+//                        style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Click to claim revenue!").formatted(Formatting.GREEN)));
+//                        style.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/claim revenue " + claim.name + " true"));
+//                    });
+//                    color = !color;
+//                });
+//
+//            }
+//            text.append("\n");
+//            source.sendFeedback(text, true);
+//            return 1;
+//        }
+//    }
 
-        text.append(new LiteralText("").append(new LiteralText("* Settings:").formatted(Formatting.YELLOW))
-                .append(Messages.Command.getSettings(claim)).append("\n"));
-        Text pos = new LiteralText("");
-        Text min = newPosLine(claim.min, Formatting.AQUA, Formatting.DARK_AQUA);
-        Text max = newPosLine(claim.max, Formatting.LIGHT_PURPLE, Formatting.DARK_PURPLE);
+//        private static int info(ServerCommandSource source, Claim claim) throws CommandSyntaxException {
+//            if (claim == null) {
+//                source.sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
+//                return 0;
+//            }
+//
+//            GameProfile owner = claim.claimBlockOwner == null ? null : source.getMinecraftServer().getUserCache().getByUuid(claim.claimBlockOwner);
+//            BlockPos size = claim.getSize();
+//
+//            Text text = new LiteralText("\n");
+//            text.append(new LiteralText("Claim Info: " + claim.name).formatted(Formatting.GOLD)).append("\n");
+//            text.append(newInfoLine("Name", new LiteralText(claim.name).formatted(Formatting.WHITE)));
+//            text.append(newInfoLine("Entities", new LiteralText(String.valueOf(claim.getEntities(source.getWorld()))).formatted(Formatting.AQUA)));
+//            text.append(newInfoLine("Owner",
+//                    owner != null && claim.customOwnerName == null ? new LiteralText(owner.getName()).formatted(Formatting.GOLD) :
+//                            claim.customOwnerName != null ? new LiteralText(claim.customOwnerName).formatted(Formatting.GOLD) :
+//                                    new LiteralText("No Owner").formatted(Formatting.RED, Formatting.ITALIC)));
+//            text.append(newInfoLine("Size", new LiteralText(size.getX() + (claim.is2d() ? "x" : ("x" + size.getY() + "x")) + size.getZ()).formatted(Formatting.GREEN)));
+//
+//
+//            text.append(new LiteralText("").append(new LiteralText("* Settings:").formatted(Formatting.YELLOW))
+//                    .append(Messages.Command.getSettings(claim)).append("\n"));
+//            Text pos = new LiteralText("");
+//            Text min = newPosLine(claim.min, Formatting.AQUA, Formatting.DARK_AQUA);
+//            Text max = newPosLine(claim.max, Formatting.LIGHT_PURPLE, Formatting.DARK_PURPLE);
+//
+//
+//            if (PERMISSION_CHECK_ADMIN.test(source)) {
+//                String format = "/execute in " + Objects.requireNonNull(Registry.DIMENSION_TYPE.getId(claim.dimension), "Dimension Doesn't Exist!!").toString() + " run tp " + source.getName() + (Config.claims2d ? " %s ~ %s" : " %s %s %s");
+//                min.styled(style -> style.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND,
+//                        String.format(format, claim.min.getX(), Config.claims2d ? claim.min.getZ() : claim.min.getY(), claim.min.getZ()))));
+//                max.styled(style -> style.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND,
+//                        String.format(format, claim.max.getX(), Config.claims2d ? claim.max.getZ() : claim.max.getY(), claim.max.getZ()))));
+//            }
+//
+//            pos.append(newInfoLine("Position", new LiteralText("")
+//                    .append(new LiteralText("Min ").formatted(Formatting.WHITE).append(min))
+//                    .append(" ")
+//                    .append(new LiteralText("Max ").formatted(Formatting.WHITE).append(max))));
+//            text.append(pos);
+//            text.append(newInfoLine("Dimension", new LiteralText(Registry.DIMENSION_TYPE.getId(claim.dimension).getPath())));
+//            if(claim.rent.isRented()){
+//                GameProfile tenant = claim.rent.getTenant() == null ? null : source.getMinecraftServer().getUserCache().getByUuid(claim.rent.getTenant());
+//                text.append(newInfoLine("Status", new LiteralText("Rented").formatted(Formatting.RED).styled(style -> {
+//                    java.util.Date time=new java.util.Date((long) claim.rent.getRentedUntil()*1000);
+//                    style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, newInfoLine("Until", new LiteralText(time.toString()).formatted(Formatting.WHITE)).append(newInfoLine("By", new LiteralText(tenant.getName()).formatted(Formatting.WHITE))).append(newInfoLine("Price", new LiteralText(claim.rent.getAmount() + " " + claim.rent.getCurrency().getName().asString() + " every " + TimeUtil.convertSecondsToString(claim.rent.getRentAbleTime(),'f', 'f')).formatted(Formatting.WHITE)))));
+//                })));
+//            } else if (claim.rent.isRentable() && !claim.rent.isRented()){
+//                text.append(newInfoLine("Status", new LiteralText("For Rent").formatted(Formatting.GREEN).styled(style -> {
+//                    style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, newInfoLine("Price", new LiteralText(claim.rent.getAmount() + " " + claim.rent.getCurrency().getName().asString() + " every " + TimeUtil.convertSecondsToString(claim.rent.getRentAbleTime(),'f', 'f')).formatted(Formatting.WHITE)).append(newInfoLine("Max Rent", new LiteralText(claim.rent.getMaxrentAbleTime() / 86400 + " days")).formatted(Formatting.WHITE))));
+//                })));
+//
+//            } else {
+//                text.append(newInfoLine("Status", new LiteralText("Not For Rent").formatted(Formatting.GREEN)));
+//
+//            }
+//            source.sendFeedback(text, false);
+//            return 1;
+//        }
+//    private static Text newPosLine(BlockPos pos, Formatting form1, Formatting form2) {
+//        return new LiteralText("")
+//                .append(new LiteralText(String.valueOf(pos.getX())).formatted(form1))
+//                .append(" ")
+//                .append(new LiteralText(String.valueOf(pos.getY())).formatted(form2))
+//                .append(" ")
+//                .append(new LiteralText(String.valueOf(pos.getZ())).formatted(form1));
+//    }
+//    private static Text newInfoLine(String title, Text text) {
+//        return new LiteralText("").append(new LiteralText("* " + title + ": ").formatted(Formatting.YELLOW))
+//                .append(text).append("\n");
+//    }
 
-        if (PERMISSION_CHECK_ADMIN.test(source)) {
-            String format = "/execute in " + Objects.requireNonNull(Registry.DIMENSION_TYPE.getId(claim.dimension), "Dimension Doesn't Exist!!").toString() + " run tp " + source.getName() + (Config.claims2d ? " %s ~ %s" : " %s %s %s");
-            min.styled(style -> style.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND,
-                    String.format(format, claim.min.getX(), Config.claims2d ? claim.min.getZ() : claim.min.getY(), claim.min.getZ()))));
-            max.styled(style -> style.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND,
-                    String.format(format, claim.max.getX(), Config.claims2d ? claim.max.getZ() : claim.max.getY(), claim.max.getZ()))));
-        }
+//    private static ArrayList<Claim> getClaims(){
+//        ArrayList<Claim> claims = new ArrayList<>();
+//        ClaimManager.INSTANCE.claimsByName.forEach((s, claim) -> {
+//            claims.add(claim);
+//        });
+//        return claims;
+//    }
+//
+//    private static int listall(ServerCommandSource source){
+//        List<Claim> claims = getClaims();
+//        Text text = new LiteralText("\n").append(new LiteralText("Claims").formatted(Formatting.GOLD)).append("\n ");
+//        for (Claim claim : claims) {
+//            Text cText = new LiteralText(claim.name).formatted(Formatting.GOLD);
+//            text.append(cText.append(" "));
+//        }
+//        source.sendFeedback(text.append("\n"), false);
+//        return 1;
+//    }
 
-        pos.append(newInfoLine("Position", new LiteralText("")
-                .append(new LiteralText("Min ").formatted(Formatting.WHITE).append(min))
-                .append(" ")
-                .append(new LiteralText("Max ").formatted(Formatting.WHITE).append(max))));
-        text.append(pos);
-        text.append(newInfoLine("Dimension", new LiteralText(Registry.DIMENSION_TYPE.getId(claim.dimension).getPath())));
-        source.sendFeedback(text, false);
-        return 1;
-    }
-    private static Text newPosLine(BlockPos pos, Formatting form1, Formatting form2) {
-        return new LiteralText("")
-                .append(new LiteralText(String.valueOf(pos.getX())).formatted(form1))
-                .append(" ")
-                .append(new LiteralText(String.valueOf(pos.getY())).formatted(form2))
-                .append(" ")
-                .append(new LiteralText(String.valueOf(pos.getZ())).formatted(form1));
-    }
-    private static Text newInfoLine(String title, Text text) {
-        return new LiteralText("").append(new LiteralText("* " + title + ": ").formatted(Formatting.YELLOW))
-                .append(text).append("\n");
-    }
+//    private static int list(ServerCommandSource source, String target) throws CommandSyntaxException {
+//        ServerPlayerEntity player = source.getPlayer();
+//        GameProfile profile = target == null ? player.getGameProfile() : source.getMinecraftServer().getUserCache().findByName(target);
+//
+//        if (profile == null) {
+//            source.sendError(Messages.INVALID_PLAYER);
+//            return -1;
+//        }
+//
+//        List<Claim> claims = ClaimManager.INSTANCE.getPlayerClaims(profile.getId());
+//        if (claims.isEmpty()) {
+//            source.sendFeedback(new LiteralText("No Claims").formatted(Formatting.RED), false);
+//            return -1;
+//        }
+//
+//
+//        Text text = new LiteralText("\n").append(new LiteralText("Claims (" + target + "): ").formatted(Formatting.GOLD)).append("\n ");
+//        boolean nextColor = false;
+//        for (Claim claim : claims) {
+//            if(!claim.isChild) {
+//                Text cText = new LiteralText(claim.name).formatted(nextColor ? Formatting.YELLOW : Formatting.GOLD).styled((style) -> {
+//                    Text hoverText = new LiteralText("Click for more Info").formatted(Formatting.GREEN);
+//                    if (claim.children.size() > 0) {
+//                        hoverText.append("\n\nSubzones:");
+//                        for (Claim subzone : claim.children) {
+//                            hoverText.append("\n- " + subzone.name);
+//                        }
+//                    }
+//                    style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText));
+//
+//                    style.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/claim info " + claim.name));
+//                });
+//
+//                nextColor = !nextColor;
+//                text.append(cText.append(" "));
+//            }
+//        }
+//
+//        source.sendFeedback(text.append("\n"), false);
+//        return 1;
+//    }
+//    private static int listAll(ServerCommandSource source, int page) {
+//        List<Claim> claims = new ArrayList<>();
+//        ClaimManager.INSTANCE.claimsByName.forEach((name, claim) -> claims.add(claim));
+//
+//        if (claims.isEmpty()) {
+//            source.sendFeedback(new LiteralText("No Claims").formatted(Formatting.RED), false);
+//            return -1;
+//        }
+//
+//        List<Text> list = new ArrayList<>(claims.size() / 10);
+//
+//        for (int i = 0; i < claims.size(); i++) {
+//            Claim claim = claims.get(i);
+//
+//            Text cText = new LiteralText("").append(new LiteralText(i + ". ").formatted(Formatting.GOLD))
+//                    .append(new LiteralText(claim.name).formatted(Formatting.GOLD)).append(new LiteralText(" in ").formatted(Formatting.GRAY))
+//                    .append(new LiteralText(Objects.requireNonNull(Registry.DIMENSION_TYPE.getId(claim.dimension), "Dimension Doesn't Exist!!").getPath()).formatted(Formatting.WHITE));
+//
+//            cText.styled((style) -> {
+//                style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Click for more Info").formatted(Formatting.GREEN)));
+//                style.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/claim info " + claim.name));
+//            });
+//
+//            list.add(cText.append("\n"));
+//        }
+//
+//        Text[] texts = new Text[]{};
+//        texts = list.toArray(texts);
+//        return sendPage(source, texts, page, "Claims", "/claim listall %page%");
+//    }
+//    private static int rename(CommandContext<ServerCommandSource> context, boolean admin) throws CommandSyntaxException {
+//        String name = getString(context, "claim");
+//        String newName = getString(context, "name");
+//        if(!newName.matches("[A-Za-z0-9]+")){
+//            context.getSource().sendError(new LiteralText("Invalid claim name"));
+//            return -1;
+//        }
+//        Claim claim = ClaimManager.INSTANCE.claimsByName.get(name);
+//        if (claim == null) {
+//            context.getSource().sendError(Messages.INVALID_CLAIM);
+//            return -1;
+//        }
+//        if (ClaimManager.INSTANCE.claimsByName.containsKey(newName)) {
+//            context.getSource().sendError(new LiteralText("That name is already taken!"));
+//            return -1;
+//        }
+//        if (!admin && !claim.hasPermission(context.getSource().getPlayer().getUuid(), Claim.Permission.MODIFY_PROPERTIES)) {
+//            context.getSource().sendError(new LiteralText("You don't have permission to modify claim properties!"));
+//            return -1;
+//        }
+//        ClaimManager.INSTANCE.claimsByName.remove(name);
+//        if(claim.isChild) claim.name = ClaimUtil.getParentClaim(claim).name + "." + newName;
+//        else claim.name = newName;
+//        ClaimManager.INSTANCE.addClaim(claim);
+//        context.getSource().sendFeedback(new LiteralText("Renamed Claim " + name + " to " + claim.name).formatted(Formatting.GOLD), admin);
+//        return -1;
+//    }
+//    private static int showTrustedList(CommandContext<ServerCommandSource> context, Claim claim, boolean showSelf) throws CommandSyntaxException {
+//        ServerCommandSource source = context.getSource();
+//        ServerPlayerEntity player = source.getPlayer();
+//        int mapSize = claim.permissionManager.playerPermissions.size();
+//
+//        if (mapSize == 1 && !showSelf) {
+//            source.sendError(new LiteralText(claim.name + " is not trusting anyone!"));
+//            return -1;
+//        }
+//
+//        Text text = new LiteralText("\n");
+//        text.append(new LiteralText("Trusted players for Claim ").formatted(Formatting.YELLOW))
+//                .append(new LiteralText(claim.name).formatted(Formatting.GOLD)).append("\n");
+//
+//        AtomicInteger atomicInteger = new AtomicInteger();
+//        claim.permissionManager.playerPermissions.forEach((uuid, perm) -> {
+//            atomicInteger.incrementAndGet();
+//            Text pText = new LiteralText("");
+//            Text owner;
+//            GameProfile profile = source.getMinecraftServer().getUserCache().getByUuid(uuid);
+//            if (profile != null) {
+//                owner = new LiteralText(profile.getName());
+//            } else {
+//                owner = new LiteralText(uuid.toString()).styled((style) -> {
+//                    style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Click to Copy")));
+//                    style.setClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, uuid.toString()));
+//                });
+//            }
+//
+//            pText.append(new LiteralText(atomicInteger.get() + ". ").formatted(Formatting.GOLD))
+//                    .append(owner.formatted(Formatting.YELLOW));
+//
+//            Text hover = new LiteralText("");
+//            hover.append(new LiteralText("Permissions:").formatted(Formatting.WHITE)).append("\n");
+//
+//            int allowed = 0;
+//            int i = 0;
+//            boolean nextColor = false;
+//            Text perms = new LiteralText("");
+//
+//            for (Claim.Permission value : Claim.Permission.values()) {
+//                if (claim.permissionManager.hasPermission(uuid, value)) {
+//                    Formatting formatting = nextColor ? Formatting.GREEN : Formatting.DARK_GREEN;
+//                    perms.append(new LiteralText(value.id).formatted(formatting)).append(" ");
+//                    if (i == 3) perms.append("\n");
+//                    allowed++;
+//                    i++;
+//                    nextColor = !nextColor;
+//                }
+//            }
+//
+//            if (allowed == Claim.Permission.values().length) {
+//                hover.append(new LiteralText("All " + allowed + " Permissions").formatted(Formatting.YELLOW, Formatting.ITALIC));
+//            } else {
+//                hover.append(perms);
+//            }
+//
+//            pText.append(new LiteralText(" ")
+//                    .append(new LiteralText("(").formatted(Formatting.GOLD))
+//                    .append(new LiteralText(String.valueOf(allowed)).formatted(Formatting.GREEN))
+//                    .append(new LiteralText("/").formatted(Formatting.GOLD))
+//                    .append(new LiteralText(String.valueOf(Claim.Permission.values().length)).formatted(Formatting.YELLOW))
+//                    .append(new LiteralText(")").formatted(Formatting.GOLD))
+//            );
+//
+//            pText.styled((style) -> style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover)));
+//            text.append(pText).append("\n");
+//        });
+//
+//        source.sendFeedback(text, false);
+//        return 1;
+//    }
+//    private static int setOwnerName(ServerCommandSource source, Claim claim, String input) {
+//        String name = input.equals("reset") ? null : input;
+//        source.sendFeedback(new LiteralText("Set the Custom Owner Name to ")
+//                .formatted(Formatting.YELLOW).append(new LiteralText(name == null ? "Reset" : name).formatted(Formatting.GOLD)).append(new LiteralText(" from "))
+//                        .append(new LiteralText(claim.customOwnerName == null ? "Not Present" : claim.customOwnerName).formatted(Formatting.GOLD))
+//                        .append(new LiteralText(" for ").formatted(Formatting.YELLOW)).append(new LiteralText(claim.name).formatted(Formatting.GOLD))
+//                , false);
+//        claim.customOwnerName = input;
+//        return 1;
+//    }
+//    private static int setOwner(ServerCommandSource source, Claim claim, GameProfile profile) {
+//        GameProfile oldOwner = source.getMinecraftServer().getUserCache().getByUuid(claim.claimBlockOwner);
+//        source.sendFeedback(new LiteralText("Set the Claim Owner to ")
+//                        .formatted(Formatting.YELLOW).append(new LiteralText(profile.getName()).formatted(Formatting.GOLD)).append(new LiteralText(" from "))
+//                        .append(new LiteralText(oldOwner == null ? "(" + claim.claimBlockOwner + ")" : oldOwner.getName()).formatted(Formatting.GOLD))
+//                        .append(new LiteralText(" for ").formatted(Formatting.YELLOW)).append(new LiteralText(claim.name).formatted(Formatting.GOLD))
+//                , false);
+//        claim.claimBlockOwner = profile.getId();
+//        return 1;
+//    }
+//    private static int setEventMessage(ServerCommandSource source, Claim claim, Claim.Event event, String message) {
+//        switch (event) {
+//            case ENTER_CLAIM:
+//                claim.enterMessage = message.equalsIgnoreCase("reset") ? null : message;
+//                break;
+//            case LEAVE_CLAIM:
+//                claim.leaveMessage = message.equalsIgnoreCase("reset") ? null : message;
+//                break;
+//        }
+//
+//        if (message.equalsIgnoreCase("reset")) {
+//            source.sendFeedback(new LiteralText("Reset ").append(new LiteralText(event.id).formatted(Formatting.GOLD)
+//                            .append(new LiteralText(" Event Message for claim ").formatted(Formatting.YELLOW))
+//                            .append(new LiteralText(claim.name).formatted(Formatting.GOLD))).formatted(Formatting.YELLOW)
+//                    , false);
+//            return -1;
+//        }
+//
+//        source.sendFeedback(new LiteralText("Set ").append(new LiteralText(event.id).formatted(Formatting.GOLD)
+//                        .append(new LiteralText(" Event Message for claim ").formatted(Formatting.YELLOW))
+//                        .append(new LiteralText(claim.name).formatted(Formatting.GOLD)).append(new LiteralText(" to:").formatted(Formatting.YELLOW)))
+//                        .append("\n").append(new LiteralText(ChatColor.translate(message)))
+//                        .formatted(Formatting.YELLOW)
+//                , false);
+//        return 1;
+//    }
+//    private static int executeSetting(ServerCommandSource source, String input, @Nullable String claimName, boolean isQuery, boolean value, boolean admin) throws CommandSyntaxException {
+//        ServerPlayerEntity player = source.getPlayer();
+//        Claim claim1 = claimName == null || claimName.isEmpty() ? ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.dimension) :
+//                ClaimManager.INSTANCE.claimsByName.get(claimName);
+//        if (claim1 == null) {
+//            source.sendError(Messages.INVALID_CLAIM);
+//            return -1;
+//        }
+//
+//        if (input == null) {
+//            return querySettings(source, claim1);
+//        }
+//
+//        validateCanAccess(player, claim1, admin);
+//        Claim.ClaimSettings.Setting setting = Claim.ClaimSettings.Setting.byId(input);
+//        Claim.Permission permission = Claim.Permission.byId(input);
+//
+//        if (setting != null && permission == null)
+//            return isQuery ? querySetting(source, claim1, setting) : setSetting(source, claim1, setting, value);
+//
+//        if (setting == null && permission != null)
+//            return isQuery ? queryPermission(source, claim1, permission) : setPermission(source, claim1, permission, value);
+//
+//        source.sendError(Messages.INVALID_SETTING);
+//        return -1;
+//    }
+//    private static int executePermission(ServerCommandSource source, String input, @Nullable String claimName, boolean isQuery, boolean value, boolean admin) throws CommandSyntaxException {
+//        ServerPlayerEntity player = source.getPlayer();
+//        Claim claim1 = claimName == null ? ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.dimension) :
+//                ClaimManager.INSTANCE.claimsByName.get(claimName);
+//        if (claim1 == null) {
+//            source.sendError(Messages.INVALID_CLAIM);
+//            return -1;
+//        }
+//
+//        validateCanAccess(player, claim1, admin);
+//        Claim.Permission permission = Claim.Permission.byId(input);
+//        if (permission != null)
+//            return !isQuery ? setPermission(source, claim1, permission, value) : queryPermission(source, claim1, permission);
+//
+//        source.sendError(Messages.INVALID_SETTING);
+//        return -1;
+//    }
+//    private static int querySetting(ServerCommandSource source, Claim claim, Claim.ClaimSettings.Setting setting) {
+//        boolean enabled = claim.settings.getSetting(setting);
+//        source.sendFeedback(new LiteralText(ChatColor.translate("&eSetting &6" + setting.name + " &e is set to " + (enabled ? "&a" : "&c") + enabled + "&e for &6" + claim.name)), false);
+//        return 1;
+//    }
+//    private static int setSetting(ServerCommandSource source, Claim claim, Claim.ClaimSettings.Setting setting, boolean set) {
+//        claim.settings.settings.put(setting, set);
+//        source.sendFeedback(new LiteralText(ChatColor.translate("&eSet setting &6" + setting.name + "&e to " + (set ? "&a" : "&c") + set + "&e for &6" + claim.name)), false);
+//        return 0;
+//    }
+//    private static int queryPermission(ServerCommandSource source, Claim claim, Claim.Permission permission) {
+//        boolean defaultPerm = claim.permissionManager.defaults.hasPermission(permission);
+//        source.sendFeedback(new LiteralText(ChatColor.translate("&ePermission &6" + permission.id + "&e is set to " + (defaultPerm ? "&a" : "&c") + defaultPerm + "&e for &6" + claim.name)), false);
+//        return 1;
+//    }
+//    private static int setPermission(ServerCommandSource source, Claim claim, Claim.Permission permission, boolean set) {
+//        claim.permissionManager.defaults.setPermission(permission, set);
+//        source.sendFeedback(new LiteralText(ChatColor.translate("&eSet permission &6" + permission.id + "&e to " + (set ? "&a" : "&c") + set + "&e for &6" + claim.name)), false);
+//        return 1;
+//    }
+//    private static int querySettings(ServerCommandSource source, Claim claim) {
+//        source.sendFeedback(new LiteralText("\n").append(new LiteralText("Settings: " + claim.name).formatted(Formatting.YELLOW)).append("\n")
+//                .append(Messages.Command.getSettings(claim)).append("\n"), false);
+//        return 1;
+//    }
+//    private static int executeTrust(CommandContext<ServerCommandSource> context, Collection<GameProfile> targetCollection, boolean set, @Nullable String claimName) throws CommandSyntaxException {
+//        AtomicInteger integer = new AtomicInteger();
+////        if(targetCollection.size() > 1){
+////            context.getSource().sendFeedback(new LiteralText("Only 1 player allowed").formatted(Formatting.RED), true);
+////            return 0;
+////        }
+//        if(targetCollection.isEmpty()){
+//            context.getSource().sendFeedback(new LiteralText("No player provided").formatted(Formatting.RED), true);
+//            return 0;
+//        }
+//        ServerPlayerEntity p = context.getSource().getPlayer();
+//        Claim claim1 = claimName == null ? ClaimManager.INSTANCE.getClaimAt(p.getBlockPos(), p.dimension) : ClaimManager.INSTANCE.claimsByName.get(claimName);
+//        validateClaim(claim1);
+//        targetCollection.iterator().forEachRemaining(gameProfile -> {
+//            try {
+//                //This is supposed to check if the player has played before :shrug:
+//                if(context.getSource().getMinecraftServer().getUserCache().getByUuid(gameProfile.getId()) == gameProfile){
+//                    integer.set(setTrust(context, claim1, gameProfile, set, false));
+//                } else {
+//                    context.getSource().sendFeedback(new LiteralText("Unknown player!").formatted(Formatting.RED), true);
+//                    integer.set(0);
+//                }
+//            } catch (CommandSyntaxException e) {
+//                e.printStackTrace();
+//            }
+//        });
+//        return integer.get();
+//    }
+//    private static int setTrust(CommandContext<ServerCommandSource> context, Claim claim, GameProfile target, boolean set, boolean admin) throws CommandSyntaxException {
+//        if (verifyPermission(claim, Claim.Permission.MODIFY_PERMISSIONS, context, admin)) {
+//            claim.permissionManager.playerPermissions.put(target.getId(), set ? new Claim.InvertedPermissionMap() : new Claim.DefaultPermissionMap());
+//            context.getSource().sendFeedback(new LiteralText(target.getName() + (set ? " now" : " no longer") + " has all the permissions").formatted(Formatting.YELLOW), false);
+//        }
+//        return 1;
+//    }
+//    private static int setFly(CommandContext<ServerCommandSource> context, boolean set) throws CommandSyntaxException {
+//        ServerPlayerEntity player = context.getSource().getPlayer();
+//        if (set) {
+//            ClaimManager.INSTANCE.flyers.add(player.getUuid());
+//            player.addMessage(new LiteralText("Enabled Ability to fly in Claims").formatted(Formatting.GREEN), false);
+//            return 1;
+//        }
+//
+//        player.addMessage(new LiteralText("Disabled Ability to fly in Claims").formatted(Formatting.RED), false);
+//        ClaimManager.INSTANCE.flyers.remove(player.getUuid());
+//        return -1;
+//    }
 
-    private static ArrayList<Claim> getClaims(){
-        ArrayList<Claim> claims = new ArrayList<>();
-        ClaimManager.INSTANCE.claimsByName.forEach((s, claim) -> {
-            claims.add(claim);
-        });
-        return claims;
-    }
-
-    private static int listall(ServerCommandSource source){
-        List<Claim> claims = getClaims();
-        Text text = new LiteralText("\n").append(new LiteralText("Claims").formatted(Formatting.GOLD)).append("\n ");
-        for (Claim claim : claims) {
-            Text cText = new LiteralText(claim.name).formatted(Formatting.GOLD);
-            text.append(cText.append(" "));
-        }
-        source.sendFeedback(text.append("\n"), false);
-        return 1;
-    }
-
-    private static int list(ServerCommandSource source, String target) throws CommandSyntaxException {
-        ServerPlayerEntity player = source.getPlayer();
-        GameProfile profile = target == null ? player.getGameProfile() : source.getMinecraftServer().getUserCache().findByName(target);
-
-        if (profile == null) {
-            source.sendError(Messages.INVALID_PLAYER);
-            return -1;
-        }
-
-        List<Claim> claims = ClaimManager.INSTANCE.getPlayerClaims(profile.getId());
-        if (claims.isEmpty()) {
-            source.sendFeedback(new LiteralText("No Claims").formatted(Formatting.RED), false);
-            return -1;
-        }
-
-
-        Text text = new LiteralText("\n").append(new LiteralText("Claims (" + target + "): ").formatted(Formatting.GOLD)).append("\n ");
-        boolean nextColor = false;
-        for (Claim claim : claims) {
-            if(!claim.isChild) {
-                Text cText = new LiteralText(claim.name).formatted(nextColor ? Formatting.YELLOW : Formatting.GOLD).styled((style) -> {
-                    Text hoverText = new LiteralText("Click for more Info").formatted(Formatting.GREEN);
-                    if (claim.children.size() > 0) {
-                        hoverText.append("\n\nSubzones:");
-                        for (Claim subzone : claim.children) {
-                            hoverText.append("\n- " + subzone.name);
-                        }
-                    }
-                    style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText));
-
-                    style.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/claim info " + claim.name));
-                });
-
-                nextColor = !nextColor;
-                text.append(cText.append(" "));
-            }
-        }
-
-        source.sendFeedback(text.append("\n"), false);
-        return 1;
-    }
-    private static int listAll(ServerCommandSource source, int page) {
-        List<Claim> claims = new ArrayList<>();
-        ClaimManager.INSTANCE.claimsByName.forEach((name, claim) -> claims.add(claim));
-
-        if (claims.isEmpty()) {
-            source.sendFeedback(new LiteralText("No Claims").formatted(Formatting.RED), false);
-            return -1;
-        }
-
-        List<Text> list = new ArrayList<>(claims.size() / 10);
-
-        for (int i = 0; i < claims.size(); i++) {
-            Claim claim = claims.get(i);
-
-            Text cText = new LiteralText("").append(new LiteralText(i + ". ").formatted(Formatting.GOLD))
-                    .append(new LiteralText(claim.name).formatted(Formatting.GOLD)).append(new LiteralText(" in ").formatted(Formatting.GRAY))
-                    .append(new LiteralText(Objects.requireNonNull(Registry.DIMENSION_TYPE.getId(claim.dimension), "Dimension Doesn't Exist!!").getPath()).formatted(Formatting.WHITE));
-
-            cText.styled((style) -> {
-                style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Click for more Info").formatted(Formatting.GREEN)));
-                style.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/claim info " + claim.name));
-            });
-
-            list.add(cText.append("\n"));
-        }
-
-        Text[] texts = new Text[]{};
-        texts = list.toArray(texts);
-        return sendPage(source, texts, page, "Claims", "/claim listall %page%");
-    }
-    private static int rename(CommandContext<ServerCommandSource> context, boolean admin) throws CommandSyntaxException {
-        String name = StringArgumentType.getString(context, "claim");
-        String newName = StringArgumentType.getString(context, "name");
-        Claim claimToRename = ClaimManager.INSTANCE.claimsByName.get(name);
-        if (claimToRename == null) {
-            context.getSource().sendError(Messages.INVALID_CLAIM);
-            return -1;
-        }
-        if (ClaimManager.INSTANCE.claimsByName.containsKey(newName)) {
-            context.getSource().sendError(new LiteralText("That name is already taken!"));
-            return -1;
-        }
-        if (!admin && !claimToRename.hasPermission(context.getSource().getPlayer().getUuid(), Claim.Permission.MODIFY_PROPERTIES)) {
-            context.getSource().sendError(new LiteralText("You don't have permission to modify claim properties!"));
-            return -1;
-        }
-        ClaimManager.INSTANCE.claimsByName.remove(name);
-        claimToRename.name = newName;
-        ClaimManager.INSTANCE.addClaim(claimToRename);
-        claimToRename.name = newName;
-        context.getSource().sendFeedback(new LiteralText("Renamed Claim " + name + " to " + newName).formatted(Formatting.GOLD), admin);
-        return -1;
-    }
-    private static int showTrustedList(CommandContext<ServerCommandSource> context, Claim claim, boolean showSelf) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        ServerPlayerEntity player = source.getPlayer();
-        int mapSize = claim.permissionManager.playerPermissions.size();
-
-        if (mapSize == 1 && !showSelf) {
-            source.sendError(new LiteralText(claim.name + " is not trusting anyone!"));
-            return -1;
-        }
-
-        Text text = new LiteralText("\n");
-        text.append(new LiteralText("Trusted players for Claim ").formatted(Formatting.YELLOW))
-                .append(new LiteralText(claim.name).formatted(Formatting.GOLD)).append("\n");
-
-        AtomicInteger atomicInteger = new AtomicInteger();
-        claim.permissionManager.playerPermissions.forEach((uuid, perm) -> {
-            atomicInteger.incrementAndGet();
-            Text pText = new LiteralText("");
-            Text owner;
-            GameProfile profile = source.getMinecraftServer().getUserCache().getByUuid(uuid);
-            if (profile != null) {
-                owner = new LiteralText(profile.getName());
-            } else {
-                owner = new LiteralText(uuid.toString()).styled((style) -> {
-                    style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Click to Copy")));
-                    style.setClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, uuid.toString()));
-                });
-            }
-
-            pText.append(new LiteralText(atomicInteger.get() + ". ").formatted(Formatting.GOLD))
-                    .append(owner.formatted(Formatting.YELLOW));
-
-            Text hover = new LiteralText("");
-            hover.append(new LiteralText("Permissions:").formatted(Formatting.WHITE)).append("\n");
-
-            int allowed = 0;
-            int i = 0;
-            boolean nextColor = false;
-            Text perms = new LiteralText("");
-
-            for (Claim.Permission value : Claim.Permission.values()) {
-                if (claim.permissionManager.hasPermission(uuid, value)) {
-                    Formatting formatting = nextColor ? Formatting.GREEN : Formatting.DARK_GREEN;
-                    perms.append(new LiteralText(value.id).formatted(formatting)).append(" ");
-                    if (i == 3) perms.append("\n");
-                    allowed++;
-                    i++;
-                    nextColor = !nextColor;
-                }
-            }
-
-            if (allowed == Claim.Permission.values().length) {
-                hover.append(new LiteralText("All " + allowed + " Permissions").formatted(Formatting.YELLOW, Formatting.ITALIC));
-            } else {
-                hover.append(perms);
-            }
-
-            pText.append(new LiteralText(" ")
-                    .append(new LiteralText("(").formatted(Formatting.GOLD))
-                    .append(new LiteralText(String.valueOf(allowed)).formatted(Formatting.GREEN))
-                    .append(new LiteralText("/").formatted(Formatting.GOLD))
-                    .append(new LiteralText(String.valueOf(Claim.Permission.values().length)).formatted(Formatting.YELLOW))
-                    .append(new LiteralText(")").formatted(Formatting.GOLD))
-            );
-
-            pText.styled((style) -> style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover)));
-            text.append(pText).append("\n");
-        });
-
-        source.sendFeedback(text, false);
-        return 1;
-    }
-    private static int setOwnerName(ServerCommandSource source, Claim claim, String input) {
-        String name = input.equals("reset") ? null : input;
-        source.sendFeedback(new LiteralText("Set the Custom Owner Name to ")
-                .formatted(Formatting.YELLOW).append(new LiteralText(name == null ? "Reset" : name).formatted(Formatting.GOLD)).append(new LiteralText(" from "))
-                        .append(new LiteralText(claim.customOwnerName == null ? "Not Present" : claim.customOwnerName).formatted(Formatting.GOLD))
-                        .append(new LiteralText(" for ").formatted(Formatting.YELLOW)).append(new LiteralText(claim.name).formatted(Formatting.GOLD))
-                , false);
-        claim.customOwnerName = input;
-        return 1;
-    }
-    private static int setOwner(ServerCommandSource source, Claim claim, GameProfile profile) {
-        GameProfile oldOwner = source.getMinecraftServer().getUserCache().getByUuid(claim.claimBlockOwner);
-        source.sendFeedback(new LiteralText("Set the Claim Owner to ")
-                        .formatted(Formatting.YELLOW).append(new LiteralText(profile.getName()).formatted(Formatting.GOLD)).append(new LiteralText(" from "))
-                        .append(new LiteralText(oldOwner == null ? "(" + claim.claimBlockOwner + ")" : oldOwner.getName()).formatted(Formatting.GOLD))
-                        .append(new LiteralText(" for ").formatted(Formatting.YELLOW)).append(new LiteralText(claim.name).formatted(Formatting.GOLD))
-                , false);
-        claim.claimBlockOwner = profile.getId();
-        return 1;
-    }
-    private static int setEventMessage(ServerCommandSource source, Claim claim, Claim.Event event, String message) {
-        switch (event) {
-            case ENTER_CLAIM:
-                claim.enterMessage = message.equalsIgnoreCase("reset") ? null : message;
-                break;
-            case LEAVE_CLAIM:
-                claim.leaveMessage = message.equalsIgnoreCase("reset") ? null : message;
-                break;
-        }
-
-        if (message.equalsIgnoreCase("reset")) {
-            source.sendFeedback(new LiteralText("Reset ").append(new LiteralText(event.id).formatted(Formatting.GOLD)
-                            .append(new LiteralText(" Event Message for claim ").formatted(Formatting.YELLOW))
-                            .append(new LiteralText(claim.name).formatted(Formatting.GOLD))).formatted(Formatting.YELLOW)
-                    , false);
-            return -1;
-        }
-
-        source.sendFeedback(new LiteralText("Set ").append(new LiteralText(event.id).formatted(Formatting.GOLD)
-                        .append(new LiteralText(" Event Message for claim ").formatted(Formatting.YELLOW))
-                        .append(new LiteralText(claim.name).formatted(Formatting.GOLD)).append(new LiteralText(" to:").formatted(Formatting.YELLOW)))
-                        .append("\n").append(new LiteralText(ChatColor.translate(message)))
-                        .formatted(Formatting.YELLOW)
-                , false);
-        return 1;
-    }
-    private static int executeSetting(ServerCommandSource source, String input, @Nullable String claimName, boolean isQuery, boolean value, boolean admin) throws CommandSyntaxException {
-        ServerPlayerEntity player = source.getPlayer();
-        Claim claim1 = claimName == null || claimName.isEmpty() ? ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.dimension) :
-                ClaimManager.INSTANCE.claimsByName.get(claimName);
-        if (claim1 == null) {
-            source.sendError(Messages.INVALID_CLAIM);
-            return -1;
-        }
-
-        if (input == null) {
-            return querySettings(source, claim1);
-        }
-
-        validateCanAccess(player, claim1, admin);
-        Claim.ClaimSettings.Setting setting = Claim.ClaimSettings.Setting.byId(input);
-        Claim.Permission permission = Claim.Permission.byId(input);
-
-        if (setting != null && permission == null)
-            return isQuery ? querySetting(source, claim1, setting) : setSetting(source, claim1, setting, value);
-
-        if (setting == null && permission != null)
-            return isQuery ? queryPermission(source, claim1, permission) : setPermission(source, claim1, permission, value);
-
-        source.sendError(Messages.INVALID_SETTING);
-        return -1;
-    }
-    private static int executePermission(ServerCommandSource source, String input, @Nullable String claimName, boolean isQuery, boolean value, boolean admin) throws CommandSyntaxException {
-        ServerPlayerEntity player = source.getPlayer();
-        Claim claim1 = claimName == null ? ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.dimension) :
-                ClaimManager.INSTANCE.claimsByName.get(claimName);
-        if (claim1 == null) {
-            source.sendError(Messages.INVALID_CLAIM);
-            return -1;
-        }
-
-        validateCanAccess(player, claim1, admin);
-        Claim.Permission permission = Claim.Permission.byId(input);
-        if (permission != null)
-            return !isQuery ? setPermission(source, claim1, permission, value) : queryPermission(source, claim1, permission);
-
-        source.sendError(Messages.INVALID_SETTING);
-        return -1;
-    }
-    private static int querySetting(ServerCommandSource source, Claim claim, Claim.ClaimSettings.Setting setting) {
-        boolean enabled = claim.settings.getSetting(setting);
-        source.sendFeedback(new LiteralText(ChatColor.translate("&eSetting &6" + setting.name + " &e is set to " + (enabled ? "&a" : "&c") + enabled + "&e for &6" + claim.name)), false);
-        return 1;
-    }
-    private static int setSetting(ServerCommandSource source, Claim claim, Claim.ClaimSettings.Setting setting, boolean set) {
-        claim.settings.settings.put(setting, set);
-        source.sendFeedback(new LiteralText(ChatColor.translate("&eSet setting &6" + setting.name + "&e to " + (set ? "&a" : "&c") + set + "&e for &6" + claim.name)), false);
-        return 0;
-    }
-    private static int queryPermission(ServerCommandSource source, Claim claim, Claim.Permission permission) {
-        boolean defaultPerm = claim.permissionManager.defaults.hasPermission(permission);
-        source.sendFeedback(new LiteralText(ChatColor.translate("&ePermission &6" + permission.id + "&e is set to " + (defaultPerm ? "&a" : "&c") + defaultPerm + "&e for &6" + claim.name)), false);
-        return 1;
-    }
-    private static int setPermission(ServerCommandSource source, Claim claim, Claim.Permission permission, boolean set) {
-        claim.permissionManager.defaults.setPermission(permission, set);
-        source.sendFeedback(new LiteralText(ChatColor.translate("&eSet permission &6" + permission.id + "&e to " + (set ? "&a" : "&c") + set + "&e for &6" + claim.name)), false);
-        return 1;
-    }
-    private static int querySettings(ServerCommandSource source, Claim claim) {
-        source.sendFeedback(new LiteralText("\n").append(new LiteralText("Settings: " + claim.name).formatted(Formatting.YELLOW)).append("\n")
-                .append(Messages.Command.getSettings(claim)).append("\n"), false);
-        return 1;
-    }
-    private static int executeTrust(CommandContext<ServerCommandSource> context, Entity entity, boolean set, @Nullable String claimName) throws CommandSyntaxException {
-        if (!(entity instanceof PlayerEntity)) {
-            context.getSource().sendError(new LiteralText("Only Players!"));
-            return -1;
-        }
-        ServerPlayerEntity target = (ServerPlayerEntity) entity;
-        ServerPlayerEntity p = context.getSource().getPlayer();
-        Claim claim1 = claimName == null ? ClaimManager.INSTANCE.getClaimAt(p.getBlockPos(), p.dimension) : ClaimManager.INSTANCE.claimsByName.get(claimName);
-        validateClaim(claim1);
-
-        return setTrust(context, claim1, target, set, false);
-    }
-    private static int setTrust(CommandContext<ServerCommandSource> context, Claim claim, ServerPlayerEntity target, boolean set, boolean admin) throws CommandSyntaxException {
-        if (verifyPermission(claim, Claim.Permission.MODIFY_PERMISSIONS, context, admin)) {
-            claim.permissionManager.playerPermissions.put(target.getGameProfile().getId(), set ? new Claim.InvertedPermissionMap() : new Claim.DefaultPermissionMap());
-            context.getSource().sendFeedback(new LiteralText(target.getGameProfile().getName() + (set ? " now" : " no longer") + " has all the permissions").formatted(Formatting.YELLOW), false);
-
-            String message;
-            if (set) message = "&aTrusted player &6" + target.getEntityName() + "&a in &6" + claim.name + "\n&aThey now have all the default permissions";
-            else message = "&cDistrusted player &6" + target.getEntityName() + "&c in &6" + claim.name + "\n&cThey don't have any permissions now";
-            context.getSource().sendFeedback(new LiteralText(ChatColor.translate(message)), false);
-        }
-        return 1;
-    }
-    private static int setFly(CommandContext<ServerCommandSource> context, boolean set) throws CommandSyntaxException {
-        ServerPlayerEntity player = context.getSource().getPlayer();
-        if (set) {
-            ClaimManager.INSTANCE.flyers.add(player.getUuid());
-            player.addMessage(new LiteralText("Enabled Ability to fly in Claims").formatted(Formatting.GREEN), false);
-            return 1;
-        }
-
-        player.addMessage(new LiteralText("Disabled Ability to fly in Claims").formatted(Formatting.RED), false);
-        ClaimManager.INSTANCE.flyers.remove(player.getUuid());
-        return -1;
-    }
-}
+//
+//    private static GameProfile getProfile(CommandContext<ServerCommandSource> context, String arg) {
+//        return context.getSource().getMinecraftServer().getUserCache().findByName(getString(context, arg));
+//    }
+//}

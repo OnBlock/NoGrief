@@ -42,7 +42,7 @@ public class ClaimManager {
         if (!useClaimBlocks(player, amount)) blocksLeft.put(player, 0);
     }
     public void setClaimBlocks(Collection<ServerPlayerEntity> players, int amount) {
-        players.forEach(player -> setClaimBlocks(player.getGameProfile().getId(), -amount));
+        players.forEach(player -> setClaimBlocks(player.getGameProfile().getId(), amount));
     }
 
     public Claim getClaim(String name){
@@ -63,6 +63,7 @@ public class ClaimManager {
         });
         return list;
     }
+
     public boolean addClaim(Claim claim) {
         if (claimsByName.containsKey(claim.name)) return false;
         if (wouldIntersect(claim) && !claim.isChild) return false;

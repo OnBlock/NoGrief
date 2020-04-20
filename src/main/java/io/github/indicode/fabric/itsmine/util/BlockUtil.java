@@ -1,8 +1,8 @@
-package io.github.indicode.fabric.itsmine;
+package io.github.indicode.fabric.itsmine.util;
 
 import net.minecraft.block.*;
 
-public class BlockUtils {
+public class BlockUtil {
 
     public static boolean isContainer(Block block) {
         return block instanceof AbstractChestBlock<?> || isChest(block) || isEnderchest(block) || isShulkerBox(block);
