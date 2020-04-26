@@ -23,7 +23,7 @@ public class EntitiesCommand {
             Claim claim1 = ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getPlayer().dimension);
             context.getSource().sendFeedback(new LiteralText("Entities (" + claim1.name + "): ").formatted(Formatting.GOLD).append(new LiteralText(String.valueOf(claim1.getEntities(context.getSource().getWorld()))).formatted(Formatting.AQUA)), true);
             claim1.getEntitySorted(claim1.getEntityMap(claim1, context.getSource().getWorld())).forEach((entityType, integer) -> {
-                context.getSource().sendFeedback(new LiteralText(entityType.getName().asFormattedString() + ": ").formatted(Formatting.YELLOW).append(new LiteralText(String.valueOf(integer)).formatted(Formatting.GOLD)), true);
+                context.getSource().sendFeedback(new LiteralText(entityType.getName().asString() + ": ").formatted(Formatting.YELLOW).append(new LiteralText(String.valueOf(integer)).formatted(Formatting.GOLD)), true);
             });
             return 1;
         });
@@ -31,7 +31,7 @@ public class EntitiesCommand {
             Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim"));
             context.getSource().sendFeedback(new LiteralText("Entities (" + claim1.name + "): ").formatted(Formatting.GOLD).append(new LiteralText(String.valueOf(claim1.getEntities(context.getSource().getWorld()))).formatted(Formatting.AQUA)), true);
             claim1.getEntitySorted(claim1.getEntityMap(claim1, context.getSource().getWorld())).forEach((entityType, integer) -> {
-                context.getSource().sendFeedback(new LiteralText(entityType.getName().asFormattedString() + ": ").formatted(Formatting.YELLOW).append(new LiteralText(String.valueOf(integer)).formatted(Formatting.GOLD)), true);
+                context.getSource().sendFeedback(new LiteralText(entityType.getName().asString() + ": ").formatted(Formatting.YELLOW).append(new LiteralText(String.valueOf(integer)).formatted(Formatting.GOLD)), true);
             });
             return 1;
         });

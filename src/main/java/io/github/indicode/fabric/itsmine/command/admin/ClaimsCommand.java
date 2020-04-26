@@ -9,10 +9,7 @@ import io.github.indicode.fabric.itsmine.ClaimManager;
 import io.github.indicode.fabric.itsmine.Messages;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
+import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 
 import java.util.List;
@@ -42,12 +39,12 @@ public class ClaimsCommand {
         }
 
 
-        Text text = new LiteralText("\n").append(new LiteralText("Claims (" + target + "): ").formatted(Formatting.GOLD)).append("\n ");
+        MutableText text = new LiteralText("\n").append(new LiteralText("Claims (" + target + "): ").formatted(Formatting.GOLD)).append("\n ");
         boolean nextColor = false;
         for (Claim claim : claims) {
             if(!claim.isChild) {
-                Text cText = new LiteralText(claim.name).formatted(nextColor ? Formatting.YELLOW : Formatting.GOLD).styled((style) -> {
-                    Text hoverText = new LiteralText("Click for more Info").formatted(Formatting.GREEN);
+                MutableText cText = new LiteralText(claim.name).formatted(nextColor ? Formatting.YELLOW : Formatting.GOLD).styled((style) -> {
+                    MutableText hoverText = new LiteralText("Click for more Info").formatted(Formatting.GREEN);
                     if (claim.children.size() > 0) {
                         hoverText.append("\n\nSubzones:");
                         for (Claim subzone : claim.children) {
@@ -56,7 +53,8 @@ public class ClaimsCommand {
                     }
                     style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText));
 
-                    style.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/claim info " + claim.name));
+                    style.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/claim info " + claim.name));
+                    return style;
                 });
 
                 nextColor = !nextColor;

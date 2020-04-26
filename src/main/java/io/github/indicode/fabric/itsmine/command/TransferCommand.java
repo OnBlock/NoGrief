@@ -99,17 +99,19 @@ public class TransferCommand {
         }
         if (!claim.claimBlockOwner.equals(sender.getPlayer().getGameProfile().getId())) {
             if (admin && ItsMine.permissions().hasPermission(sender, PermissionUtil.Command.ADMIN_MODIFY, 2)) {
-                sender.sendFeedback(new LiteralText("WARNING: This is not your claim...").formatted(Formatting.DARK_RED, Formatting.BOLD), false);
+                sender.sendFeedback(new LiteralText("WARNING: This is not your claim...").formatted(Formatting.DARK_RED).formatted(Formatting.BOLD), false);
             } else {
                 sender.sendFeedback(new LiteralText("You can't transfer ownership of that claim").formatted(Formatting.RED), false);
                 return 0;
             }
         }
         sender.sendFeedback(new LiteralText("").append(new LiteralText("Are you sure you want to transfer ownership of \"" + claim.name + "\" to " + player.getGameProfile().getName() + "? ").formatted(Formatting.GOLD))
-                .append(new LiteralText("[YES]").setStyle(new Style()
-                        .setColor(Formatting.DARK_RED)
-                        .setBold(true)
-                        .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, (admin ? "/claim admin" : "/claim") + " transfer " + claim.name + " " + player.getGameProfile().getName() + " confirm")))), false);
+                .append(new LiteralText("[YES]").styled(style -> {
+                    style.withColor(Formatting.DARK_RED);
+                    style.withBold(true);
+                    style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, (admin ? "/claim admin" : "/claim") + " transfer " + claim.name + " " + player.getGameProfile().getName() + " confirm"));
+                    return style;
+                })), false);
         return 0;
     }
     private static Map<UUID, String> pendingClaimTransfers = new HashMap<>();
@@ -128,7 +130,7 @@ public class TransferCommand {
         }
         if (!claim.claimBlockOwner.equals(sender.getPlayer().getGameProfile().getId())) {
             if (admin && ItsMine.permissions().hasPermission(sender, PermissionUtil.Command.ADMIN_MODIFY, 2)) {
-                sender.sendFeedback(new LiteralText("Transfering ownership of a claim belonging to somebody else").formatted(Formatting.DARK_RED, Formatting.BOLD), false);
+                sender.sendFeedback(new LiteralText("Transfering ownership of a claim belonging to somebody else").formatted(Formatting.DARK_RED).formatted(Formatting.BOLD), false);
             } else {
                 sender.sendFeedback(new LiteralText("You can't transfer ownership of that claim").formatted(Formatting.RED), false);
                 return 0;
@@ -137,10 +139,12 @@ public class TransferCommand {
         GameProfile profile = sender.getWorld().getServer().getUserCache().getByUuid(claim.claimBlockOwner);
         sender.sendFeedback(new LiteralText("Transferring ownership of the claim \"" + claim.name + "\" to " + player.getGameProfile().getName() + " if they accept").formatted(Formatting.GREEN), claim.claimBlockOwner != player.getGameProfile().getId());
         player.sendSystemMessage(new LiteralText("").append(new LiteralText("Do you want to accept ownership of the claim \"" + claim.name + "\" from " + profile == null ? "Not Present" : profile.getName() + "? ").formatted(Formatting.GOLD))
-                .append(new LiteralText("[ACCEPT]").setStyle(new Style()
-                        .setColor(Formatting.GREEN)
-                        .setBold(true)
-                        .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/claim transfer -accept-" + claim.name + " " + player.getEntityName() + " confirm")))));
+                .append(new LiteralText("[ACCEPT]").styled(style -> {
+                            style.withColor(Formatting.GREEN);
+                            style.withBold(true);
+                            style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/claim transfer -accept-" + claim.name + " " + player.getEntityName() + " confirm"));
+                            return style;
+                        })));
         pendingClaimTransfers.put(player.getGameProfile().getId(), claim.name);
         return 0;
     }

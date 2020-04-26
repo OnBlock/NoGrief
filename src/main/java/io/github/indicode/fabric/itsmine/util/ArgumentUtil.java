@@ -27,7 +27,7 @@ public class ArgumentUtil {
 
 
     public static RequiredArgumentBuilder<ServerCommandSource, String> getSubAndClaims() {
-        return argument("claim", word()).suggests(CLAIM__SUBZONE_PROVIDER);
+        return argument("claim", word()).suggests(ArgumentUtil::claimSubzoneProvider);
     }
 
     public static RequiredArgumentBuilder<ServerCommandSource, String> getClaims() {
@@ -35,7 +35,7 @@ public class ArgumentUtil {
     }
 
     public static RequiredArgumentBuilder<ServerCommandSource, String> getSubzones() {
-        return argument("subzone", word()).suggests(ArgumentUtil::subzoneProvider);
+        return argument("claim", word()).suggests(ArgumentUtil::subzoneProvider);
     }
 
     public static RequiredArgumentBuilder<ServerCommandSource, String> getDirections() {
@@ -63,14 +63,13 @@ public class ArgumentUtil {
 
 
 
-    private static final SuggestionProvider<ServerCommandSource> CLAIM__SUBZONE_PROVIDER = (source, builder) -> {
-        ServerPlayerEntity player = source.getSource().getPlayer();
+    private static CompletableFuture<Suggestions> claimSubzoneProvider(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder) throws CommandSyntaxException {
+        ServerPlayerEntity player = context.getSource().getPlayer();
         List<String> names = new ArrayList<>();
         Claim current = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.dimension);
         if (current != null) names.add(current.name);
         for (Claim claim : ClaimManager.INSTANCE.getPlayerClaims(player.getGameProfile().getId())) {
             if (claim != null) {
-                System.out.println("Claim " + claim.name);
                 names.add(claim.name);
             }
         }
@@ -90,7 +89,7 @@ public class ArgumentUtil {
         return CommandSource.suggestMatching(names, builder);
     }
 
-    public static CompletableFuture<Suggestions> subzoneProvider(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder) throws CommandSyntaxException {
+    private static CompletableFuture<Suggestions> subzoneProvider(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder) throws CommandSyntaxException {
         ServerPlayerEntity player = context.getSource().getPlayer();
         List<String> names = new ArrayList<>();
         Claim current = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.dimension);
@@ -100,7 +99,6 @@ public class ArgumentUtil {
                 names.add(claim.name);
             }
         }
-        names.add("Debug");
         return CommandSource.suggestMatching(names, builder);
     }
 

@@ -1,45 +1,46 @@
 package io.github.indicode.fabric.itsmine;
 
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 public class Messages {
-    public static final Text PREFIX = new LiteralText(ChatColor.translate(Config.prefix));
+    public static final MutableText PREFIX = new LiteralText(ChatColor.translate(Config.prefix));
 
-    public static final Text INVALID_CLAIM = PREFIX.copy().append(new LiteralText("Can not find a claim with that name or a claim at your position").formatted(Formatting.RED));
+    public static final Text INVALID_CLAIM = PREFIX.append(new LiteralText("Can not find a claim with that name or a claim at your position").formatted(Formatting.RED));
 
-    public static final Text INVALID_SETTING = PREFIX.copy().append(new LiteralText("Invalid Claim Setting!").formatted(Formatting.RED));
+    public static final Text INVALID_SETTING = PREFIX.append(new LiteralText("Invalid Claim Setting!").formatted(Formatting.RED));
 
-    public static final Text NO_PERMISSION = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_no_perm)));
+    public static final Text NO_PERMISSION = PREFIX.append(new LiteralText(ChatColor.translate(Config.msg_no_perm)));
 
-    public static final Text INVALID_MESSAGE_EVENT = PREFIX.copy().append(new LiteralText("Invalid Message Event!"));
+    public static final Text INVALID_MESSAGE_EVENT = PREFIX.append(new LiteralText("Invalid Message Event!"));
 
-    public static final Text INVALID_PLAYER = PREFIX.copy().append(new LiteralText("Can not find a Player with that Name!"));
+    public static final Text INVALID_PLAYER = PREFIX.append(new LiteralText("Can not find a Player with that Name!"));
 
-    public static final Text TOO_MANY_SELECTIONS = PREFIX.copy().append(new LiteralText("Only one selection is allowed!"));
+    public static final Text TOO_MANY_SELECTIONS = PREFIX.append(new LiteralText("Only one selection is allowed!"));
 
-    public static final Text MSG_PLACE_BLOCK = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_place_block)).formatted(Formatting.RED));
+    public static final Text MSG_PLACE_BLOCK = PREFIX.append(new LiteralText(ChatColor.translate(Config.msg_place_block)).formatted(Formatting.RED));
 
-    public static final Text MSG_BREAK_BLOCK = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_break_block)).formatted(Formatting.RED));
+    public static final Text MSG_BREAK_BLOCK = PREFIX.append(new LiteralText(ChatColor.translate(Config.msg_break_block)).formatted(Formatting.RED));
 
-    public static final Text MSG_CANT_ENTER = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_cant_enter)).formatted(Formatting.RED));
+    public static final Text MSG_CANT_ENTER = PREFIX.append(new LiteralText(ChatColor.translate(Config.msg_cant_enter)).formatted(Formatting.RED));
 
-    public static final Text MSG_INTERACT_ENTITY = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_interact_entity)).formatted(Formatting.RED));
+    public static final Text MSG_INTERACT_ENTITY = PREFIX.append(new LiteralText(ChatColor.translate(Config.msg_interact_entity)).formatted(Formatting.RED));
 
-    public static final Text MSG_INTERACT_BLOCK = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_interact_block)).formatted(Formatting.RED));
+    public static final Text MSG_INTERACT_BLOCK = PREFIX.append(new LiteralText(ChatColor.translate(Config.msg_interact_block)).formatted(Formatting.RED));
 
-    public static final Text MSG_OPEN_CONTAINER = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_open_container)).formatted(Formatting.RED));
+    public static final Text MSG_OPEN_CONTAINER = PREFIX.append(new LiteralText(ChatColor.translate(Config.msg_open_container)).formatted(Formatting.RED));
 
-    public static final Text MSG_DAMAGE_ENTITY = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_attack_entity)).formatted(Formatting.RED));
+    public static final Text MSG_DAMAGE_ENTITY = PREFIX.append(new LiteralText(ChatColor.translate(Config.msg_attack_entity)).formatted(Formatting.RED));
 
-    public static final Text MSG_CANT_USE = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_cant_use)).formatted(Formatting.RED));
+    public static final Text MSG_CANT_USE = PREFIX.append(new LiteralText(ChatColor.translate(Config.msg_cant_use)).formatted(Formatting.RED));
 
-    public static final Text MSG_LONG_NAME = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_long_name)).formatted(Formatting.RED));
+    public static final Text MSG_LONG_NAME = PREFIX.append(new LiteralText(ChatColor.translate(Config.msg_long_name)).formatted(Formatting.RED));
 
-    public static final Text MSG_CANT_DO = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_cant_do)).formatted(Formatting.RED));
+    public static final Text MSG_CANT_DO = PREFIX.append(new LiteralText(ChatColor.translate(Config.msg_cant_do)).formatted(Formatting.RED));
 
-    public static final Text[] GET_STARTED = new Text[]{
+    public static final Text[] GET_STARTED = new MutableText[]{
             header("How to Claim (Basics)")
                     .append(line(1, "Type &6/claim stick&e then Left click with a stick on a block to set the &6first&e corner of your claim"))
                     .append(line(2, "Right click to set the other corner"))
@@ -64,7 +65,7 @@ public class Messages {
             header("How to Claim (Subzones)")
                     .append(line("Subzones allow you to have seperate permissions / settings in certain areas of your claim").formatted(Formatting.LIGHT_PURPLE))
                     .append(line(1, "To create a subzone, you select an area inside your claim the way you would select a normal claim"))
-                    .append(line(2, "Type ").append("/claim subzone add <name>").formatted(Formatting.GOLD).append(" to create a subzone").formatted(Formatting.YELLOW))
+                    .append(line(2, "Type ").append(text("/claim subzone add <name>")).formatted(Formatting.GOLD).append(text(" to create a subzone")).formatted(Formatting.YELLOW))
                     .append(line(3,"Done! Everything else works the same way claims work"))
     };
 
@@ -137,25 +138,25 @@ public class Messages {
                     .append(line("&6break_farmlands ").append(text("Allow turning Farmlands into Dirt by jumping on them")))
     };
 
-    private static Text header(String title) {
-        return new LiteralText("").append(new LiteralText(title + ":").formatted(Formatting.AQUA, Formatting.UNDERLINE)).formatted(Formatting.WHITE).append("\n");
+    private static MutableText header(String title) {
+        return new LiteralText("").append(new LiteralText(title + ":").formatted(Formatting.AQUA).formatted(Formatting.UNDERLINE)).formatted(Formatting.WHITE).append(new LiteralText("\n"));
     }
 
-    private static Text line(int num, String string) {
+    private static MutableText line(int num, String string) {
         return line("&e" + num + ".&e " + string);
     }
 
-    private static Text line(String string) {
-        return new LiteralText("\n").append(ChatColor.translate(string)).formatted(Formatting.YELLOW);
+    private static MutableText line(String string) {
+        return new LiteralText("\n").append(new LiteralText(ChatColor.translate(string))).formatted(Formatting.YELLOW);
     }
 
-    private static Text text(String text) {
+    private static MutableText text(String text) {
         return new LiteralText(ChatColor.translate(text));
     }
 
     public static class Command {
         public static Text getSettings(Claim claim) {
-            Text claimSettings = new LiteralText("");
+            MutableText claimSettings = new LiteralText("");
             boolean nextEnabled = false;
             boolean nextDisabled = false;
             for (Claim.ClaimSettings.Setting value : Claim.ClaimSettings.Setting.values()) {
@@ -171,7 +172,7 @@ public class Messages {
                     nextDisabled = !nextDisabled;
                 }
 
-                claimSettings.append(" ").append(new LiteralText(value.id).formatted(formatting));
+                claimSettings.append(new LiteralText(" ")).append(new LiteralText(value.id).formatted(formatting));
             }
 
             return claimSettings;

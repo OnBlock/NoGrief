@@ -30,10 +30,9 @@ import static net.minecraft.server.command.CommandManager.literal;
 
 public class ExceptionCommand {
 
-    public static void register(LiteralArgumentBuilder<ServerCommandSource> command, boolean admin, RequiredArgumentBuilder<ServerCommandSource, String> argumentBuilder) {
+    public static void register(LiteralArgumentBuilder<ServerCommandSource> command, boolean admin, RequiredArgumentBuilder<ServerCommandSource, String> claim) {
         {
             LiteralArgumentBuilder<ServerCommandSource> settings = literal("settings");
-            RequiredArgumentBuilder<ServerCommandSource, String> claim = argumentBuilder;
 
             if (!admin) {
                 settings.executes((context) -> sendPage(context.getSource(), Messages.SETTINGS_AND_PERMISSIONS, 1, "Claim Permissions and Settings", "/claim help perms_and_settings %page%"));
@@ -59,34 +58,35 @@ public class ExceptionCommand {
             settings.then(claim);
             command.then(settings);
         }
+        {
+            LiteralArgumentBuilder<ServerCommandSource> exceptions = literal("permissions");
+            if (admin) exceptions.requires(source -> ItsMine.permissions().hasPermission(source, PermissionUtil.Command.ADMIN_MODIFY_PERMISSIONS, 2));
+            if (!admin) {
+                exceptions.executes((context) -> sendPage(context.getSource(), Messages.SETTINGS_AND_PERMISSIONS, 1, "Claim Permissions and Settings", "/claim help perms_and_settings %page%"));
 
-        LiteralArgumentBuilder<ServerCommandSource> exceptions = literal("permissions");
-        if (admin) exceptions.requires(source -> ItsMine.permissions().hasPermission(source, PermissionUtil.Command.ADMIN_MODIFY_PERMISSIONS, 2));
-        RequiredArgumentBuilder<ServerCommandSource, String> claim = ArgumentUtil.getClaims();
-        if (!admin) {
-            exceptions.executes((context) -> sendPage(context.getSource(), Messages.SETTINGS_AND_PERMISSIONS, 1, "Claim Permissions and Settings", "/claim help perms_and_settings %page%"));
+                claim.executes((context) -> {
+                    Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim"));
+                    if (claim1 == null) {
+                        context.getSource().sendError(Messages.INVALID_CLAIM);
+                        return -1;
+                    }
+                    return showTrustedList(context, claim1, false);
+                });
+            }
 
-            claim.executes((context) -> {
-                Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim"));
-                if (claim1 == null) {
-                    context.getSource().sendError(Messages.INVALID_CLAIM);
-                    return -1;
-                }
-                return showTrustedList(context, claim1, false);
-            });
+            if (!admin) {
+                claim.executes((context) -> {
+                    Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim"));
+                    if (claim1 == null) {
+                        context.getSource().sendError(new LiteralText("That claim does not exist"));
+                        return -1;
+                    }
+                    return showTrustedList(context, claim1, true);
+                });
+            }
+            exceptions.then(claim);
+            command.then(exceptions);
         }
-
-        if (!admin) {
-            claim.executes((context) -> {
-                Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim"));
-                if (claim1 == null) {
-                    context.getSource().sendError(new LiteralText("That claim does not exist"));
-                    return -1;
-                }
-                return showTrustedList(context, claim1, true);
-            });
-        }
-
         {
             RequiredArgumentBuilder<ServerCommandSource, EntitySelector> player = argument("player", EntityArgumentType.player());
             LiteralArgumentBuilder<ServerCommandSource> remove = literal("remove");
@@ -139,7 +139,6 @@ public class ExceptionCommand {
         }
         {
             LiteralArgumentBuilder<ServerCommandSource> message = literal("message");
-            RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = ArgumentUtil.getClaims();
             RequiredArgumentBuilder<ServerCommandSource, String> messageEvent = getMessageEvent();
             RequiredArgumentBuilder<ServerCommandSource, String> messageArgument = getEventMessage();
             messageArgument.executes(context -> {
@@ -159,13 +158,9 @@ public class ExceptionCommand {
             });
 
             messageEvent.then(messageArgument);
-            claimArgument.then(messageEvent);
-            message.then(claimArgument);
+            claim.then(messageEvent);
+            message.then(claim);
             command.then(message);
         }
-
-
-        exceptions.then(claim);
-        command.then(exceptions);
     }
 }

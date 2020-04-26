@@ -27,7 +27,7 @@ import static net.minecraft.server.command.CommandManager.literal;
 
 public class ExpandCommand {
 
-    public static void register(LiteralArgumentBuilder<ServerCommandSource> command) {
+    public static void register(LiteralArgumentBuilder<ServerCommandSource> command, boolean admin) {
         {
             LiteralArgumentBuilder<ServerCommandSource> expand = literal("expand");
             RequiredArgumentBuilder<ServerCommandSource, Integer> amount = argument("distance", IntegerArgumentType.integer(1, Integer.MAX_VALUE));
@@ -38,7 +38,7 @@ public class ExpandCommand {
                     IntegerArgumentType.getInteger(context, "distance"),
                     directionByName(getString(context, "direction")),
                     context.getSource(),
-                    false
+                    admin
             ));
 
             amount.executes(context -> expand(
@@ -46,7 +46,7 @@ public class ExpandCommand {
                     IntegerArgumentType.getInteger(context, "distance"),
                     Direction.getEntityFacingOrder(context.getSource().getPlayer())[0],
                     context.getSource(),
-                    false
+                    admin
             ));
 
             amount.then(direction);
@@ -63,7 +63,7 @@ public class ExpandCommand {
                     -IntegerArgumentType.getInteger(context, "distance"),
                     directionByName(getString(context, "direction")),
                     context.getSource(),
-                    false
+                    admin
             ));
 
             amount.executes(context -> expand(
@@ -71,7 +71,7 @@ public class ExpandCommand {
                     -IntegerArgumentType.getInteger(context, "distance"),
                     Direction.getEntityFacingOrder(context.getSource().getPlayer())[0],
                     context.getSource(),
-                    false
+                    admin
             ));
 
             amount.then(direction);

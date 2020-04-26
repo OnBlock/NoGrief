@@ -25,7 +25,7 @@ import static io.github.indicode.fabric.itsmine.command.ShowCommand.executeShowC
 
 public class CreateCommand {
 
-    public static void register(LiteralArgumentBuilder<ServerCommandSource> command) {
+    public static void register(LiteralArgumentBuilder<ServerCommandSource> command, boolean admin) {
         {
             LiteralArgumentBuilder<ServerCommandSource> create = CommandManager.literal("create");
 
@@ -33,7 +33,7 @@ public class CreateCommand {
                     .executes(ctx -> addZone(ctx.getSource(), StringArgumentType.getString(ctx, "name"), null, false));
 
             RequiredArgumentBuilder<ServerCommandSource, String> claim = ArgumentUtil.getClaims()
-                    .executes(ctx -> addZone(ctx.getSource(), StringArgumentType.getString(ctx, "name"), StringArgumentType.getString(ctx, "claim"), false));
+                    .executes(ctx -> addZone(ctx.getSource(), StringArgumentType.getString(ctx, "name"), StringArgumentType.getString(ctx, "claim"), admin));
 
             name.then(claim);
             create.then(name);

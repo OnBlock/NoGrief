@@ -25,32 +25,30 @@ import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public class TrustCommand {
-    public static void register(LiteralArgumentBuilder<ServerCommandSource> command) {
+    public static void register(LiteralArgumentBuilder<ServerCommandSource> command, RequiredArgumentBuilder<ServerCommandSource, String> claim, boolean admin) {
         {
             LiteralArgumentBuilder<ServerCommandSource> trust = literal("trust");
             RequiredArgumentBuilder<ServerCommandSource, GameProfileArgumentType.GameProfileArgument> playerArgument = argument("player", GameProfileArgumentType.gameProfile());
-            RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = ArgumentUtil.getClaims();
-            playerArgument.executes((context -> executeTrust(context, GameProfileArgumentType.getProfileArgument(context, "player"), true, null)));
-            claimArgument.executes((context -> executeTrust(context, GameProfileArgumentType.getProfileArgument(context, "player"), true, getString(context, "claim"))));
+            playerArgument.executes((context -> executeTrust(context, GameProfileArgumentType.getProfileArgument(context, "player"), true, null, admin)));
+            claim.executes((context -> executeTrust(context, GameProfileArgumentType.getProfileArgument(context, "player"), true, getString(context, "claim"), admin)));
 
-            playerArgument.then(claimArgument);
+            playerArgument.then(claim);
             trust.then(playerArgument);
             command.then(trust);
         }
         {
             LiteralArgumentBuilder<ServerCommandSource> distrust = literal("distrust");
             RequiredArgumentBuilder<ServerCommandSource, GameProfileArgumentType.GameProfileArgument> playerArgument = argument("player", GameProfileArgumentType.gameProfile());
-            RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = ArgumentUtil.getClaims();
 
-            playerArgument.executes((context -> executeTrust(context, GameProfileArgumentType.getProfileArgument(context, "player"), false, null)));
-            claimArgument.executes((context -> executeTrust(context, GameProfileArgumentType.getProfileArgument(context, "player"), false, getString(context, "claim"))));
+            playerArgument.executes((context -> executeTrust(context, GameProfileArgumentType.getProfileArgument(context, "player"), false, null, admin)));
+            claim.executes((context -> executeTrust(context, GameProfileArgumentType.getProfileArgument(context, "player"), false, getString(context, "claim"), admin)));
 
-            playerArgument.then(claimArgument);
+            playerArgument.then(claim);
             distrust.then(playerArgument);
             command.then(distrust);
         }
     }
-    private static int executeTrust(CommandContext<ServerCommandSource> context, Collection<GameProfile> targetCollection, boolean set, @Nullable String claimName) throws CommandSyntaxException {
+    private static int executeTrust(CommandContext<ServerCommandSource> context, Collection<GameProfile> targetCollection, boolean set, @Nullable String claimName, boolean admin) throws CommandSyntaxException {
         AtomicInteger integer = new AtomicInteger();
 
         if(targetCollection.isEmpty()){
@@ -64,7 +62,7 @@ public class TrustCommand {
             try {
                 //This is supposed to check if the player has played before :shrug:
                 if(context.getSource().getMinecraftServer().getUserCache().getByUuid(gameProfile.getId()) == gameProfile){
-                    integer.set(setTrust(context, claim, gameProfile, set, false));
+                    integer.set(setTrust(context, claim, gameProfile, set, admin));
                 } else {
                     context.getSource().sendFeedback(new LiteralText("Unknown player!").formatted(Formatting.RED), true);
                     integer.set(0);

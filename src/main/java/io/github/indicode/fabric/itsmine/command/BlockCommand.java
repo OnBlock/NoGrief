@@ -32,12 +32,12 @@ public class BlockCommand {
 
     static int blocksLeft(ServerCommandSource source, UUID player) throws CommandSyntaxException {
         int blocks = ClaimManager.INSTANCE.getClaimBlocks(player);
-        source.sendFeedback(new LiteralText((source.getPlayer().getGameProfile().getId().equals(player) ? "You have " : "They have ") + blocks + " blocks left").setStyle(new Style().setColor(Formatting.YELLOW)), false);
+        source.sendFeedback(new LiteralText((source.getPlayer().getGameProfile().getId().equals(player) ? "You have " : "They have ") + blocks + " blocks left").formatted(Formatting.YELLOW), false);
         return 1;
     }
     static int blocksLeft(ServerCommandSource source) throws CommandSyntaxException {
         int blocks = ClaimManager.INSTANCE.getClaimBlocks(source.getPlayer().getUuid());
-        source.sendFeedback(new LiteralText("You have "  + blocks + " blocks left").setStyle(new Style().setColor(Formatting.YELLOW)), false);
+        source.sendFeedback(new LiteralText("You have "  + blocks + " blocks left").formatted(Formatting.YELLOW), false);
         return 1;
     }
 }

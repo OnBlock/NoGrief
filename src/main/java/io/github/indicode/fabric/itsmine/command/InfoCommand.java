@@ -6,28 +6,23 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.indicode.fabric.itsmine.Claim;
 import io.github.indicode.fabric.itsmine.ClaimManager;
-import io.github.indicode.fabric.itsmine.Config;
 import io.github.indicode.fabric.itsmine.Messages;
-import io.github.indicode.fabric.itsmine.util.ArgumentUtil;
 import io.github.indicode.fabric.itsmine.util.TimeUtil;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.ClickEvent;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 
-import java.util.Objects;
-
 import static com.mojang.brigadier.arguments.StringArgumentType.getString;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public class InfoCommand {
-    public static void register(LiteralArgumentBuilder<ServerCommandSource> command) {
+    public static void register(LiteralArgumentBuilder<ServerCommandSource> command, RequiredArgumentBuilder<ServerCommandSource, String> claim) {
         LiteralArgumentBuilder<ServerCommandSource> info = literal("info");
-        RequiredArgumentBuilder<ServerCommandSource, String> claim = ArgumentUtil.getClaims();
         info.executes(context -> info(
                 context.getSource(),
                 ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition()), context.getSource().getWorld().getDimension().getType())
@@ -47,27 +42,27 @@ public class InfoCommand {
         GameProfile owner = claim.claimBlockOwner == null ? null : source.getMinecraftServer().getUserCache().getByUuid(claim.claimBlockOwner);
         BlockPos size = claim.getSize();
 
-        Text text = new LiteralText("\n");
-        text.append(new LiteralText("Claim Info: " + claim.name).formatted(Formatting.GOLD)).append("\n");
+        MutableText text = new LiteralText("\n");
+        text.append(new LiteralText("Claim Info: " + claim.name).formatted(Formatting.GOLD)).append(new LiteralText("\n"));
         text.append(newInfoLine("Name", new LiteralText(claim.name).formatted(Formatting.WHITE)));
         text.append(newInfoLine("Entities", new LiteralText(String.valueOf(claim.getEntities(source.getWorld()))).formatted(Formatting.AQUA)));
         text.append(newInfoLine("Owner",
                 owner != null && claim.customOwnerName == null ? new LiteralText(owner.getName()).formatted(Formatting.GOLD) :
                         claim.customOwnerName != null ? new LiteralText(claim.customOwnerName).formatted(Formatting.GOLD) :
-                                new LiteralText("No Owner").formatted(Formatting.RED, Formatting.ITALIC)));
+                                new LiteralText("No Owner").formatted(Formatting.RED).formatted(Formatting.ITALIC)));
         text.append(newInfoLine("Size", new LiteralText(size.getX() + (claim.is2d() ? "x" : ("x" + size.getY() + "x")) + size.getZ()).formatted(Formatting.GREEN)));
 
 
         text.append(new LiteralText("").append(new LiteralText("* Settings:").formatted(Formatting.YELLOW))
-                .append(Messages.Command.getSettings(claim)).append("\n"));
-        Text pos = new LiteralText("");
+                .append(Messages.Command.getSettings(claim)).append(new LiteralText("\n")));
+        MutableText pos = new LiteralText("");
         Text min = newPosLine(claim.min, Formatting.AQUA, Formatting.DARK_AQUA);
         Text max = newPosLine(claim.max, Formatting.LIGHT_PURPLE, Formatting.DARK_PURPLE);
 
 
         pos.append(newInfoLine("Position", new LiteralText("")
                 .append(new LiteralText("Min ").formatted(Formatting.WHITE).append(min))
-                .append(" ")
+                .append(new LiteralText(" "))
                 .append(new LiteralText("Max ").formatted(Formatting.WHITE).append(max))));
         text.append(pos);
         text.append(newInfoLine("Dimension", new LiteralText(Registry.DIMENSION_TYPE.getId(claim.dimension).getPath())));
@@ -76,10 +71,12 @@ public class InfoCommand {
             text.append(newInfoLine("Status", new LiteralText("Rented").formatted(Formatting.RED).styled(style -> {
                 java.util.Date time=new java.util.Date((long) claim.rent.getRentedUntil()*1000);
                 style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, newInfoLine("Until", new LiteralText(time.toString()).formatted(Formatting.WHITE)).append(newInfoLine("By", new LiteralText(tenant.getName()).formatted(Formatting.WHITE))).append(newInfoLine("Price", new LiteralText(claim.rent.getAmount() + " " + claim.rent.getCurrency().getName().asString() + " every " + TimeUtil.convertSecondsToString(claim.rent.getRentAbleTime(),'f', 'f')).formatted(Formatting.WHITE)))));
+                return style;
             })));
         } else if (claim.rent.isRentable() && !claim.rent.isRented()){
             text.append(newInfoLine("Status", new LiteralText("For Rent").formatted(Formatting.GREEN).styled(style -> {
                 style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, newInfoLine("Price", new LiteralText(claim.rent.getAmount() + " " + claim.rent.getCurrency().getName().asString() + " every " + TimeUtil.convertSecondsToString(claim.rent.getRentAbleTime(),'f', 'f')).formatted(Formatting.WHITE)).append(newInfoLine("Max Rent", new LiteralText(claim.rent.getMaxrentAbleTime() / 86400 + " days")).formatted(Formatting.WHITE))));
+                return style;
             })));
 
         } else {
@@ -90,16 +87,16 @@ public class InfoCommand {
         return 1;
     }
 
-    private static Text newPosLine(BlockPos pos, Formatting form1, Formatting form2) {
+    private static MutableText newPosLine(BlockPos pos, Formatting form1, Formatting form2) {
         return new LiteralText("")
                 .append(new LiteralText(String.valueOf(pos.getX())).formatted(form1))
-                .append(" ")
+                .append(new LiteralText(" "))
                 .append(new LiteralText(String.valueOf(pos.getY())).formatted(form2))
-                .append(" ")
+                .append(new LiteralText(" "))
                 .append(new LiteralText(String.valueOf(pos.getZ())).formatted(form1));
     }
-    private static Text newInfoLine(String title, Text text) {
+    private static MutableText newInfoLine(String title, Text text) {
         return new LiteralText("").append(new LiteralText("* " + title + ": ").formatted(Formatting.YELLOW))
-                .append(text).append("\n");
+                .append(text).append(new LiteralText("\n"));
     }
 }

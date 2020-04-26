@@ -13,6 +13,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
@@ -106,7 +107,21 @@ public class CreateCommand {
                 // works because only the first statement is evaluated if true
                 if ((admin && ItsMine.permissions().hasPermission(owner, PermissionUtil.Command.INFINITE_BLOCKS, 2)) || ClaimManager.INSTANCE.useClaimBlocks(ownerID, subInt)) {
                     ClaimManager.INSTANCE.addClaim(claim);
-                    owner.sendFeedback(new LiteralText("").append(new LiteralText("Your claim was created").formatted(Formatting.GREEN)).append(new LiteralText("(Area: " + sub.getX() + "x" + sub.getY() + "x" + sub.getZ() + ")").setStyle(new Style().setColor(Formatting.GREEN).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(subInt + " blocks").formatted(Formatting.YELLOW))))), false);
+                    MutableText message = null;
+                    message.append(new LiteralText("").append(new LiteralText("Your claim was created").formatted(Formatting.GREEN)));
+                    message.append(new LiteralText("(Area: " + sub.getX() + "x" + sub.getY() + "x" + sub.getZ() + ")").styled(style -> {
+                        style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(subInt + " blocks").formatted(Formatting.YELLOW)));
+                        return style;
+                    }));
+                    owner.sendFeedback(message, false);
+
+                    MutableText message2 = null;
+                    message2.append(new LiteralText("").append(new LiteralText("Your claim was created").formatted(Formatting.GREEN)));
+                    message2.append(new LiteralText("(Area: " + sub.getX() + "x" + sub.getY() + "x" + sub.getZ() + ")").styled(style -> {
+                        style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(subInt + " blocks").formatted(Formatting.YELLOW)));
+                        return style;
+                    }));
+                    owner.sendFeedback(message2, false);
                     BlockCommand.blocksLeft(owner);
                     executeShowClaim(owner, claim, false);
                     if (admin)

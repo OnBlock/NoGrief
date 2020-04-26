@@ -14,15 +14,14 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 
-import static com.mojang.brigadier.arguments.StringArgumentType.getString;
-import static com.mojang.brigadier.arguments.StringArgumentType.string;
+import static com.mojang.brigadier.arguments.StringArgumentType.*;
+import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public class RentCommand {
-    public static void register(LiteralArgumentBuilder<ServerCommandSource> command) {
+    public static void register(LiteralArgumentBuilder<ServerCommandSource> command, RequiredArgumentBuilder<ServerCommandSource, String> claim) {
         LiteralArgumentBuilder<ServerCommandSource> rent = literal("rent");
-        RequiredArgumentBuilder<ServerCommandSource, String> claim = ArgumentUtil.getClaims();
-        RequiredArgumentBuilder<ServerCommandSource, String> days = CommandManager.argument("days", string());
+        RequiredArgumentBuilder<ServerCommandSource, String> days = argument("days", word());
         days.executes(context -> rent(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim")), getString(context, "days")));
 
         claim.then(days);

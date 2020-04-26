@@ -41,17 +41,6 @@ public abstract class ServerWorldMixin implements MonitorableWorld {
 
     @Shadow public abstract void playGlobalEvent(int type, BlockPos pos, int data);
 
-    //    @Inject(method = "canPlayerModifyAt", at = @At("HEAD"), cancellable = true)
-//    private void canMine(PlayerEntity player, BlockPos blockPos_1, CallbackInfoReturnable<Boolean> ci) {
-//        if (player.world.isClient()) return;
-//        Claim claim = ClaimManager.INSTANCE.getClaimAt(blockPos_1, player.getEntityWorld().getDimension().getType());
-//        if (claim != null) {
-//            if (!claim.hasPermission(player.getGameProfile().getId(), Claim.Permission.SPAWN_PROTECTION)) {
-//                player.sendSystemMessage(Messages.NO_PERMISSION);
-//                ci.setReturnValue(false);
-//            }
-//        }
-//    }
     @Redirect(method = "sendBlockActions", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerManager;sendToAround(Lnet/minecraft/entity/player/PlayerEntity;DDDDLnet/minecraft/world/dimension/DimensionType;Lnet/minecraft/network/Packet;)V"))
     private void sendPistonUpdate(PlayerManager manager, PlayerEntity playerEntity_1, double double_1, double double_2, double double_3, double double_4, DimensionType dimensionType_1, Packet<?> packet_1) {
         manager.sendToAround(playerEntity_1, double_1, double_2, double_3, double_4, dimensionType_1, packet_1);
@@ -75,14 +64,6 @@ public abstract class ServerWorldMixin implements MonitorableWorld {
         });
     }
 
-//    AtomicReference<ServerPlayerEntity> atomicReference = new AtomicReference<>();
-//    public ServerPlayerEntity getPlayerByUUID(UUID uuid){
-//        this.getPlayers().forEach(serverPlayerEntity -> {
-//            if(serverPlayerEntity.getUuid() == uuid)
-//                atomicReference.set(serverPlayerEntity);
-//        });
-//        return atomicReference.get();
-//    }
 
     @Override
     public int loadedEntities() {

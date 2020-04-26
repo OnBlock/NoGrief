@@ -20,11 +20,11 @@ import static net.minecraft.server.command.CommandManager.literal;
 
 public class RenameCommand {
 
-    public static void register(LiteralArgumentBuilder<ServerCommandSource> command) {
+    public static void register(LiteralArgumentBuilder<ServerCommandSource> command, boolean admin) {
         LiteralArgumentBuilder<ServerCommandSource> rename = literal("rename");
         RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = ArgumentUtil.getClaims();
         RequiredArgumentBuilder<ServerCommandSource, String> nameArgument = argument("name", word());
-        nameArgument.executes((context) -> rename(context, false));
+        nameArgument.executes((context) -> rename(context, admin));
         claimArgument.then(nameArgument);
         rename.then(claimArgument);
         command.then(rename);

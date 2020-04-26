@@ -1,7 +1,6 @@
 package io.github.indicode.fabric.itsmine.command;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -18,21 +17,18 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 
-import static com.mojang.brigadier.arguments.StringArgumentType.getString;
-import static com.mojang.brigadier.arguments.StringArgumentType.string;
+import static com.mojang.brigadier.arguments.StringArgumentType.*;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public class RentableCommand {
 
-    public static void register(LiteralArgumentBuilder<ServerCommandSource> command) {
+    public static void register(LiteralArgumentBuilder<ServerCommandSource> command, RequiredArgumentBuilder<ServerCommandSource, String> claim) {
         LiteralArgumentBuilder<ServerCommandSource> rentable = literal("rentable");
-        RequiredArgumentBuilder<ServerCommandSource, String> claim = ArgumentUtil.getClaims();
-
         RequiredArgumentBuilder<ServerCommandSource, ItemStackArgument> currency = net.minecraft.server.command.CommandManager.argument("item", ItemStackArgumentType.itemStack()).suggests(ArgumentUtil::itemsSuggestion);
         RequiredArgumentBuilder<ServerCommandSource, Integer> amount = net.minecraft.server.command.CommandManager.argument("count", IntegerArgumentType.integer(1));
-        RequiredArgumentBuilder<ServerCommandSource, String> days = net.minecraft.server.command.CommandManager.argument("days", StringArgumentType.string()
+        RequiredArgumentBuilder<ServerCommandSource, String> days = net.minecraft.server.command.CommandManager.argument("days", word()
         );
-        RequiredArgumentBuilder<ServerCommandSource, String> maxdays = CommandManager.argument("maxdays", string());
+        RequiredArgumentBuilder<ServerCommandSource, String> maxdays = CommandManager.argument("maxdays", word());
         maxdays.executes(context -> makeRentable(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim")), ItemStackArgumentType.getItemStackArgument(context, "item").createStack(1, false), IntegerArgumentType.getInteger(context, "count"), getString(context, "days"), getString(context, "maxdays")));
         claim.executes(context -> {
             Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim"));

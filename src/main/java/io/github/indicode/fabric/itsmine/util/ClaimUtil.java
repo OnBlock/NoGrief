@@ -109,8 +109,8 @@ public class ClaimUtil {
         return 1;
     }
     public static int querySettings(ServerCommandSource source, Claim claim) {
-        source.sendFeedback(new LiteralText("\n").append(new LiteralText("Settings: " + claim.name).formatted(Formatting.YELLOW)).append("\n")
-                .append(Messages.Command.getSettings(claim)).append("\n"), false);
+        source.sendFeedback(new LiteralText("\n").append(new LiteralText("Settings: " + claim.name).formatted(Formatting.YELLOW)).append(new LiteralText("\n"))
+                .append(Messages.Command.getSettings(claim)).append(new LiteralText("\n")), false);
         return 1;
     }
     public static int executeSetting(ServerCommandSource source, String input, @Nullable String claimName, boolean isQuery, boolean value, boolean admin) throws CommandSyntaxException {
@@ -191,7 +191,7 @@ public class ClaimUtil {
         source.sendFeedback(new LiteralText("Set ").append(new LiteralText(event.id).formatted(Formatting.GOLD)
                         .append(new LiteralText(" Event Message for claim ").formatted(Formatting.YELLOW))
                         .append(new LiteralText(claim.name).formatted(Formatting.GOLD)).append(new LiteralText(" to:").formatted(Formatting.YELLOW)))
-                        .append("\n").append(new LiteralText(ChatColor.translate(message)))
+                        .append(new LiteralText("\n")).append(new LiteralText(ChatColor.translate(message)))
                         .formatted(Formatting.YELLOW)
                 , false);
         return 1;

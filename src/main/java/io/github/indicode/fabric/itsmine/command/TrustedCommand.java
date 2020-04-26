@@ -11,10 +11,7 @@ import io.github.indicode.fabric.itsmine.Messages;
 import io.github.indicode.fabric.itsmine.util.ArgumentUtil;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
+import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -59,41 +56,42 @@ public class TrustedCommand {
             return -1;
         }
 
-        Text text = new LiteralText("\n");
+        MutableText text = new LiteralText("\n");
         text.append(new LiteralText("Trusted players for Claim ").formatted(Formatting.YELLOW))
-                .append(new LiteralText(claim.name).formatted(Formatting.GOLD)).append("\n");
+                .append(new LiteralText(claim.name).formatted(Formatting.GOLD)).append(new LiteralText("\n"));
 
         AtomicInteger atomicInteger = new AtomicInteger();
         claim.permissionManager.playerPermissions.forEach((uuid, perm) -> {
             atomicInteger.incrementAndGet();
-            Text pText = new LiteralText("");
-            Text owner;
+            MutableText pText = new LiteralText("");
+            MutableText owner;
             GameProfile profile = source.getMinecraftServer().getUserCache().getByUuid(uuid);
             if (profile != null) {
                 owner = new LiteralText(profile.getName());
             } else {
                 owner = new LiteralText(uuid.toString()).styled((style) -> {
                     style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Click to Copy")));
-                    style.setClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, uuid.toString()));
+                    style.withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, uuid.toString()));
+                    return style;
                 });
             }
 
             pText.append(new LiteralText(atomicInteger.get() + ". ").formatted(Formatting.GOLD))
                     .append(owner.formatted(Formatting.YELLOW));
 
-            Text hover = new LiteralText("");
-            hover.append(new LiteralText("Permissions:").formatted(Formatting.WHITE)).append("\n");
+            MutableText hover = new LiteralText("");
+            hover.append(new LiteralText("Permissions:").formatted(Formatting.WHITE)).append(new LiteralText("\n"));
 
             int allowed = 0;
             int i = 0;
             boolean nextColor = false;
-            Text perms = new LiteralText("");
+            MutableText perms = new LiteralText("");
 
             for (Claim.Permission value : Claim.Permission.values()) {
                 if (claim.permissionManager.hasPermission(uuid, value)) {
                     Formatting formatting = nextColor ? Formatting.GREEN : Formatting.DARK_GREEN;
-                    perms.append(new LiteralText(value.id).formatted(formatting)).append(" ");
-                    if (i == 3) perms.append("\n");
+                    perms.append(new LiteralText(value.id).formatted(formatting)).append(new LiteralText(" "));
+                    if (i == 3) perms.append(new LiteralText("\n"));
                     allowed++;
                     i++;
                     nextColor = !nextColor;
@@ -101,7 +99,7 @@ public class TrustedCommand {
             }
 
             if (allowed == Claim.Permission.values().length) {
-                hover.append(new LiteralText("All " + allowed + " Permissions").formatted(Formatting.YELLOW, Formatting.ITALIC));
+                hover.append(new LiteralText("All " + allowed + " Permissions").formatted(Formatting.YELLOW).formatted(Formatting.ITALIC));
             } else {
                 hover.append(perms);
             }
@@ -115,7 +113,7 @@ public class TrustedCommand {
             );
 
             pText.styled((style) -> style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover)));
-            text.append(pText).append("\n");
+            text.append(pText).append(new LiteralText("\n"));
         });
 
         source.sendFeedback(text, false);

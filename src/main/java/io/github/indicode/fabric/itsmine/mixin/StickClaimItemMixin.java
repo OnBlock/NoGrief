@@ -32,7 +32,7 @@ public class StickClaimItemMixin {
                 context.getPlayer().sendSystemMessage(new LiteralText("Position #1 set: " + context.getBlockPos().getX() + (Config.claims2d ? "" : " " + context.getBlockPos().getY()) + " " + context.getBlockPos().getZ()).formatted(Formatting.GREEN));
                 if (posPair.getRight() != null) {
                     context.getPlayer().sendSystemMessage(new LiteralText("Area Selected. Type /claim create <name> to create your claim!").formatted(Formatting.GOLD));
-                    if (!Config.claims2d) context.getPlayer().sendSystemMessage(new LiteralText("Remember that claims are three dimensional. Don't forget to expand up/down or select a big enough area...").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC));
+                    if (!Config.claims2d) context.getPlayer().sendSystemMessage(new LiteralText("Remember that claims are three dimensional. Don't forget to expand up/down or select a big enough area...").formatted(Formatting.LIGHT_PURPLE).formatted(Formatting.ITALIC));
                 }
                 cir.setReturnValue(ActionResult.SUCCESS);
             }

@@ -3,33 +3,30 @@ package io.github.indicode.fabric.itsmine.command.subzone;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.github.indicode.fabric.itsmine.command.*;
-import io.github.indicode.fabric.itsmine.util.ArgumentUtil;
 import net.minecraft.server.command.ServerCommandSource;
 
+import static io.github.indicode.fabric.itsmine.util.ArgumentUtil.getSubzones;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public class SubzoneCommand {
-    public static void register(LiteralArgumentBuilder<ServerCommandSource> command, CommandDispatcher dispatcher) {
+    public static void register(LiteralArgumentBuilder<ServerCommandSource> command, CommandDispatcher dispatcher, boolean admin) {
         LiteralArgumentBuilder<ServerCommandSource> subzone = literal("subzone");
-        registerSubzone(subzone, dispatcher);
+        registerSubzone(subzone, dispatcher, admin);
         command.then(subzone);
     }
 
-    public static void registerSubzone(LiteralArgumentBuilder<ServerCommandSource> command, CommandDispatcher dispatcher) {
-        CreateCommand.register(command);
-        ExceptionCommand.register(command, false, ArgumentUtil.getSubzones());
-        ExpandCommand.register(command);
-        InfoCommand.register(command);
-        PermissionsCommand.register(command, false);
-        RemoveCommand.register(command);
-        RenameCommand.register(command);
-        RentableCommand.register(command);
-        RentCommand.register(command);
-        RevenueCommand.register(command);
-        SettingsCommand.register(command, false);
-        ShowCommand.register(command);
-//        SubzoneCommand.register(command, dispatcher);
-        TrustCommand.register(command);
+    public static void registerSubzone(LiteralArgumentBuilder<ServerCommandSource> command, CommandDispatcher dispatcher, boolean admin) {
+        CreateCommand.register(command, admin);
+        ExceptionCommand.register(command, admin, getSubzones());
+        ExpandCommand.register(command, admin);
+        InfoCommand.register(command, getSubzones());
+        PermissionsCommand.register(command, admin);
+        RemoveCommand.register(command, getSubzones(), admin);
+        RenameCommand.register(command, admin);
+        RentableCommand.register(command, getSubzones());
+        RentCommand.register(command, getSubzones());
+        RevenueCommand.register(command, getSubzones());
+        TrustCommand.register(command, getSubzones(), true);
         TrustedCommand.register(command);
     }
 }
