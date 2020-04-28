@@ -53,6 +53,10 @@ public class ArgumentUtil {
     public static RequiredArgumentBuilder<ServerCommandSource, String> getSettings(){
         return argument("setting", word()).suggests(SETTINGS_PROVIDER);
     }
+    public static RequiredArgumentBuilder<ServerCommandSource, String> getPermissions(){
+        return argument("permission", word()).suggests(SETTINGS_PROVIDER);
+    }
+
     public static RequiredArgumentBuilder<ServerCommandSource, String> getMessageEvent(){
         return argument("messageEvent", word()).suggests(MESSAGE_EVENTS_PROVIDER);
     }
@@ -140,6 +144,17 @@ public class ArgumentUtil {
     public static final SuggestionProvider<ServerCommandSource> SETTINGS_PROVIDER = (source, builder) -> {
         List<String> strings = new ArrayList<>();
         for (Claim.ClaimSettings.Setting value : Claim.ClaimSettings.Setting.values()) {
+            strings.add(value.id);
+        }
+        for (Claim.Permission value : Claim.Permission.values()) {
+            strings.add(value.id);
+        }
+        return CommandSource.suggestMatching(strings, builder);
+    };
+
+    public static final SuggestionProvider<ServerCommandSource> PERMISSIONS_PROVIDER = (source, builder) -> {
+        List<String> strings = new ArrayList<>();
+        for (Claim.Permission value : Claim.Permission.values()) {
             strings.add(value.id);
         }
         for (Claim.Permission value : Claim.Permission.values()) {

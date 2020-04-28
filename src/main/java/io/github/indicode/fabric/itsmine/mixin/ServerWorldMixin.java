@@ -22,6 +22,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -38,8 +39,6 @@ public abstract class ServerWorldMixin implements MonitorableWorld {
     private Map<UUID, Entity> entitiesByUuid;
 
     @Shadow public abstract List<ServerPlayerEntity> getPlayers();
-
-    @Shadow public abstract void playGlobalEvent(int type, BlockPos pos, int data);
 
     @Redirect(method = "sendBlockActions", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerManager;sendToAround(Lnet/minecraft/entity/player/PlayerEntity;DDDDLnet/minecraft/world/dimension/DimensionType;Lnet/minecraft/network/Packet;)V"))
     private void sendPistonUpdate(PlayerManager manager, PlayerEntity playerEntity_1, double double_1, double double_2, double double_3, double double_4, DimensionType dimensionType_1, Packet<?> packet_1) {
@@ -69,7 +68,6 @@ public abstract class ServerWorldMixin implements MonitorableWorld {
     public int loadedEntities() {
         if (this.entitiesByUuid == null)
             return -1;
-
         return this.entitiesByUuid.size();
     }
 

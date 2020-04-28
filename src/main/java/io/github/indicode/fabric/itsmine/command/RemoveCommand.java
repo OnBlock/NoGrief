@@ -50,10 +50,7 @@ public class RemoveCommand {
         }
         sender.sendFeedback(new LiteralText("").append(new LiteralText("Are you sure you want to delete the claim \"" + claim.name + "\"? ").formatted(Formatting.GOLD))
                 .append(new LiteralText("[I'M SURE]").styled(style -> {
-                        style.withColor(Formatting.DARK_RED);
-                            style.withBold(true);
-                            style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, (admin ? "/claim admin" : "/claim") + " remove " + claim.name + " confirm"));
-                            return style;
+                    return style.withColor(Formatting.DARK_RED).withBold(true).withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, (admin ? "/claim admin" : "/claim") + " remove " + claim.name + " confirm"));
                 })), false);
         return 0;
     }

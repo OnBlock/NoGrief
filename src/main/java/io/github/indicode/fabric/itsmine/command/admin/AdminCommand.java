@@ -3,16 +3,15 @@ package io.github.indicode.fabric.itsmine.command.admin;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.github.indicode.fabric.itsmine.ItsMine;
-import io.github.indicode.fabric.itsmine.command.ExceptionCommand;
-import io.github.indicode.fabric.itsmine.command.PermissionsCommand;
+import io.github.indicode.fabric.itsmine.command.MessageCommand;
+import io.github.indicode.fabric.itsmine.command.PermissionCommand;
 import io.github.indicode.fabric.itsmine.command.SettingsCommand;
 import io.github.indicode.fabric.itsmine.command.subzone.SubzoneCommand;
-import io.github.indicode.fabric.itsmine.util.ArgumentUtil;
 import net.minecraft.server.command.ServerCommandSource;
 
 import java.util.function.Predicate;
 
-import static io.github.indicode.fabric.itsmine.util.ArgumentUtil.*;
+import static io.github.indicode.fabric.itsmine.util.ArgumentUtil.getClaims;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public class AdminCommand {
@@ -29,15 +28,15 @@ public class AdminCommand {
         ClaimsCommand.register(admin, dispatcher);
         CreateCommand.register(admin);
         EntitiesCommand.register(admin);
-        ExceptionCommand.register(admin, true, getClaims());
         ExpandCommand.register(admin);
         IgnoreCommand.register(admin);
         ListAllCommand.register(admin);
+        MessageCommand.register(admin, true, getClaims());
         OwnerCommand.register(admin);
-        PermissionsCommand.register(admin, true);
+        PermissionCommand.register(admin, true, getClaims());
         RemoveCommand.register(admin);
         RenameCommand.register(admin);
-//        SettingsCommand.register(admin, true);
+        SettingsCommand.register(admin, true, getClaims());
         SubzoneCommand.register(admin, dispatcher, true);
     }
 

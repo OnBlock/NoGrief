@@ -70,13 +70,11 @@ public class InfoCommand {
             GameProfile tenant = claim.rent.getTenant() == null ? null : source.getMinecraftServer().getUserCache().getByUuid(claim.rent.getTenant());
             text.append(newInfoLine("Status", new LiteralText("Rented").formatted(Formatting.RED).styled(style -> {
                 java.util.Date time=new java.util.Date((long) claim.rent.getRentedUntil()*1000);
-                style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, newInfoLine("Until", new LiteralText(time.toString()).formatted(Formatting.WHITE)).append(newInfoLine("By", new LiteralText(tenant.getName()).formatted(Formatting.WHITE))).append(newInfoLine("Price", new LiteralText(claim.rent.getAmount() + " " + claim.rent.getCurrency().getName().asString() + " every " + TimeUtil.convertSecondsToString(claim.rent.getRentAbleTime(),'f', 'f')).formatted(Formatting.WHITE)))));
-                return style;
+                return style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, newInfoLine("Until", new LiteralText(time.toString()).formatted(Formatting.WHITE)).append(newInfoLine("By", new LiteralText(tenant.getName()).formatted(Formatting.WHITE))).append(newInfoLine("Price", new LiteralText(claim.rent.getAmount() + " " + claim.rent.getCurrency().getName().asString() + " every " + TimeUtil.convertSecondsToString(claim.rent.getRentAbleTime(),'f', 'f')).formatted(Formatting.WHITE)))));
             })));
         } else if (claim.rent.isRentable() && !claim.rent.isRented()){
             text.append(newInfoLine("Status", new LiteralText("For Rent").formatted(Formatting.GREEN).styled(style -> {
-                style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, newInfoLine("Price", new LiteralText(claim.rent.getAmount() + " " + claim.rent.getCurrency().getName().asString() + " every " + TimeUtil.convertSecondsToString(claim.rent.getRentAbleTime(),'f', 'f')).formatted(Formatting.WHITE)).append(newInfoLine("Max Rent", new LiteralText(claim.rent.getMaxrentAbleTime() / 86400 + " days")).formatted(Formatting.WHITE))));
-                return style;
+                return style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, newInfoLine("Price", new LiteralText(claim.rent.getAmount() + " " + claim.rent.getCurrency().getName().asString() + " every " + TimeUtil.convertSecondsToString(claim.rent.getRentAbleTime(),'f', 'f')).formatted(Formatting.WHITE)).append(newInfoLine("Max Rent", new LiteralText(claim.rent.getMaxrentAbleTime() / 86400 + " days")).formatted(Formatting.WHITE))));
             })));
 
         } else {

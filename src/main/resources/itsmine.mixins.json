@@ -33,7 +33,8 @@
     "FarmlandBlockMixin",
     "BoatItemMixin",
     "AnimalEntityMixin",
-    "LecternScreenHandlerMixin"
+    "LecternScreenHandlerMixin",
+    "ServerCommandOutputMixin"
   ],
   "injectors": {
     "defaultRequire": 1

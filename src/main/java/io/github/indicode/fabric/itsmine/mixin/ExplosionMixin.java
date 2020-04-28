@@ -27,7 +27,6 @@ public class ExplosionMixin {
 
     @Redirect(method = "collectBlocksAndDamageEntities", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;getBlockState(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/block/BlockState;"))
     private BlockState theyCallMeBedrock(World world, BlockPos pos) {
-        System.out.println("Running method1");
         Claim claim = ClaimManager.INSTANCE.getClaimAt(pos, world.getDimension().getType());
         if (claim != null && !world.isAir(pos) && !world.getBlockState(pos).getBlock().equals(Blocks.TNT)) {
             if (!claim.settings.getSetting(Claim.ClaimSettings.Setting.EXPLOSION_DESTRUCTION)) {
@@ -39,7 +38,6 @@ public class ExplosionMixin {
 
     @Redirect(method = "collectBlocksAndDamageEntities", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;isImmuneToExplosion()Z"))
     private boolean claimDeniesExplosion(Entity entity) {
-        System.out.println("Running method2");
         BlockPos blockPos_1 = entity.getBlockPos();
         Claim claim = ClaimManager.INSTANCE.getClaimAt(blockPos_1, entity.world.getDimension().getType());
         if (claim != null) {
@@ -49,10 +47,5 @@ public class ExplosionMixin {
         }
 
         return entity.isImmuneToExplosion();
-    }
-
-    @Inject(method = "getAffectedBlocks", at = @At(value = "HEAD"))
-    private void dontAffectMe(CallbackInfoReturnable<List<BlockPos>> cir){
-        System.out.println("Running method3");
     }
 }

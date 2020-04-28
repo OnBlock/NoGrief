@@ -13,6 +13,7 @@ import static com.mojang.brigadier.arguments.StringArgumentType.getString;
 import static com.mojang.brigadier.arguments.StringArgumentType.word;
 import static io.github.indicode.fabric.itsmine.command.HelpCommand.sendPage;
 import static io.github.indicode.fabric.itsmine.util.ArgumentUtil.SETTINGS_PROVIDER;
+import static io.github.indicode.fabric.itsmine.util.ArgumentUtil.getSettings;
 import static io.github.indicode.fabric.itsmine.util.ClaimUtil.executeSetting;
 import static io.github.indicode.fabric.itsmine.util.ClaimUtil.querySettings;
 import static net.minecraft.server.command.CommandManager.argument;
@@ -20,9 +21,8 @@ import static net.minecraft.server.command.CommandManager.literal;
 
 public class SettingsCommand {
 
-    public static void register(LiteralArgumentBuilder<ServerCommandSource> command, boolean admin) {
+    public static void register(LiteralArgumentBuilder<ServerCommandSource> command, boolean admin, RequiredArgumentBuilder<ServerCommandSource, String> claim) {
             LiteralArgumentBuilder<ServerCommandSource> settings = literal("settings");
-            RequiredArgumentBuilder<ServerCommandSource, String> claim = ArgumentUtil.getClaims();
 
             if (!admin) {
                 settings.executes((context) -> sendPage(context.getSource(), Messages.SETTINGS_AND_PERMISSIONS, 1, "Claim Permissions and Settings", "/claim help perms_and_settings %page%"));
@@ -37,7 +37,7 @@ public class SettingsCommand {
                 });
             }
 
-            RequiredArgumentBuilder<ServerCommandSource, String> id = argument("setting", word()).suggests(SETTINGS_PROVIDER);
+            RequiredArgumentBuilder<ServerCommandSource, String> id = getSettings();
             RequiredArgumentBuilder<ServerCommandSource, Boolean> set = argument("set", BoolArgumentType.bool());
 
             id.executes((context) -> executeSetting(context.getSource(), getString(context, "setting"), getString(context, "claim"), true, false, admin));

@@ -18,6 +18,7 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 
 import static com.mojang.brigadier.arguments.StringArgumentType.*;
+import static io.github.indicode.fabric.itsmine.command.admin.AdminCommand.PERMISSION_CHECK_ADMIN;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public class RentableCommand {
@@ -26,10 +27,10 @@ public class RentableCommand {
         LiteralArgumentBuilder<ServerCommandSource> rentable = literal("rentable");
         RequiredArgumentBuilder<ServerCommandSource, ItemStackArgument> currency = net.minecraft.server.command.CommandManager.argument("item", ItemStackArgumentType.itemStack()).suggests(ArgumentUtil::itemsSuggestion);
         RequiredArgumentBuilder<ServerCommandSource, Integer> amount = net.minecraft.server.command.CommandManager.argument("count", IntegerArgumentType.integer(1));
-        RequiredArgumentBuilder<ServerCommandSource, String> days = net.minecraft.server.command.CommandManager.argument("days", word()
-        );
+        RequiredArgumentBuilder<ServerCommandSource, String> days = net.minecraft.server.command.CommandManager.argument("days", word());
         RequiredArgumentBuilder<ServerCommandSource, String> maxdays = CommandManager.argument("maxdays", word());
         maxdays.executes(context -> makeRentable(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim")), ItemStackArgumentType.getItemStackArgument(context, "item").createStack(1, false), IntegerArgumentType.getInteger(context, "count"), getString(context, "days"), getString(context, "maxdays")));
+        rentable.requires(PERMISSION_CHECK_ADMIN);
         claim.executes(context -> {
             Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim"));
             if(claim1.rent.getCurrency() !=null || claim1.rent.getAmount() != 0 || claim1.rent.getRentAbleTime() != 0 || claim1.rent.getMaxrentAbleTime() != 0 && claim1.rent.isRentable()) {

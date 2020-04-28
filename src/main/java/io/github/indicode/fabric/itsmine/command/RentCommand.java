@@ -15,6 +15,7 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 
 import static com.mojang.brigadier.arguments.StringArgumentType.*;
+import static io.github.indicode.fabric.itsmine.command.admin.AdminCommand.PERMISSION_CHECK_ADMIN;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
@@ -23,7 +24,7 @@ public class RentCommand {
         LiteralArgumentBuilder<ServerCommandSource> rent = literal("rent");
         RequiredArgumentBuilder<ServerCommandSource, String> days = argument("days", word());
         days.executes(context -> rent(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim")), getString(context, "days")));
-
+        rent.requires(PERMISSION_CHECK_ADMIN);
         claim.then(days);
         rent.then(claim);
         command.then(rent);

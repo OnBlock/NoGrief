@@ -10,6 +10,7 @@ public class Config {
     public static int baseClaimBlocks2d = 2500;
     public static boolean claims2d = true;
     public static int rent_maxseconds = 7776000;
+    public static int claim_max_entities_passive = 100;
     public static String permissionManager = "luckperms";
     public static String prefix = "&8[&aClaims&8]&r ";
     public static String msg_no_perm = "&c&lHey!&r&c Sorry but you don't have permission to do that";
@@ -34,6 +35,7 @@ public class Config {
             baseClaimBlocks2d = config.getInt("2D base claim blocks", baseClaimBlocks2d, "Area Filled: " + ItsMine.blocksToAreaString2d(baseClaimBlocks2d));
             baseClaimBlocks3d = config.getInt("3D base claim blocks", baseClaimBlocks3d, "Area Filled: " + ItsMine.blocksToAreaString3d(baseClaimBlocks3d));
             rent_maxseconds = config.getInt("rent.maxdays", rent_maxseconds, "Maximum rent time in seconds (eg. 90d = 7776000)");
+            claim_max_entities_passive = config.getInt("claim.max.passive", claim_max_entities_passive, "Maximum allowed passive entities per claim");
             permissionManager = config.getString("permissionManager", permissionManager, "Values: thimble, luckperms, vanilla");
             prefix = config.getString("msg.prefix", prefix);
             msg_interact_entity = config.getString("msg.interact.entity", msg_interact_entity);

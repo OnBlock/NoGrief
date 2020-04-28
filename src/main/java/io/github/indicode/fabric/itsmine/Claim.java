@@ -92,7 +92,6 @@ public class Claim {
                 entities.set(entities.get()+1);
             }
         });
-
         return entities.get();
     }
 

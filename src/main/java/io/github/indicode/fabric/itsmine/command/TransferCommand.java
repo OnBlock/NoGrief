@@ -107,10 +107,7 @@ public class TransferCommand {
         }
         sender.sendFeedback(new LiteralText("").append(new LiteralText("Are you sure you want to transfer ownership of \"" + claim.name + "\" to " + player.getGameProfile().getName() + "? ").formatted(Formatting.GOLD))
                 .append(new LiteralText("[YES]").styled(style -> {
-                    style.withColor(Formatting.DARK_RED);
-                    style.withBold(true);
-                    style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, (admin ? "/claim admin" : "/claim") + " transfer " + claim.name + " " + player.getGameProfile().getName() + " confirm"));
-                    return style;
+                    return style.withColor(Formatting.DARK_RED).withBold(true).withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, (admin ? "/claim admin" : "/claim") + " transfer " + claim.name + " " + player.getGameProfile().getName() + " confirm"));
                 })), false);
         return 0;
     }

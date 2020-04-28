@@ -17,16 +17,17 @@ public class SubzoneCommand {
 
     public static void registerSubzone(LiteralArgumentBuilder<ServerCommandSource> command, CommandDispatcher dispatcher, boolean admin) {
         CreateCommand.register(command, admin);
-        ExceptionCommand.register(command, admin, getSubzones());
         ExpandCommand.register(command, admin);
         InfoCommand.register(command, getSubzones());
-        PermissionsCommand.register(command, admin);
+        MessageCommand.register(command, admin, getSubzones());
+        PermissionCommand.register(command, admin, getSubzones());
         RemoveCommand.register(command, getSubzones(), admin);
         RenameCommand.register(command, admin);
         RentableCommand.register(command, getSubzones());
         RentCommand.register(command, getSubzones());
         RevenueCommand.register(command, getSubzones());
-        TrustCommand.register(command, getSubzones(), true);
+        SettingsCommand.register(command, admin, getSubzones());
+        TrustCommand.register(command, getSubzones(), admin);
         TrustedCommand.register(command);
     }
 }

@@ -2,6 +2,7 @@ package io.github.indicode.fabric.itsmine.util;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.indicode.fabric.itsmine.Config;
+import io.github.indicode.fabric.itsmine.ItsMine;
 import io.github.indicode.fabric.permissions.PermChangeBehavior;
 import io.github.indicode.fabric.permissions.Thimble;
 import net.fabricmc.loader.api.FabricLoader;
@@ -17,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 public class PermissionUtil {
     private Manager manager;
@@ -213,4 +215,6 @@ public class PermissionUtil {
             return "itsmine." + this.NODE;
         }
     }
+
+
 }

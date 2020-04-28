@@ -107,21 +107,12 @@ public class CreateCommand {
                 // works because only the first statement is evaluated if true
                 if ((admin && ItsMine.permissions().hasPermission(owner, PermissionUtil.Command.INFINITE_BLOCKS, 2)) || ClaimManager.INSTANCE.useClaimBlocks(ownerID, subInt)) {
                     ClaimManager.INSTANCE.addClaim(claim);
-                    MutableText message = null;
-                    message.append(new LiteralText("").append(new LiteralText("Your claim was created").formatted(Formatting.GREEN)));
+                    MutableText message = new LiteralText("");
+                    message.append(new LiteralText("Your claim was created").formatted(Formatting.GREEN));
                     message.append(new LiteralText("(Area: " + sub.getX() + "x" + sub.getY() + "x" + sub.getZ() + ")").styled(style -> {
-                        style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(subInt + " blocks").formatted(Formatting.YELLOW)));
-                        return style;
+                        return style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(subInt + " blocks").formatted(Formatting.YELLOW)));
                     }));
                     owner.sendFeedback(message, false);
-
-                    MutableText message2 = null;
-                    message2.append(new LiteralText("").append(new LiteralText("Your claim was created").formatted(Formatting.GREEN)));
-                    message2.append(new LiteralText("(Area: " + sub.getX() + "x" + sub.getY() + "x" + sub.getZ() + ")").styled(style -> {
-                        style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(subInt + " blocks").formatted(Formatting.YELLOW)));
-                        return style;
-                    }));
-                    owner.sendFeedback(message2, false);
                     BlockCommand.blocksLeft(owner);
                     executeShowClaim(owner, claim, false);
                     if (admin)

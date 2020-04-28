@@ -23,6 +23,7 @@ public class ClaimManager {
     private HashMap<UUID, Integer> blocksLeft = new HashMap<>();
     public List<UUID> ignoringClaims = new ArrayList<>();
     public List<UUID> flyers = new ArrayList<>();
+    public MinecraftServer server;
     public int getClaimBlocks(UUID id) {
         return blocksLeft.getOrDefault(id, Config.claims2d ? Config.baseClaimBlocks2d : Config.baseClaimBlocks3d);
     }

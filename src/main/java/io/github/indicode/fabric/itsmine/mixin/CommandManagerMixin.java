@@ -18,6 +18,7 @@ public class CommandManagerMixin {
     private CommandDispatcher<ServerCommandSource> dispatcher;
     @Inject(method = "<init>", at = @At("RETURN"))
     public void addCommand(boolean bool, CallbackInfo ci) {
-        CommandManager.register(dispatcher);
+        CommandManager.dispatcher = this.dispatcher;
+        CommandManager.register();
     }
 }

@@ -2,6 +2,7 @@ package io.github.indicode.fabric.itsmine;
 
 import net.minecraft.entity.Entity;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
 

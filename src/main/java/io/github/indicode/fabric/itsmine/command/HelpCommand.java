@@ -59,20 +59,20 @@ public class HelpCommand {
                 .append(new LiteralText("<-").formatted(Formatting.WHITE).formatted(Formatting.BOLD))
                 .append(new LiteralText(" ")).append(new LiteralText("Prev").formatted(Formatting.GOLD))
                 .styled((style) -> {
-                    style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText((prevPage >= 0) ? "<<<" : "|<").formatted(Formatting.GRAY)));
-                    if (prevPage >= 0)
-                        style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command.replace("%page%",  String.valueOf(page - 1))));
-                    return style;
+                    if (prevPage >= 0){
+                        return style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText((prevPage >= 0) ? "<<<" : "|<").formatted(Formatting.GRAY))).withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command.replace("%page%",  String.valueOf(page - 1))));
+                    }
+                    return style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText((prevPage >= 0) ? "<<<" : "|<").formatted(Formatting.GRAY)));
                 });
 
         Text button_next = new LiteralText("")
                 .append(new LiteralText("Next").formatted(Formatting.GOLD))
                 .append(new LiteralText(" ")).append(new LiteralText("->").formatted(Formatting.WHITE).formatted(Formatting.BOLD)).append(new LiteralText(" "))
                 .styled((style) -> {
-                    style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText((nextPage <= text.length) ? ">>>" : ">|").formatted(Formatting.GRAY)));
-                    if (nextPage <= text.length)
-                        style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command.replace("%page%",  String.valueOf(nextPage))));
-                    return style;
+                    if (nextPage <= text.length){
+                        return style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText((nextPage <= text.length) ? ">>>" : ">|").formatted(Formatting.GRAY))).withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command.replace("%page%",  String.valueOf(nextPage))));
+                    }
+                    return style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText((nextPage <= text.length) ? ">>>" : ">|").formatted(Formatting.GRAY)));
                 });
 
         Text buttons = new LiteralText("")

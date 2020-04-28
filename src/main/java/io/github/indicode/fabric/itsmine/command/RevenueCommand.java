@@ -17,6 +17,7 @@ import net.minecraft.util.math.BlockPos;
 import java.util.HashMap;
 
 import static com.mojang.brigadier.arguments.StringArgumentType.getString;
+import static io.github.indicode.fabric.itsmine.command.admin.AdminCommand.PERMISSION_CHECK_ADMIN;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
@@ -26,6 +27,7 @@ public class RevenueCommand {
         LiteralArgumentBuilder<ServerCommandSource> revenue = literal("revenue");
         RequiredArgumentBuilder<ServerCommandSource, Boolean> claimRevenue = argument("claimRevenue", BoolArgumentType.bool());
         revenue.executes(context -> revenue(context.getSource(), ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition()), context.getSource().getWorld().getDimension().getType()), false));
+        revenue.requires(PERMISSION_CHECK_ADMIN);
         claim.executes(context -> revenue(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim")), false));
         claimRevenue.executes(context -> revenue(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim")), true));
         claim.then(claimRevenue);
@@ -69,9 +71,7 @@ public class RevenueCommand {
                 hashMap.forEach((item, integer) -> {
                     boolean color = true;
                     text.append(new LiteralText(String.valueOf(integer)).append(new LiteralText(" ")).append(new TranslatableText(item.getTranslationKey())).append(new LiteralText(" ")).formatted(color ? Formatting.GOLD : Formatting.YELLOW)).styled(style -> {
-                        style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Click to claim revenue!").formatted(Formatting.GREEN)));
-                        style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/claim revenue " + claim.name + " true"));
-                        return style;
+                        return style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Click to claim revenue!").formatted(Formatting.GREEN))).withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/claim revenue " + claim.name + " true"));
                     });
                     color = !color;
                 });

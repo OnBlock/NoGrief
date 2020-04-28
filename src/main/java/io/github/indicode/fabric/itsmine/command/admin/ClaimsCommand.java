@@ -51,10 +51,7 @@ public class ClaimsCommand {
                             hoverText.append("\n- " + subzone.name);
                         }
                     }
-                    style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText));
-
-                    style.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/claim info " + claim.name));
-                    return style;
+                    return style.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/claim info " + claim.name)).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText));
                 });
 
                 nextColor = !nextColor;
