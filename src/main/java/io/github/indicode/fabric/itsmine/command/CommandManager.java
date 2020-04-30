@@ -45,7 +45,7 @@ public class CommandManager {
         StickCommand.register(command);
         SubzoneCommand.register(command, dispatcher, false);
         TransferCommand.register(command);
-        TrustCommand.register(command, getClaims(), false);
+        TrustCommand.register(command, dispatcher, getClaims(), false);
         TrustedCommand.register(command);
     }
 }

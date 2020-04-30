@@ -2,6 +2,7 @@ package io.github.indicode.fabric.itsmine.command;
 
 import blue.endless.jankson.annotation.Nullable;
 import com.mojang.authlib.GameProfile;
+import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -19,26 +20,28 @@ import java.util.Collection;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.mojang.brigadier.arguments.StringArgumentType.getString;
+import static io.github.indicode.fabric.itsmine.util.ArgumentUtil.PLAYERS_PROVIDER;
 import static io.github.indicode.fabric.itsmine.util.ClaimUtil.validateClaim;
 import static io.github.indicode.fabric.itsmine.util.ClaimUtil.verifyPermission;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public class TrustCommand {
-    public static void register(LiteralArgumentBuilder<ServerCommandSource> command, RequiredArgumentBuilder<ServerCommandSource, String> claim, boolean admin) {
+    public static void register(LiteralArgumentBuilder<ServerCommandSource> command, CommandDispatcher dispatcher, RequiredArgumentBuilder<ServerCommandSource, String> claim, boolean admin) {
         {
             LiteralArgumentBuilder<ServerCommandSource> trust = literal("trust");
-            RequiredArgumentBuilder<ServerCommandSource, GameProfileArgumentType.GameProfileArgument> playerArgument = argument("player", GameProfileArgumentType.gameProfile());
+            RequiredArgumentBuilder<ServerCommandSource, GameProfileArgumentType.GameProfileArgument> playerArgument = argument("player", GameProfileArgumentType.gameProfile()).suggests(PLAYERS_PROVIDER);
             playerArgument.executes((context -> executeTrust(context, GameProfileArgumentType.getProfileArgument(context, "player"), true, null, admin)));
             claim.executes((context -> executeTrust(context, GameProfileArgumentType.getProfileArgument(context, "player"), true, getString(context, "claim"), admin)));
 
             playerArgument.then(claim);
             trust.then(playerArgument);
             command.then(trust);
+            dispatcher.register(trust);
         }
         {
             LiteralArgumentBuilder<ServerCommandSource> distrust = literal("distrust");
-            RequiredArgumentBuilder<ServerCommandSource, GameProfileArgumentType.GameProfileArgument> playerArgument = argument("player", GameProfileArgumentType.gameProfile());
+            RequiredArgumentBuilder<ServerCommandSource, GameProfileArgumentType.GameProfileArgument> playerArgument = argument("player", GameProfileArgumentType.gameProfile()).suggests(PLAYERS_PROVIDER);
 
             playerArgument.executes((context -> executeTrust(context, GameProfileArgumentType.getProfileArgument(context, "player"), false, null, admin)));
             claim.executes((context -> executeTrust(context, GameProfileArgumentType.getProfileArgument(context, "player"), false, getString(context, "claim"), admin)));
@@ -46,6 +49,7 @@ public class TrustCommand {
             playerArgument.then(claim);
             distrust.then(playerArgument);
             command.then(distrust);
+            dispatcher.register(distrust);
         }
     }
     private static int executeTrust(CommandContext<ServerCommandSource> context, Collection<GameProfile> targetCollection, boolean set, @Nullable String claimName, boolean admin) throws CommandSyntaxException {

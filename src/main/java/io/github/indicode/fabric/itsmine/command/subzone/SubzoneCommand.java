@@ -27,7 +27,7 @@ public class SubzoneCommand {
         RentCommand.register(command, getSubzones());
         RevenueCommand.register(command, getSubzones());
         SettingsCommand.register(command, admin, getSubzones());
-        TrustCommand.register(command, getSubzones(), admin);
+        TrustCommand.register(command, dispatcher, getSubzones(), admin);
         TrustedCommand.register(command);
     }
 }
