@@ -35,7 +35,7 @@ public class LevelStorageSessionMixin {
             if (!claims.exists() && claims_old.exists()) throw new FileNotFoundException();
             ClaimManager.INSTANCE.fromNBT(NbtIo.readCompressed(new FileInputStream(claims)));
         } catch (IOException e) {
-            System.err.println("Could not load claims.dat:");
+            System.out.println("Could not load " + claims.getName() + ":");
             e.printStackTrace();
             if (claims_old.exists()) {
                 System.out.println("Attempting to load backup claims...");
@@ -54,15 +54,22 @@ public class LevelStorageSessionMixin {
             File claimDataFile = new File(directory.toFile(), "claims.dat");
             if (claimDataFile.exists()) {
                 File old = new File(directory.toFile(), "claims.dat_old");
-                if (old.exists()) old.delete();
-                claimDataFile.renameTo(old);
-                claimDataFile.delete();
+                System.out.println("Saving NBT File: " + claimDataFile.getName() + " " + claimDataFile.length()+ "b " + claimDataFile.getAbsolutePath());
+                if(claimDataFile.length() > 45){
+                    System.out.println("Creating backup of NBT File: " + claimDataFile.getName());
+                    if (old.exists()) old.delete();
+                    claimDataFile.renameTo(old);
+                    claimDataFile.delete();
+                } else {
+                    System.out.println("Backup failed!" + claimDataFile.getName() + " may be broken, keeping " + old.getName());
+                }
             }
             try {
                 claimDataFile.createNewFile();
                 CompoundTag tag = ClaimManager.INSTANCE.toNBT();
                 NbtIo.writeCompressed(tag, new FileOutputStream(claimDataFile));
             } catch (IOException e) {
+                System.out.println("Could not save " + claimDataFile.getName() + ":");
                 e.printStackTrace();
             }
         }
