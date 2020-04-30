@@ -19,8 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import static com.mojang.brigadier.arguments.StringArgumentType.getString;
-import static com.mojang.brigadier.arguments.StringArgumentType.word;
+import static com.mojang.brigadier.arguments.StringArgumentType.*;
 import static net.minecraft.server.command.CommandManager.argument;
 
 public class ArgumentUtil {
@@ -62,7 +61,7 @@ public class ArgumentUtil {
     }
 
     public static RequiredArgumentBuilder<ServerCommandSource, String> getEventMessage(){
-        return argument("message", word()).suggests(EVENT_MESSAGE_PROVIDER);
+        return argument("message", greedyString()).suggests(EVENT_MESSAGE_PROVIDER);
     }
 
 
