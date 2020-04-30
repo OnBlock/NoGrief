@@ -35,10 +35,10 @@ public abstract class AnimalEntityMixin {
             if(claim.isChild){
                 claim = ClaimUtil.getParentClaim(claim);
             }
-            if(claim.getEntities(other.getEntityWorld().getServer().getWorld(other.getEntityWorld().getDimension().getType())) > 50){
+            if(claim.getEntities(other.getEntityWorld().getServer().getWorld(other.getEntityWorld().getDimension().getType())) > Config.claim_max_entities_passive){
                 ServerPlayerEntity player = this.getLovingPlayer();
                 if(player != null){
-                    player.networkHandler.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.ACTIONBAR, new LiteralText("You reached the entity limit in your claim!").formatted(Formatting.RED), -1, Config.event_msg_stay_ticks, -1));
+                    player.networkHandler.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.ACTIONBAR, new LiteralText("You reached the passive entity limit in your claim!").formatted(Formatting.RED), -1, Config.event_msg_stay_ticks, -1));
                 }
                 this.resetLoveTicks();
                 cir.setReturnValue(false);

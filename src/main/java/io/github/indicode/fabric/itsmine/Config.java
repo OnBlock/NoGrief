@@ -10,7 +10,7 @@ public class Config {
     public static int baseClaimBlocks2d = 2500;
     public static boolean claims2d = true;
     public static int rent_maxseconds = 7776000;
-    public static int claim_max_entities_passive = 100;
+    public static int claim_max_entities_passive = 75;
     public static String permissionManager = "luckperms";
     public static String prefix = "&8[&aClaims&8]&r ";
     public static String msg_no_perm = "&c&lHey!&r&c Sorry but you don't have permission to do that";

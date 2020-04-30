@@ -20,6 +20,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.CancellationException;
 
 @Mixin(BoatItem.class)
 public abstract class BoatItemMixin extends Item {
@@ -33,12 +34,13 @@ public abstract class BoatItemMixin extends Item {
         ItemStack itemStack = user.getStackInHand(hand);
         HitResult hitResult = rayTrace(world, user, RayTraceContext.FluidHandling.ANY);
         Vec3d pos = hitResult.getPos();
-
         Claim claim = ClaimManager.INSTANCE.getClaimAt(new BlockPos(pos.getX(), pos.getY(), pos.getZ()), user.dimension);
 
-        if (claim != null && !claim.hasPermission(user.getUuid(), Claim.Permission.BUILD) || !claim.hasPermission(user.getUuid(), Claim.Permission.SPAWN_BOAT)) {
-            user.sendSystemMessage(Messages.NO_PERMISSION);
-            cir.setReturnValue(TypedActionResult.fail(itemStack));
+        if (claim != null){
+            if(!claim.hasPermission(user.getUuid(), Claim.Permission.BUILD) || !claim.hasPermission(user.getUuid(), Claim.Permission.SPAWN_BOAT)){
+                user.sendSystemMessage(Messages.NO_PERMISSION);
+                cir.setReturnValue(TypedActionResult.fail(itemStack));
+            }
         }
 
     }
