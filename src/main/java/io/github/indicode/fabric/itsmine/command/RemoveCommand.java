@@ -83,7 +83,7 @@ public class RemoveCommand {
             ShowerUtil.update(parent, world, false);
         }
         source.getWorld().getPlayers().forEach(playerEntity -> {
-            if (((ClaimShower)playerEntity).getShownClaim() != null && ((ClaimShower)playerEntity).getShownClaim().name.equals(claim.name)) silentHideShow(playerEntity, claim, true, true);
+            if (((ClaimShower)playerEntity).getShownClaim() != null && ((ClaimShower)playerEntity).getShownClaim().name.equals(claim.name)) silentHideShow(playerEntity, claim, true, true, ((ClaimShower)playerEntity).getMode());
         });
         source.sendFeedback(new LiteralText("Deleted the claim \"" + claim.name + "\"").formatted(Formatting.GREEN), !claim.permissionManager.hasPermission(source.getPlayer().getGameProfile().getId(), Claim.Permission.REMOVE_CLAIM));
         return 0;

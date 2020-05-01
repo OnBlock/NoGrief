@@ -30,6 +30,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements ClaimSho
     }
     private Claim shownClaim = null;
     private BlockPos lastShowPos = null;
+    private String showmode = null;
 
     @Redirect(method = "interact", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;interact(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/Hand;)Z"))
     private boolean dontYouDareTouchMe(Entity entity, PlayerEntity playerEntity_1, Hand hand_1) {
@@ -91,9 +92,13 @@ public abstract class PlayerEntityMixin extends LivingEntity implements ClaimSho
     public Claim getShownClaim() {
         return shownClaim;
     }
-
     @Override
     public BlockPos getLastShowPos() {
         return lastShowPos;
     }
+    @Override
+    public void setShowMode(String mode){showmode = mode;}
+    @Override
+    public String getMode(){return showmode;}
+
 }

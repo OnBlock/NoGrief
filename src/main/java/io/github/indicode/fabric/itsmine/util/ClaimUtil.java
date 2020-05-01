@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class ClaimUtil {
     public static BlockPos getPosOnGround(BlockPos pos, World world) {
-        BlockPos blockPos = new BlockPos(pos.getX(), pos.getY(), pos.getZ());
+        BlockPos blockPos = new BlockPos(pos.getX(), 256, pos.getZ());
 
         do {
             blockPos = blockPos.down();

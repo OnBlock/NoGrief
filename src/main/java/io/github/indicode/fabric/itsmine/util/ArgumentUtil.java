@@ -64,6 +64,10 @@ public class ArgumentUtil {
         return argument("message", greedyString()).suggests(EVENT_MESSAGE_PROVIDER);
     }
 
+    public static RequiredArgumentBuilder<ServerCommandSource, String> getShowMode(){
+        return argument("mode", greedyString()).suggests(SHOW_MODE_PROVIDER);
+    }
+
 
 
     private static CompletableFuture<Suggestions> claimSubzoneProvider(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder) throws CommandSyntaxException {
@@ -187,6 +191,14 @@ public class ArgumentUtil {
         } catch (Exception ignored) {
         }
 
+        return CommandSource.suggestMatching(strings, builder);
+    };
+
+    public static final SuggestionProvider<ServerCommandSource> SHOW_MODE_PROVIDER = (source, builder) -> {
+        List<String> strings = new ArrayList<>();
+        strings.add("outline");
+        strings.add("corner");
+//        strings.add("old");
         return CommandSource.suggestMatching(strings, builder);
     };
 
