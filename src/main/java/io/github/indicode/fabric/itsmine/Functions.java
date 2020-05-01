@@ -100,13 +100,13 @@ public class Functions {
             return true;
         }
 
-        thrownEntity.kill();
+//        thrownEntity.kill();
         return false;
     }
 
     public static boolean canDamageWithProjectile(ProjectileEntity projectile, Entity entity) {
         if (checkCanDamageWithProjectile(entity, projectile.getServer(), ((OwnedProjectile) projectile).getOwner())) {
-            projectile.kill();
+//            projectile.kill();
             return true;
         }
 

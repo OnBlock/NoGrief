@@ -4,7 +4,9 @@ import blue.endless.jankson.annotation.Nullable;
 import io.github.indicode.fabric.itsmine.Functions;
 import io.github.indicode.fabric.itsmine.Messages;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.ArrowEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.util.hit.EntityHitResult;
 import org.spongepowered.asm.mixin.Mixin;
@@ -31,7 +33,11 @@ public abstract class ProjectileEntityMixin {
                 this.getOwner().sendSystemMessage(Messages.MSG_DAMAGE_ENTITY);
             }
         }
+        if(projectileEntity.getType() == EntityType.ARROW){
+            projectileEntity.kill();
+        }
     }
+
 //    public boolean imInvincible(Entity entity, DamageSource damageSource_1, float float_1) {
 //        if (entity.world.isClient()) return entity.damage(damageSource_1, float_1);
 //        ProjectileEntity projectile = (ProjectileEntity)(Object)this;
