@@ -10,28 +10,24 @@ import java.util.ArrayList;
 public class MessageUtil {
 
     public static void sendPage(ServerCommandSource source, Text header, int entries, int page, String command, ArrayList<Text> content){
-        System.out.println(1);
-        //1
-        //10 max entries
-        //3 entries
+
+        for (int i=0; i < content.size(); i += entries) {
+            System.out.println(content.subList(i, Math.min(content.size(), i + entries)));
+        }
+
         int pages = Math.floorDiv(content.size(), entries);
         if(content.size() % entries != 0) pages++;
-        System.out.println("pages: " + pages);
         if(page < 1) return;
-        System.out.println(2);
         if(page > pages) return;
-        System.out.println(3);
         LiteralText message = new LiteralText("");
-        System.out.println(4);
         message.append(header).append(new LiteralText("\n\n"));
-        System.out.println(5);
-        for(int i = (entries * (page - 1) + 1); i < (page * entries); i++) {
-            System.out.println("i: " + i);
-            message.append(content.get(i-1)).append(new LiteralText("\n"));
+        for (int i = 0; i < content.size(); i += entries) {
+            content.subList(i, Math.min(content.size(), i + entries)).forEach(text -> {
+                message.append(text).append(new LiteralText("\n"));
+            });
         }
-        System.out.println(6);
+
         message.append(new LiteralText("\n"));
-        System.out.println(7);
         Text button_prev = new LiteralText("")
                 .append(new LiteralText("<-").formatted(Formatting.WHITE).formatted(Formatting.BOLD))
                 .append(new LiteralText(" ")).append(new LiteralText("Prev").formatted(Formatting.GOLD))
