@@ -32,7 +32,6 @@
     "EnderDragonEntityMixin",
     "FarmlandBlockMixin",
     "BoatItemMixin",
-    "AnimalEntityMixin",
     "ServerCommandOutputMixin"
   ],
   "injectors": {
