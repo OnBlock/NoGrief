@@ -1,4 +1,4 @@
-package io.github.indicode.fabric.itsmine.command.admin;
+package io.github.indicode.fabric.itsmine.command;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;

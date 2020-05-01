@@ -28,6 +28,7 @@ public class CommandManager {
         AdminCommand.register(command, dispatcher);
         BlockCommand.register(command);
         CreateCommand.register(command);
+        ClaimsCommand.register(command, dispatcher);
         ExpandCommand.register(command, false);
         FlyCommand.register(command);
         HelpCommand.register(command);

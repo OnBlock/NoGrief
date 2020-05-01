@@ -3,6 +3,7 @@ package io.github.indicode.fabric.itsmine.command.admin;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.github.indicode.fabric.itsmine.ItsMine;
+import io.github.indicode.fabric.itsmine.command.ClaimsCommand;
 import io.github.indicode.fabric.itsmine.command.MessageCommand;
 import io.github.indicode.fabric.itsmine.command.PermissionCommand;
 import io.github.indicode.fabric.itsmine.command.SettingsCommand;
@@ -25,7 +26,6 @@ public class AdminCommand {
 
     private static void registerAdmin(LiteralArgumentBuilder<ServerCommandSource> admin, CommandDispatcher dispatcher) {
         BlocksCommand.register(admin);
-        ClaimsCommand.register(admin, dispatcher);
         CreateCommand.register(admin);
         EntitiesCommand.register(admin);
         ExpandCommand.register(admin);
