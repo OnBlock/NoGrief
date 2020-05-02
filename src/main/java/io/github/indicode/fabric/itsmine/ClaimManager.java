@@ -1,9 +1,9 @@
 package io.github.indicode.fabric.itsmine;
 
+import io.github.indicode.fabric.itsmine.claim.Claim;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Pair;
@@ -11,7 +11,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.dimension.DimensionType;
 import org.jetbrains.annotations.Nullable;
 
-import javax.naming.Name;
 import java.util.*;
 
 /**
@@ -73,7 +72,7 @@ public class ClaimManager {
     }
     public boolean wouldIntersect(Claim claim) {
         for (Claim value : claimsByName.values()) {
-            if(!claim.name.equals(value.name) && claim.intersects(value)) return true;
+            if(!value.isChild && !claim.name.equals(value.name) && (claim.intersects(value) || value.intersects(claim))) return true;
         }
         return false;
     }
