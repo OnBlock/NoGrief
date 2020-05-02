@@ -4,7 +4,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import io.github.indicode.fabric.itsmine.Claim;
+import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.ClaimManager;
 import io.github.indicode.fabric.itsmine.ClaimShower;
 import io.github.indicode.fabric.itsmine.Config;

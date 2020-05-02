@@ -1,5 +1,7 @@
 package io.github.indicode.fabric.itsmine;
 
+import io.github.indicode.fabric.itsmine.claim.Claim;
+import io.github.indicode.fabric.itsmine.claim.ClaimSettings;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -11,6 +13,8 @@ public class Messages {
     public static final Text INVALID_CLAIM = PREFIX.copy().append(new LiteralText("Can not find a claim with that name or a claim at your position").formatted(Formatting.RED));
 
     public static final Text INVALID_SETTING = PREFIX.copy().append(new LiteralText("Invalid Claim Setting!").formatted(Formatting.RED));
+
+    public static final Text INVALID_PERMISSION = PREFIX.copy().append(new LiteralText("Invalid Claim Permission!"));
 
     public static final Text NO_PERMISSION = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_no_perm)));
 
@@ -159,7 +163,7 @@ public class Messages {
             MutableText claimSettings = new LiteralText("");
             boolean nextEnabled = false;
             boolean nextDisabled = false;
-            for (Claim.ClaimSettings.Setting value : Claim.ClaimSettings.Setting.values()) {
+            for (ClaimSettings.Setting value : ClaimSettings.Setting.values()) {
                 boolean enabled = claim.settings.getSetting(value);
                 Formatting formatting;
                 if (enabled) {

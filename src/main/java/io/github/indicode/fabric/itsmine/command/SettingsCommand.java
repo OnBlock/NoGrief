@@ -3,16 +3,13 @@ package io.github.indicode.fabric.itsmine.command;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import io.github.indicode.fabric.itsmine.Claim;
+import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.ClaimManager;
 import io.github.indicode.fabric.itsmine.Messages;
-import io.github.indicode.fabric.itsmine.util.ArgumentUtil;
 import net.minecraft.server.command.ServerCommandSource;
 
 import static com.mojang.brigadier.arguments.StringArgumentType.getString;
-import static com.mojang.brigadier.arguments.StringArgumentType.word;
 import static io.github.indicode.fabric.itsmine.command.HelpCommand.sendPage;
-import static io.github.indicode.fabric.itsmine.util.ArgumentUtil.SETTINGS_PROVIDER;
 import static io.github.indicode.fabric.itsmine.util.ArgumentUtil.getSettings;
 import static io.github.indicode.fabric.itsmine.util.ClaimUtil.executeSetting;
 import static io.github.indicode.fabric.itsmine.util.ClaimUtil.querySettings;

@@ -1,7 +1,7 @@
 package io.github.indicode.fabric.itsmine.mixin;
 
 import blue.endless.jankson.annotation.Nullable;
-import io.github.indicode.fabric.itsmine.Claim;
+import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.ClaimManager;
 import io.github.indicode.fabric.itsmine.Config;
 import io.github.indicode.fabric.itsmine.util.ClaimUtil;
@@ -16,8 +16,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import java.util.UUID;
 
 @Mixin(AnimalEntity.class)
 public abstract class AnimalEntityMixin {

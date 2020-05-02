@@ -1,8 +1,7 @@
 package io.github.indicode.fabric.itsmine.mixin;
 
-import io.github.indicode.fabric.itsmine.Claim;
+import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.ClaimManager;
-import io.github.indicode.fabric.itsmine.Functions;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BucketItem;
 import net.minecraft.item.Item;

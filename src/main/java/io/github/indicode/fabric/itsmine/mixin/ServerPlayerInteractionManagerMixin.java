@@ -1,6 +1,7 @@
 package io.github.indicode.fabric.itsmine.mixin;
 
 import io.github.indicode.fabric.itsmine.*;
+import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.util.BlockUtil;
 import net.minecraft.block.*;
 import net.minecraft.entity.player.PlayerEntity;

@@ -1,5 +1,6 @@
 package io.github.indicode.fabric.itsmine;
 
+import io.github.indicode.fabric.itsmine.claim.Claim;
 import net.minecraft.util.math.BlockPos;
 
 /**

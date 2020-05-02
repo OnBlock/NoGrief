@@ -1,6 +1,6 @@
 //package io.github.indicode.fabric.itsmine.mixin;
 //
-//import io.github.indicode.fabric.itsmine.Claim;
+//import io.github.indicode.fabric.itsmine.claim.Claim;
 //import io.github.indicode.fabric.itsmine.ClaimManager;
 //import io.github.indicode.fabric.itsmine.util.ClaimUtil;
 //import net.minecraft.entity.player.PlayerEntity;

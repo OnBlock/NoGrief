@@ -1,6 +1,8 @@
 package io.github.indicode.fabric.itsmine.mixin;
 
 import io.github.indicode.fabric.itsmine.*;
+import io.github.indicode.fabric.itsmine.claim.Claim;
+import io.github.indicode.fabric.itsmine.claim.ClaimSettings;
 import io.github.indicode.fabric.itsmine.util.ClaimUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -8,11 +10,8 @@ import net.minecraft.network.packet.s2c.play.PlaySoundIdS2CPacket;
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.LiteralText;
-import net.minecraft.text.Texts;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
@@ -59,7 +58,7 @@ public abstract class EntityMixin {
                     if (message != null)
                         serverPlayerEntity.networkHandler.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.ACTIONBAR, new LiteralText(ChatColor.translate(message)), -1, Config.event_msg_stay_ticks, -1));
 
-                    if (claim != null && claim.settings.getSetting(Claim.ClaimSettings.Setting.ENTER_SOUND)) {
+                    if (claim != null && claim.settings.getSetting(ClaimSettings.Setting.ENTER_SOUND)) {
                         serverPlayerEntity.networkHandler.sendPacket(new PlaySoundIdS2CPacket(Registry.SOUND_EVENT.getId(SoundEvents.BLOCK_CONDUIT_ACTIVATE), SoundCategory.MASTER, this.getPos(), 2, 1.2F));
                     }
                 }
@@ -95,7 +94,7 @@ public abstract class EntityMixin {
                                 (
                                         (
                                                 !ClaimManager.INSTANCE.flyers.contains(player.getUuid()) ||
-                                                claim == null || !claim.settings.getSetting(Claim.ClaimSettings.Setting.FLIGHT_ALLOWED) ||
+                                                claim == null || !claim.settings.getSetting(ClaimSettings.Setting.FLIGHT_ALLOWED) ||
                                                 !claim.hasPermission(player.getGameProfile().getId(), Claim.Permission.FLIGHT) ||
                                                 !Functions.canFly((ServerPlayerEntity) player)
                                         )
@@ -116,7 +115,7 @@ public abstract class EntityMixin {
                                 ClaimManager.INSTANCE.flyers.contains(player.getUuid()) &&
                                 shouldChange(player) &&
                                 claim != null &&
-                                claim.settings.getSetting(Claim.ClaimSettings.Setting.FLIGHT_ALLOWED)
+                                claim.settings.getSetting(ClaimSettings.Setting.FLIGHT_ALLOWED)
                                 && claim.hasPermission(player.getUuid(), Claim.Permission.FLIGHT)
                                 && Functions.canFly((ServerPlayerEntity) player)
                                 ///&& Functions.canClaimFly((ServerPlayerEntity) player)

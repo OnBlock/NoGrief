@@ -1,6 +1,6 @@
 package io.github.indicode.fabric.itsmine.util;
 
-import io.github.indicode.fabric.itsmine.Claim;
+import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.ClaimShower;
 import io.github.indicode.fabric.itsmine.mixin.BlockUpdatePacketMixin;
 import net.minecraft.block.BlockState;
@@ -11,8 +11,6 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
-
-import java.text.Format;
 
 public class ShowerUtil {
 

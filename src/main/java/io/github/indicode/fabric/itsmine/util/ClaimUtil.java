@@ -5,9 +5,10 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import io.github.indicode.fabric.itsmine.*;
+import io.github.indicode.fabric.itsmine.claim.Claim;
+import io.github.indicode.fabric.itsmine.claim.ClaimSettings;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
@@ -88,12 +89,12 @@ public class ClaimUtil {
         }
     }
 
-    public static int querySetting(ServerCommandSource source, Claim claim, Claim.ClaimSettings.Setting setting) {
+    public static int querySetting(ServerCommandSource source, Claim claim, ClaimSettings.Setting setting) {
         boolean enabled = claim.settings.getSetting(setting);
         source.sendFeedback(new LiteralText(ChatColor.translate("&eSetting &6" + setting.name + " &e is set to " + (enabled ? "&a" : "&c") + enabled + "&e for &6" + claim.name)), false);
         return 1;
     }
-    public static int setSetting(ServerCommandSource source, Claim claim, Claim.ClaimSettings.Setting setting, boolean set) {
+    public static int setSetting(ServerCommandSource source, Claim claim, ClaimSettings.Setting setting, boolean set) {
         claim.settings.settings.put(setting, set);
         source.sendFeedback(new LiteralText(ChatColor.translate("&eSet setting &6" + setting.name + "&e to " + (set ? "&a" : "&c") + set + "&e for &6" + claim.name)), false);
         return 0;
@@ -127,7 +128,7 @@ public class ClaimUtil {
         }
 
         validateCanAccess(player, claim1, admin);
-        Claim.ClaimSettings.Setting setting = Claim.ClaimSettings.Setting.byId(input);
+        ClaimSettings.Setting setting = ClaimSettings.Setting.byId(input);
         Claim.Permission permission = Claim.Permission.byId(input);
 
         if (setting != null && permission == null)

@@ -1,7 +1,8 @@
 package io.github.indicode.fabric.itsmine.mixin;
 
-import io.github.indicode.fabric.itsmine.Claim;
+import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.ClaimManager;
+import io.github.indicode.fabric.itsmine.claim.ClaimSettings;
 import net.minecraft.block.FarmlandBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
@@ -18,7 +19,7 @@ public abstract class FarmlandBlockMixin {
     private void dontYouDareFarmMe(World world, BlockPos pos, Entity entity, float distance, CallbackInfo ci) {
         Claim claim = ClaimManager.INSTANCE.getClaimAt(pos, world.dimension.getType());
 
-        if (claim != null && !claim.settings.getSetting(Claim.ClaimSettings.Setting.BREAK_FARMLANDS)) {
+        if (claim != null && !claim.settings.getSetting(ClaimSettings.Setting.BREAK_FARMLANDS)) {
             ci.cancel();
         }
     }

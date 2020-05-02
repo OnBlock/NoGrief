@@ -1,11 +1,11 @@
 package io.github.indicode.fabric.itsmine.mixin;
 
-import io.github.indicode.fabric.itsmine.Claim;
+import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.ClaimManager;
+import io.github.indicode.fabric.itsmine.claim.ClaimSettings;
 import net.minecraft.block.BlockState;
 import net.minecraft.fluid.BaseFluid;
 import net.minecraft.fluid.FluidState;
-import net.minecraft.fluid.LavaFluid;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.IWorld;
@@ -26,13 +26,13 @@ public class FluidMixin {
         Claim newClaim = ClaimManager.INSTANCE.getClaimAt(newPos, world.getDimension().getType());
         if (oldClaim != newClaim) {
             if (oldClaim == null) {
-                if (!newClaim.settings.getSetting(Claim.ClaimSettings.Setting.FLUID_CROSSES_BORDERS)) ci.cancel();
+                if (!newClaim.settings.getSetting(ClaimSettings.Setting.FLUID_CROSSES_BORDERS)) ci.cancel();
             }
             else if (newClaim == null) {
-                if (!oldClaim.settings.getSetting(Claim.ClaimSettings.Setting.FLUID_CROSSES_BORDERS)) ci.cancel();
+                if (!oldClaim.settings.getSetting(ClaimSettings.Setting.FLUID_CROSSES_BORDERS)) ci.cancel();
             } else {
-                if (!oldClaim.settings.getSetting(Claim.ClaimSettings.Setting.FLUID_CROSSES_BORDERS) ||
-                        !newClaim.settings.getSetting(Claim.ClaimSettings.Setting.FLUID_CROSSES_BORDERS)) ci.cancel();
+                if (!oldClaim.settings.getSetting(ClaimSettings.Setting.FLUID_CROSSES_BORDERS) ||
+                        !newClaim.settings.getSetting(ClaimSettings.Setting.FLUID_CROSSES_BORDERS)) ci.cancel();
             }
         }
     }

@@ -1,6 +1,7 @@
 package io.github.indicode.fabric.itsmine.mixin;
 
 import io.github.indicode.fabric.itsmine.*;
+import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.util.EntityUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -55,35 +56,11 @@ public abstract class PlayerEntityMixin extends LivingEntity implements ClaimSho
             ci.cancel();
         }
     }
-
-
-
-//    @Redirect(method = "dropInventory", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/GameRules;getBoolean(Lnet/minecraft/world/GameRules$RuleKey;)Z"))
-//    private boolean dontTakeMyThingies(GameRules gameRules, GameRules.RuleKey<GameRules.BooleanRule> rule) {
-//        PlayerEntity playerEntity_1 = (PlayerEntity)(Object)this;
-//        Claim claim = ClaimManager.INSTANCE.getClaimAt(playerEntity_1.getSenseCenterPos(), playerEntity_1.world.getDimension().getType());
-//        if (claim != null) {
-//            playerEntity_1.sendSystemMessage(new LiteralText("keep_inventory: " + claim.settings.getSetting(Claim.ClaimSettings.Setting.KEEP_INVENTORY) + " server: " + gameRules.getBoolean(rule)));
-//
-//            if (claim.settings.getSetting(Claim.ClaimSettings.Setting.KEEP_INVENTORY))
-//                return true;
-//        }
-//
-//        return gameRules.getBoolean(rule);
-//    }
-
     @Override
     public void setLastShowPos(BlockPos pos) {
         lastShowPos = pos;
     }
 
-    /*@Inject(method = "canPlaceOn", at = @At("HEAD"))
-        public void iDontWantYerStuff(BlockPos blockPos_1, Direction direction_1, ItemStack itemStack_1, CallbackInfoReturnable<Boolean> cir) {
-            Claim claim = ClaimManager.INSTANCE.getClaimAt(blockPos_1, world.getDimension().getType());
-            if (claim != null) {
-                cir.setReturnValue(false);
-            }
-        }*/ // Replace with specific undos on certain methods(buttons, containers, etc)
     @Override
     public void setShownClaim(Claim claim) {
         shownClaim = claim;

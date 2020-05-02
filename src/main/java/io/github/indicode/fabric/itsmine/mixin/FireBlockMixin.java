@@ -1,7 +1,8 @@
 package io.github.indicode.fabric.itsmine.mixin;
 
-import io.github.indicode.fabric.itsmine.Claim;
+import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.ClaimManager;
+import io.github.indicode.fabric.itsmine.claim.ClaimSettings;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.FireBlock;
@@ -32,13 +33,13 @@ public abstract class FireBlockMixin {
         Claim newClaim = ClaimManager.INSTANCE.getClaimAt(newPos, world.getDimension().getType());
         if (oldClaim != newClaim) {
             if (oldClaim == null) {
-                if (!newClaim.settings.getSetting(Claim.ClaimSettings.Setting.FIRE_CROSSES_BORDERS)) return;
+                if (!newClaim.settings.getSetting(ClaimSettings.Setting.FIRE_CROSSES_BORDERS)) return;
             }
             else if (newClaim == null) {
-                if (!oldClaim.settings.getSetting(Claim.ClaimSettings.Setting.FIRE_CROSSES_BORDERS)) return;
+                if (!oldClaim.settings.getSetting(ClaimSettings.Setting.FIRE_CROSSES_BORDERS)) return;
             } else {
-                if (!oldClaim.settings.getSetting(Claim.ClaimSettings.Setting.FIRE_CROSSES_BORDERS) ||
-                        !newClaim.settings.getSetting(Claim.ClaimSettings.Setting.FIRE_CROSSES_BORDERS)) return;
+                if (!oldClaim.settings.getSetting(ClaimSettings.Setting.FIRE_CROSSES_BORDERS) ||
+                        !newClaim.settings.getSetting(ClaimSettings.Setting.FIRE_CROSSES_BORDERS)) return;
             }
         }
         trySpreadingFire(world, newPos, int_1, random_1, int_2);
@@ -49,14 +50,14 @@ public abstract class FireBlockMixin {
             Claim newClaim = ClaimManager.INSTANCE.getClaimAt(newPos, world.getDimension().getType());
             if (oldClaim != newClaim) {
                 if (oldClaim == null) {
-                    if (!newClaim.settings.getSetting(Claim.ClaimSettings.Setting.FIRE_CROSSES_BORDERS))
+                    if (!newClaim.settings.getSetting(ClaimSettings.Setting.FIRE_CROSSES_BORDERS))
                         return false;
                 } else if (newClaim == null) {
-                    if (!oldClaim.settings.getSetting(Claim.ClaimSettings.Setting.FIRE_CROSSES_BORDERS))
+                    if (!oldClaim.settings.getSetting(ClaimSettings.Setting.FIRE_CROSSES_BORDERS))
                         return false;
                 } else {
-                    if (!oldClaim.settings.getSetting(Claim.ClaimSettings.Setting.FIRE_CROSSES_BORDERS) ||
-                            !newClaim.settings.getSetting(Claim.ClaimSettings.Setting.FIRE_CROSSES_BORDERS))
+                    if (!oldClaim.settings.getSetting(ClaimSettings.Setting.FIRE_CROSSES_BORDERS) ||
+                            !newClaim.settings.getSetting(ClaimSettings.Setting.FIRE_CROSSES_BORDERS))
                         return false;
                 }
             }
@@ -80,13 +81,13 @@ public abstract class FireBlockMixin {
             Claim newClaim = ClaimManager.INSTANCE.getClaimAt(newPos, world.getDimension().getType());
             if (oldClaim != newClaim) {
                 if (oldClaim == null) {
-                    if (!newClaim.settings.getSetting(Claim.ClaimSettings.Setting.FIRE_CROSSES_BORDERS)) iterator.remove();
+                    if (!newClaim.settings.getSetting(ClaimSettings.Setting.FIRE_CROSSES_BORDERS)) iterator.remove();
                 }
                 else if (newClaim == null) {
-                    if (!oldClaim.settings.getSetting(Claim.ClaimSettings.Setting.FIRE_CROSSES_BORDERS)) iterator.remove();
+                    if (!oldClaim.settings.getSetting(ClaimSettings.Setting.FIRE_CROSSES_BORDERS)) iterator.remove();
                 } else {
-                    if (!oldClaim.settings.getSetting(Claim.ClaimSettings.Setting.FIRE_CROSSES_BORDERS) ||
-                            !newClaim.settings.getSetting(Claim.ClaimSettings.Setting.FIRE_CROSSES_BORDERS)) iterator.remove();
+                    if (!oldClaim.settings.getSetting(ClaimSettings.Setting.FIRE_CROSSES_BORDERS) ||
+                            !newClaim.settings.getSetting(ClaimSettings.Setting.FIRE_CROSSES_BORDERS)) iterator.remove();
                 }
             }
         }

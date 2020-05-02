@@ -1,22 +1,17 @@
 package io.github.indicode.fabric.itsmine.util;
 
-import com.mojang.datafixers.types.Func;
-import io.github.indicode.fabric.itsmine.Claim;
-import io.github.indicode.fabric.itsmine.ClaimManager;
+import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.Functions;
 import io.github.indicode.fabric.itsmine.MonitorableWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCategory;
 import net.minecraft.entity.EntityType;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.LiteralText;
-import net.minecraft.util.Formatting;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static io.github.indicode.fabric.itsmine.util.WorldUtil.getServerWorld;
 
