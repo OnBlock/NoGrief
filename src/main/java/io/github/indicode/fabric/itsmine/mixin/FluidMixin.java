@@ -4,7 +4,7 @@ import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.ClaimManager;
 import io.github.indicode.fabric.itsmine.claim.ClaimSettings;
 import net.minecraft.block.BlockState;
-import net.minecraft.fluid.BaseFluid;
+import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /**
  * @author Indigo Amann
  */
-@Mixin(BaseFluid.class)
+@Mixin(FlowableFluid.class)
 public class FluidMixin {
     @Inject(method = "flow", at = @At("HEAD"), cancellable = true)
     private void dontFlow(IWorld world, BlockPos newPos, BlockState blockState_1, Direction direction, FluidState fluidState_1, CallbackInfo ci) {

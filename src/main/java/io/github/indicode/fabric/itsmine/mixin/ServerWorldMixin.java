@@ -40,7 +40,7 @@ public abstract class ServerWorldMixin implements MonitorableWorld {
 
     @Shadow public abstract List<ServerPlayerEntity> getPlayers();
 
-    @Redirect(method = "sendBlockActions", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerManager;sendToAround(Lnet/minecraft/entity/player/PlayerEntity;DDDDLnet/minecraft/world/dimension/DimensionType;Lnet/minecraft/network/Packet;)V"))
+    @Redirect(method = "processSyncedBlockEvents", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerManager;sendToAround(Lnet/minecraft/entity/player/PlayerEntity;DDDDLnet/minecraft/world/dimension/DimensionType;Lnet/minecraft/network/Packet;)V"))
     private void sendPistonUpdate(PlayerManager manager, PlayerEntity playerEntity_1, double double_1, double double_2, double double_3, double double_4, DimensionType dimensionType_1, Packet<?> packet_1) {
         manager.sendToAround(playerEntity_1, double_1, double_2, double_3, double_4, dimensionType_1, packet_1);
         Functions.doPistonUpdate((ServerWorld) (Object)this, packet_1);

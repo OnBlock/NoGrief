@@ -15,7 +15,7 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.BucketItem;
 import net.minecraft.item.Item;
 import net.minecraft.network.Packet;
-import net.minecraft.network.packet.s2c.play.BlockActionS2CPacket;
+import net.minecraft.network.packet.s2c.play.BlockEventS2CPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -29,7 +29,7 @@ import java.util.*;
  */
 public class Functions {
     public static void doPistonUpdate(ServerWorld world, Packet packet) {
-        if (packet instanceof BlockActionS2CPacket) {
+        if (packet instanceof BlockEventS2CPacket) {
             BlockActionPacketMixin accessor = (BlockActionPacketMixin) packet;
             if ((accessor.getBlock() == Blocks.PISTON || accessor.getBlock() == Blocks.PISTON_HEAD || accessor.getBlock() == Blocks.STICKY_PISTON)) {
                 Direction direction = Direction.byId(accessor.getData());

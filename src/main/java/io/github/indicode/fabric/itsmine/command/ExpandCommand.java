@@ -141,7 +141,7 @@ public class ExpandCommand {
                 return 0;
             } else {
                 if (!admin && claim.claimBlockOwner != null) ClaimManager.INSTANCE.useClaimBlocks(ownerID, newArea);
-                source.sendFeedback(new LiteralText("Your claim was " + (amount > 0 ? "expanded" : "shrunk") + " by " + (amount < 0 ? -amount : amount) + " blocks " + direction.getName()).formatted(Formatting.GREEN), false);
+                source.sendFeedback(new LiteralText("Your claim was " + (amount > 0 ? "expanded" : "shrunk") + " by " + (amount < 0 ? -amount : amount) + (amount == 1 ? " block " : " blocks ") + direction.getName()).formatted(Formatting.GREEN), false);
                 blocksLeft(source);
                 undoExpand(claim, direction, amount);
                 ShowerUtil.update(claim, source.getWorld(), true);

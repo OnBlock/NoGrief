@@ -31,10 +31,10 @@ public abstract class ProjectileEntityMixin {
         } else {
             if (this.getOwner() instanceof PlayerEntity) {
                 this.getOwner().sendSystemMessage(Messages.MSG_DAMAGE_ENTITY);
+                if(projectileEntity.getType() == EntityType.ARROW){
+                    projectileEntity.kill();
+                }
             }
-        }
-        if(projectileEntity.getType() == EntityType.ARROW){
-            projectileEntity.kill();
         }
     }
 
