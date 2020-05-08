@@ -5,8 +5,8 @@ import net.minecraft.nbt.CompoundTag;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ClaimSettings{
-    public enum Setting {
+public class ClaimFlags{
+    public enum Flag {
         FLIGHT_ALLOWED("flight_allowed", "Flying Allowed", true),
         EXPLOSION_DESTRUCTION("explosion_destruction", "Explosion Destroys Blocks", false),
         EXPLOSION_DAMAGE("explosion_damage", "Explosion Damages Entities", false),
@@ -23,40 +23,40 @@ public class ClaimSettings{
         public String id, name;
         boolean defaultValue;
 
-        Setting(String id, String name, boolean defaultValue) {
+        Flag(String id, String name, boolean defaultValue) {
             this.id = id;
             this.name =  name;
             this.defaultValue = defaultValue;
         }
-        public static Setting byId(String id) {
-            for (Setting permission: values()) {
+        public static Flag byId(String id) {
+            for (Flag permission: values()) {
                 if (permission.id.equals(id)) return permission;
             }
             return null;
         }
     }
-    public Map<Setting, Boolean> settings = new HashMap<>();
-    public ClaimSettings(CompoundTag tag) {
+    public Map<Flag, Boolean> flags = new HashMap<>();
+    public ClaimFlags(CompoundTag tag) {
         fromTag(tag);
     }
-    public ClaimSettings() {
+    public ClaimFlags() {
     }
-    public boolean getSetting(Setting setting) {
-        return settings.getOrDefault(setting, setting.defaultValue);
+    public boolean getFlag(Flag flag) {
+        return flags.getOrDefault(flag, flag.defaultValue);
     }
     public CompoundTag toTag() {
         CompoundTag tag =  new CompoundTag();
-        this.settings.forEach((setting, data) -> {
-            tag.putBoolean(setting.id, data);
+        this.flags.forEach((flag, data) -> {
+            tag.putBoolean(flag.id, data);
         });
         return tag;
     }
     public void fromTag(CompoundTag tag) {
-        settings.clear();
+        flags.clear();
         tag.getKeys().forEach(key -> {
-            Setting setting = Setting.byId(key);
-            if (setting == null) return;
-            this.settings.put(setting, tag.getBoolean(key));
+            Flag flag = Flag.byId(key);
+            if (flag == null) return;
+            this.flags.put(flag, tag.getBoolean(key));
         });
     }
 }

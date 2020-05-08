@@ -10,7 +10,7 @@ import io.github.indicode.fabric.itsmine.ClaimManager;
 import io.github.indicode.fabric.itsmine.ItsMine;
 import io.github.indicode.fabric.itsmine.ItsMineConfig;
 import io.github.indicode.fabric.itsmine.claim.Claim;
-import io.github.indicode.fabric.itsmine.claim.ClaimSettings;
+import io.github.indicode.fabric.itsmine.claim.ClaimFlags;
 import net.minecraft.server.command.CommandSource;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -51,8 +51,8 @@ public class ArgumentUtil {
         return argument("player", word()).suggests(PLAYERS_PROVIDER);
     }
 
-    public static RequiredArgumentBuilder<ServerCommandSource, String> getSettings(){
-        return argument("setting", word()).suggests(SETTINGS_PROVIDER);
+    public static RequiredArgumentBuilder<ServerCommandSource, String> getFlags(){
+        return argument("flag", word()).suggests(SETTINGS_PROVIDER);
     }
     public static RequiredArgumentBuilder<ServerCommandSource, String> getPermissions(){
         return argument("permission", word()).suggests(PERMISSIONS_PROVIDER);
@@ -148,7 +148,7 @@ public class ArgumentUtil {
 
     public static final SuggestionProvider<ServerCommandSource> SETTINGS_PROVIDER = (source, builder) -> {
         List<String> strings = new ArrayList<>();
-        for (ClaimSettings.Setting value : ClaimSettings.Setting.values()) {
+        for (ClaimFlags.Flag value : ClaimFlags.Flag.values()) {
             strings.add(value.id);
         }
         for (Claim.Permission value : Claim.Permission.values()) {

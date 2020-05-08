@@ -27,7 +27,7 @@ public class Claim {
     public @Nullable BlockPos tpPos;
     public DimensionType dimension;
     public List<Claim> children = new ArrayList<>();
-    public ClaimSettings settings = new ClaimSettings();
+    public ClaimFlags flags = new ClaimFlags();
     public PermissionManager permissionManager = new PermissionManager();
     public Rent rent = new Rent();
     public UUID claimBlockOwner = null;
@@ -318,7 +318,7 @@ public class Claim {
 
         }
         {
-            tag.put("settings", settings.toTag());
+            tag.put("flags", flags.toTag());
             tag.put("permissions", permissionManager.toNBT());
             if(claimBlockOwner != null) tag.putUuidNew("top_owner", claimBlockOwner);
 
@@ -390,7 +390,7 @@ public class Claim {
             }
         }
         {
-            this.settings = new ClaimSettings(tag.getCompound("settings"));
+            this.flags = new ClaimFlags(tag.getCompound("flags"));
             permissionManager = new PermissionManager();
             permissionManager.fromNBT(tag.getCompound("permissions"));
             if (containsUUID(tag, "top_owner")) claimBlockOwner = getUUID(tag,"top_owner");
@@ -419,7 +419,7 @@ public class Claim {
         //Admin
         REMOVE_CLAIM("remove_claim", "Remove Claim"),
         MODIFY_SIZE("modify.size", "Modify Claim Size"),
-        MODIFY_SETTINGS("modify.settings", "Change Claim Settings"),
+        MODIFY_SETTINGS("modify.flags", "Change Claim Flags"),
         MODIFY_PERMISSIONS("modify.permissions", "Change Permissions"),
         //Normal
         MODIFY_PROPERTIES("modify.properties", "Modify Claim Properties"),
@@ -763,7 +763,7 @@ public class Claim {
     public enum HelpBook {
         GET_STARTED("getStarted", Messages.GET_STARTED, "Get Started"),
         COMMAND("commands", Messages.HELP, "Claim Commands"),
-        PERMS_AND_SETTINGS("perms_and_settings", Messages.SETTINGS_AND_PERMISSIONS, "Claim Permissions and Settings");
+        PERMS_AND_SETTINGS("perms_and_flags", Messages.SETTINGS_AND_PERMISSIONS, "Claim Permissions and Flags");
 
         public String id;
         public String title;

@@ -6,7 +6,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import io.github.indicode.fabric.itsmine.*;
 import io.github.indicode.fabric.itsmine.claim.Claim;
-import io.github.indicode.fabric.itsmine.claim.ClaimSettings;
+import io.github.indicode.fabric.itsmine.claim.ClaimFlags;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
@@ -89,14 +89,14 @@ public class ClaimUtil {
         }
     }
 
-    public static int querySetting(ServerCommandSource source, Claim claim, ClaimSettings.Setting setting) {
-        boolean enabled = claim.settings.getSetting(setting);
-        source.sendFeedback(new LiteralText(ChatColor.translate("&eFlag &6" + setting.name + " &e is set to " + (enabled ? "&a" : "&c") + enabled + "&e for &6" + claim.name)), false);
+    public static int queryFlag(ServerCommandSource source, Claim claim, ClaimFlags.Flag flag) {
+        boolean enabled = claim.flags.getFlag(flag);
+        source.sendFeedback(new LiteralText(ChatColor.translate("&eFlag &6" + flag.name + " &e is set to " + (enabled ? "&a" : "&c") + enabled + "&e for &6" + claim.name)), false);
         return 1;
     }
-    public static int setSetting(ServerCommandSource source, Claim claim, ClaimSettings.Setting setting, boolean set) {
-        claim.settings.settings.put(setting, set);
-        source.sendFeedback(new LiteralText(ChatColor.translate("&eSet flag &6" + setting.name + "&e to " + (set ? "&a" : "&c") + set + "&e for &6" + claim.name)), false);
+    public static int setFlag(ServerCommandSource source, Claim claim, ClaimFlags.Flag flag, boolean set) {
+        claim.flags.flags.put(flag, set);
+        source.sendFeedback(new LiteralText(ChatColor.translate("&eSet flag &6" + flag.name + "&e to " + (set ? "&a" : "&c") + set + "&e for &6" + claim.name)), false);
         return 0;
     }
     public static int queryPermission(ServerCommandSource source, Claim claim, Claim.Permission permission) {
@@ -109,12 +109,12 @@ public class ClaimUtil {
         source.sendFeedback(new LiteralText(ChatColor.translate("&eSet permission &6" + permission.id + "&e to " + (set ? "&a" : "&c") + set + "&e for &6" + claim.name)), false);
         return 1;
     }
-    public static int querySettings(ServerCommandSource source, Claim claim) {
-        source.sendFeedback(new LiteralText("\n").append(new LiteralText("Settings: " + claim.name).formatted(Formatting.YELLOW)).append(new LiteralText("\n"))
-                .append(Messages.Command.getSettings(claim)).append(new LiteralText("\n")), false);
+    public static int queryFlags(ServerCommandSource source, Claim claim) {
+        source.sendFeedback(new LiteralText("\n").append(new LiteralText("Flags: " + claim.name).formatted(Formatting.YELLOW)).append(new LiteralText("\n"))
+                .append(Messages.Command.getFlags(claim)).append(new LiteralText("\n")), false);
         return 1;
     }
-    public static int executeSetting(ServerCommandSource source, String input, @Nullable String claimName, boolean isQuery, boolean value, boolean admin) throws CommandSyntaxException {
+    public static int executeFlag(ServerCommandSource source, String input, @Nullable String claimName, boolean isQuery, boolean value, boolean admin) throws CommandSyntaxException {
         ServerPlayerEntity player = source.getPlayer();
         Claim claim1 = claimName == null || claimName.isEmpty() ? ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.dimension) :
                 ClaimManager.INSTANCE.claimsByName.get(claimName);
@@ -124,17 +124,17 @@ public class ClaimUtil {
         }
 
         if (input == null) {
-            return querySettings(source, claim1);
+            return queryFlags(source, claim1);
         }
 
         validateCanAccess(player, claim1, admin);
-        ClaimSettings.Setting setting = ClaimSettings.Setting.byId(input);
+        ClaimFlags.Flag flag = ClaimFlags.Flag.byId(input);
         Claim.Permission permission = Claim.Permission.byId(input);
 
-        if (setting != null && permission == null)
-            return isQuery ? querySetting(source, claim1, setting) : setSetting(source, claim1, setting, value);
+        if (flag != null && permission == null)
+            return isQuery ? queryFlag(source, claim1, flag) : setFlag(source, claim1, flag, value);
 
-        if (setting == null && permission != null)
+        if (flag == null && permission != null)
             return isQuery ? queryPermission(source, claim1, permission) : setPermission(source, claim1, permission, value);
 
         source.sendError(Messages.INVALID_SETTING);

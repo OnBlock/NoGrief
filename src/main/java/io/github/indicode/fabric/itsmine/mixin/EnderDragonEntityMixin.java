@@ -2,7 +2,7 @@ package io.github.indicode.fabric.itsmine.mixin;
 
 import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.ClaimManager;
-import io.github.indicode.fabric.itsmine.claim.ClaimSettings;
+import io.github.indicode.fabric.itsmine.claim.ClaimFlags;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -17,7 +17,7 @@ public class EnderDragonEntityMixin {
     private boolean dontTouchieMyBlocksStupidDragon(World world, BlockPos pos, boolean move) {
         Claim claim = ClaimManager.INSTANCE.getClaimAt(pos, world.dimension.getType());
 
-        if (claim != null && !claim.settings.getSetting(ClaimSettings.Setting.EXPLOSION_DESTRUCTION)) {
+        if (claim != null && !claim.flags.getFlag(ClaimFlags.Flag.EXPLOSION_DESTRUCTION)) {
             return false;
         }
 

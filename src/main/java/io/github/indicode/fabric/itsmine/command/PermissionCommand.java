@@ -35,7 +35,7 @@ public class PermissionCommand {
         RequiredArgumentBuilder<ServerCommandSource, String> permNode = getPermissions();
         RequiredArgumentBuilder<ServerCommandSource, Boolean> allow = argument("allow", BoolArgumentType.bool());
 
-        exception.executes((context) -> sendPage(context.getSource(), Messages.SETTINGS_AND_PERMISSIONS, 1, "Claim Permissions and Settings", "/claim help perms_and_settings %page%"));
+        exception.executes((context) -> sendPage(context.getSource(), Messages.SETTINGS_AND_PERMISSIONS, 1, "Claim Permissions and Flags", "/claim help perms_and_flags %page%"));
         claim.executes((context) -> {
             Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim"));
             if (claim1 == null) {

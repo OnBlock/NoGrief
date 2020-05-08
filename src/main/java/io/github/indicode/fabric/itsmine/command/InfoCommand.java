@@ -53,8 +53,8 @@ public class InfoCommand {
         text.append(newInfoLine("Size", new LiteralText(size.getX() + (claim.is2d() ? "x" : ("x" + size.getY() + "x")) + size.getZ()).formatted(Formatting.GREEN)));
 
 
-        text.append(new LiteralText("").append(new LiteralText("* Settings:").formatted(Formatting.YELLOW))
-                .append(Messages.Command.getSettings(claim)).append(new LiteralText("\n")));
+        text.append(new LiteralText("").append(new LiteralText("* Flags:").formatted(Formatting.YELLOW))
+                .append(Messages.Command.getFlags(claim)).append(new LiteralText("\n")));
         MutableText pos = new LiteralText("");
         Text min = newPosLine(claim.min, Formatting.AQUA, Formatting.DARK_AQUA);
         Text max = newPosLine(claim.max, Formatting.LIGHT_PURPLE, Formatting.DARK_PURPLE);

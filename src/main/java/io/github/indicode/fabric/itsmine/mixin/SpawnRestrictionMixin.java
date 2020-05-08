@@ -2,7 +2,7 @@ package io.github.indicode.fabric.itsmine.mixin;
 
 import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.ClaimManager;
-import io.github.indicode.fabric.itsmine.claim.ClaimSettings;
+import io.github.indicode.fabric.itsmine.claim.ClaimFlags;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnRestriction;
 import net.minecraft.entity.SpawnType;
@@ -24,7 +24,7 @@ public class SpawnRestrictionMixin {
 			return;
 		}
 		Claim claim = ClaimManager.INSTANCE.getClaimAt(pos, world.getDimension().getType());
-		if (claim != null && !claim.settings.getSetting(ClaimSettings.Setting.MOB_SPAWNING)) {
+		if (claim != null && !claim.flags.getFlag(ClaimFlags.Flag.MOB_SPAWNING)) {
 			cir.setReturnValue(false);
 		}
 	}

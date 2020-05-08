@@ -2,7 +2,7 @@ package io.github.indicode.fabric.itsmine.mixin;
 
 import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.ClaimManager;
-import io.github.indicode.fabric.itsmine.claim.ClaimSettings;
+import io.github.indicode.fabric.itsmine.claim.ClaimFlags;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.PistonBlock;
 import net.minecraft.block.piston.PistonHandler;
@@ -31,13 +31,13 @@ public class PistonBlockMixin {
         Claim newClaim = ClaimManager.INSTANCE.getClaimAt(newPos, world.getDimension().getType());
         if (oldClaim != newClaim) {
             if (oldClaim == null) {
-                if (!newClaim.settings.getSetting(ClaimSettings.Setting.PISTON_FROM_OUTSIDE)) ci.setReturnValue(false);
+                if (!newClaim.flags.getFlag(ClaimFlags.Flag.PISTON_FROM_OUTSIDE)) ci.setReturnValue(false);
             }
             else if (newClaim == null) {
-                if (!oldClaim.settings.getSetting(ClaimSettings.Setting.PISTON_FROM_INSIDE)) ci.setReturnValue(false);
+                if (!oldClaim.flags.getFlag(ClaimFlags.Flag.PISTON_FROM_INSIDE)) ci.setReturnValue(false);
             } else {
-                if (!oldClaim.settings.getSetting(ClaimSettings.Setting.PISTON_FROM_INSIDE) ||
-                        !newClaim.settings.getSetting(ClaimSettings.Setting.PISTON_FROM_OUTSIDE)) ci.setReturnValue(false);
+                if (!oldClaim.flags.getFlag(ClaimFlags.Flag.PISTON_FROM_INSIDE) ||
+                        !newClaim.flags.getFlag(ClaimFlags.Flag.PISTON_FROM_OUTSIDE)) ci.setReturnValue(false);
             }
         }
     }

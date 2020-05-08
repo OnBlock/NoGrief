@@ -10,19 +10,19 @@ import net.minecraft.server.command.ServerCommandSource;
 
 import static com.mojang.brigadier.arguments.StringArgumentType.getString;
 import static io.github.indicode.fabric.itsmine.command.HelpCommand.sendPage;
-import static io.github.indicode.fabric.itsmine.util.ArgumentUtil.getSettings;
-import static io.github.indicode.fabric.itsmine.util.ClaimUtil.executeSetting;
-import static io.github.indicode.fabric.itsmine.util.ClaimUtil.querySettings;
+import static io.github.indicode.fabric.itsmine.util.ArgumentUtil.getFlags;
+import static io.github.indicode.fabric.itsmine.util.ClaimUtil.executeFlag;
+import static io.github.indicode.fabric.itsmine.util.ClaimUtil.queryFlags;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public class FlagsCommand {
 
     public static void register(LiteralArgumentBuilder<ServerCommandSource> command, boolean admin, RequiredArgumentBuilder<ServerCommandSource, String> claim) {
-            LiteralArgumentBuilder<ServerCommandSource> settings = literal("flags");
+            LiteralArgumentBuilder<ServerCommandSource> flags = literal("flags");
 
             if (!admin) {
-                settings.executes((context) -> sendPage(context.getSource(), Messages.SETTINGS_AND_PERMISSIONS, 1, "Claim Permissions and Flags", "/claim help perms_and_settings %page%"));
+                flags.executes((context) -> sendPage(context.getSource(), Messages.SETTINGS_AND_PERMISSIONS, 1, "Claim Permissions and Flags", "/claim help perms_and_flags %page%"));
 
                 claim.executes((context) -> {
                     Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim"));
@@ -30,20 +30,20 @@ public class FlagsCommand {
                         context.getSource().sendError(Messages.INVALID_CLAIM);
                         return -1;
                     }
-                    return querySettings(context.getSource(), claim1);
+                    return queryFlags(context.getSource(), claim1);
                 });
             }
 
-            RequiredArgumentBuilder<ServerCommandSource, String> id = getSettings();
+            RequiredArgumentBuilder<ServerCommandSource, String> id = getFlags();
             RequiredArgumentBuilder<ServerCommandSource, Boolean> set = argument("set", BoolArgumentType.bool());
 
-            id.executes((context) -> executeSetting(context.getSource(), getString(context, "setting"), getString(context, "claim"), true, false, admin));
-            set.executes((context) -> executeSetting(context.getSource(), getString(context, "setting"), null, false, BoolArgumentType.getBool(context, "set"), admin));
+            id.executes((context) -> executeFlag(context.getSource(), getString(context, "flag"), getString(context, "claim"), true, false, admin));
+            set.executes((context) -> executeFlag(context.getSource(), getString(context, "flag"), null, false, BoolArgumentType.getBool(context, "set"), admin));
 
             id.then(set);
             claim.then(id);
-            settings.then(claim);
-            command.then(settings);
+            flags.then(claim);
+            command.then(flags);
         }
 
 
