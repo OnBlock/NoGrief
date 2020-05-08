@@ -1,6 +1,7 @@
 package io.github.indicode.fabric.itsmine.mixin;
 
 import io.github.indicode.fabric.itsmine.ClaimManager;
+import io.github.indicode.fabric.itsmine.ItsMine;
 import net.minecraft.class_5219;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;

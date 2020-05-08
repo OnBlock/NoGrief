@@ -14,6 +14,7 @@ minecraft {
 }
 repositories {
 	mavenLocal()
+	maven { url 'https://repo.spongepowered.org/maven'}
 	maven { url 'https://jitpack.io' }
 	maven { url 'http://server.bbkr.space:8081/artifactory/libs-release' }
 }
@@ -22,6 +23,8 @@ dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	modCompile "net.fabricmc:fabric-loader:${project.loader_version}"
+
+	compile "org.spongepowered:configurate-hocon:${project.configurate_version}"
 
 	//modImplementation "com.github.giantnuker:TinyConfig:${project.tiny_config_version}"
 	//modImplementation /*"io.github.indicode.fabric:thimble-permissions:0.0.9"//*/"com.github.giantnuker:Thimble-Permissions:${project.thimble_permissions_version}"

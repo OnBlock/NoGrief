@@ -3,10 +3,9 @@ package io.github.indicode.fabric.itsmine.command.admin;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.github.indicode.fabric.itsmine.ItsMine;
-import io.github.indicode.fabric.itsmine.command.ClaimsCommand;
 import io.github.indicode.fabric.itsmine.command.MessageCommand;
 import io.github.indicode.fabric.itsmine.command.PermissionCommand;
-import io.github.indicode.fabric.itsmine.command.SettingsCommand;
+import io.github.indicode.fabric.itsmine.command.FlagsCommand;
 import io.github.indicode.fabric.itsmine.command.subzone.SubzoneCommand;
 import net.minecraft.server.command.ServerCommandSource;
 
@@ -34,9 +33,10 @@ public class AdminCommand {
         MessageCommand.register(admin, true, getClaims());
         OwnerCommand.register(admin);
         PermissionCommand.register(admin, true, getClaims());
+        ReloadCommand.register(admin);
         RemoveCommand.register(admin);
         RenameCommand.register(admin);
-        SettingsCommand.register(admin, true, getClaims());
+        FlagsCommand.register(admin, true, getClaims());
         SubzoneCommand.register(admin, dispatcher, true);
     }
 

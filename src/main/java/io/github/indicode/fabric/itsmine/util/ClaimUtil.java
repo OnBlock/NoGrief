@@ -91,12 +91,12 @@ public class ClaimUtil {
 
     public static int querySetting(ServerCommandSource source, Claim claim, ClaimSettings.Setting setting) {
         boolean enabled = claim.settings.getSetting(setting);
-        source.sendFeedback(new LiteralText(ChatColor.translate("&eSetting &6" + setting.name + " &e is set to " + (enabled ? "&a" : "&c") + enabled + "&e for &6" + claim.name)), false);
+        source.sendFeedback(new LiteralText(ChatColor.translate("&eFlag &6" + setting.name + " &e is set to " + (enabled ? "&a" : "&c") + enabled + "&e for &6" + claim.name)), false);
         return 1;
     }
     public static int setSetting(ServerCommandSource source, Claim claim, ClaimSettings.Setting setting, boolean set) {
         claim.settings.settings.put(setting, set);
-        source.sendFeedback(new LiteralText(ChatColor.translate("&eSet setting &6" + setting.name + "&e to " + (set ? "&a" : "&c") + set + "&e for &6" + claim.name)), false);
+        source.sendFeedback(new LiteralText(ChatColor.translate("&eSet flag &6" + setting.name + "&e to " + (set ? "&a" : "&c") + set + "&e for &6" + claim.name)), false);
         return 0;
     }
     public static int queryPermission(ServerCommandSource source, Claim claim, Claim.Permission permission) {

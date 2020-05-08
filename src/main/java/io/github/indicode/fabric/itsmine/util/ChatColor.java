@@ -1,7 +1,8 @@
-package io.github.indicode.fabric.itsmine;
+package io.github.indicode.fabric.itsmine.util;
 
 import com.google.common.collect.Maps;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.apache.commons.lang3.Validate;
@@ -9,6 +10,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -239,6 +241,23 @@ public enum ChatColor {
             }
         }
         return new String(b);
+    }
+
+    public static Text translateStringToText(char altColorChar, String input) {
+        String[] strings = input.split("(?=((\\&([0-9]|[a-f])){1}(\\&(k|l|m|n|o|r)){0,5}))");
+        MutableText text = new LiteralText("");
+        for(String string : strings) {
+            char[] b = string.toCharArray();
+            for (int i = 0; i < b.length - 1; i++) {
+                ArrayList<Formatting> formattings = new ArrayList<>();
+                if(b[i] == altColorChar && "0123456789AaBbCcDdEeFfKkLlMmNnOoRr".indexOf(b[i+1]) > -1){
+                    ChatColor color = getByChar(b[i+1]);
+                    formattings.add(color.getFormattingByChar(b[i+1]));
+                    text.append(new LiteralText(removeAlternateColorCodes('&', string)).formatted(formattings.toArray(new Formatting[formattings.size()])));
+                }
+            }
+        }
+    return text;
     }
 
     public static String reverseTranslate(String textToTranslate, char altColorChar) {

@@ -252,7 +252,7 @@ public class Claim {
         shrink(new BlockPos(direction.getOffsetX() * distance, direction.getOffsetY() * distance, direction.getOffsetZ() * distance));
     }
     public int getArea() {
-        return getSize().getX() * (Config.claims2d ? 1 : getSize().getY()) * getSize().getZ();
+        return getSize().getX() * (ItsMineConfig.main().claims2d ? 1 : getSize().getY()) * getSize().getZ();
     }
 
 
@@ -738,8 +738,8 @@ public class Claim {
         }
     }
     public enum Event {
-        ENTER_CLAIM("enter", Config.msg_enter_default),
-        LEAVE_CLAIM("leave", Config.msg_leave_default);
+        ENTER_CLAIM("enter", ItsMineConfig.main().message().enterDefault),
+        LEAVE_CLAIM("leave", ItsMineConfig.main().message().leaveDefault);
 
         public String id;
         String defaultValue;

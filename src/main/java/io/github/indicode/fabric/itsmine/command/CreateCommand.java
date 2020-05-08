@@ -77,7 +77,7 @@ public class CreateCommand {
             x =  posA.getX();
             mx = posB.getX();
         }
-        if (!Config.claims2d) {
+        if (!ItsMineConfig.main().claims2d) {
             if (posA.getY() > posB.getY()) {
                 y = posB.getY();
                 my = posA.getY();
@@ -96,8 +96,8 @@ public class CreateCommand {
         BlockPos min = new BlockPos(x, y, z);
         BlockPos max = new BlockPos(mx, my, mz);
         BlockPos sub = max.subtract(min);
-        sub = sub.add(1, Config.claims2d ? 0 : 1,1);
-        int subInt = sub.getX() * (Config.claims2d ? 1 : sub.getY()) * sub.getZ();
+        sub = sub.add(1, ItsMineConfig.main().claims2d ? 0 : 1,1);
+        int subInt = sub.getX() * (ItsMineConfig.main().claims2d ? 1 : sub.getY()) * sub.getZ();
 
         Claim claim = new Claim(name, admin ? null : ownerID, min, max, owner.getWorld().getDimension().getType(), owner.getPlayer().getBlockPos(), false);
         if (cOwnerName != null) claim.customOwnerName = cOwnerName;

@@ -2,13 +2,14 @@ package io.github.indicode.fabric.itsmine;
 
 import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.claim.ClaimSettings;
+import io.github.indicode.fabric.itsmine.util.ChatColor;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 public class Messages {
-    public static final MutableText PREFIX = new LiteralText(ChatColor.translate(Config.prefix));
+    public static final MutableText PREFIX = new LiteralText(ChatColor.translate(ItsMineConfig.main().prefix));
 
     public static final Text INVALID_CLAIM = PREFIX.copy().append(new LiteralText("Can not find a claim with that name or a claim at your position").formatted(Formatting.RED));
 
@@ -16,7 +17,7 @@ public class Messages {
 
     public static final Text INVALID_PERMISSION = PREFIX.copy().append(new LiteralText("Invalid Claim Permission!"));
 
-    public static final Text NO_PERMISSION = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_no_perm)));
+    public static final Text NO_PERMISSION = PREFIX.copy().append(new LiteralText(ChatColor.translate(ItsMineConfig.main().message().noPermission)));
 
     public static final Text INVALID_MESSAGE_EVENT = PREFIX.copy().append(new LiteralText("Invalid Message Event!"));
 
@@ -24,25 +25,25 @@ public class Messages {
 
     public static final Text TOO_MANY_SELECTIONS = PREFIX.copy().append(new LiteralText("Only one selection is allowed!"));
 
-    public static final Text MSG_PLACE_BLOCK = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_place_block)).formatted(Formatting.RED));
+    public static final Text MSG_PLACE_BLOCK = PREFIX.copy().append(new LiteralText(ChatColor.translate(ItsMineConfig.main().message().placeBlock)));
 
-    public static final Text MSG_BREAK_BLOCK = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_break_block)).formatted(Formatting.RED));
+    public static final Text MSG_BREAK_BLOCK = PREFIX.copy().append(new LiteralText(ChatColor.translate(ItsMineConfig.main().message().breakBlock)).formatted(Formatting.RED));
 
-    public static final Text MSG_CANT_ENTER = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_cant_enter)).formatted(Formatting.RED));
+    public static final Text MSG_CANT_ENTER = PREFIX.copy().append(new LiteralText(ChatColor.translate(ItsMineConfig.main().message().cantEnter)).formatted(Formatting.RED));
 
-    public static final Text MSG_INTERACT_ENTITY = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_interact_entity)).formatted(Formatting.RED));
+    public static final Text MSG_INTERACT_ENTITY = PREFIX.copy().append(new LiteralText(ChatColor.translate(ItsMineConfig.main().message().interactEntity)).formatted(Formatting.RED));
 
-    public static final Text MSG_INTERACT_BLOCK = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_interact_block)).formatted(Formatting.RED));
+    public static final Text MSG_INTERACT_BLOCK = PREFIX.copy().append(new LiteralText(ChatColor.translate(ItsMineConfig.main().message().interactBlock)).formatted(Formatting.RED));
 
-    public static final Text MSG_OPEN_CONTAINER = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_open_container)).formatted(Formatting.RED));
+    public static final Text MSG_OPEN_CONTAINER = PREFIX.copy().append(new LiteralText(ChatColor.translate(ItsMineConfig.main().message().openContainer)).formatted(Formatting.RED));
 
-    public static final Text MSG_DAMAGE_ENTITY = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_attack_entity)).formatted(Formatting.RED));
+    public static final Text MSG_DAMAGE_ENTITY = PREFIX.copy().append(new LiteralText(ChatColor.translate(ItsMineConfig.main().message().attackEntity)).formatted(Formatting.RED));
 
-    public static final Text MSG_CANT_USE = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_cant_use)).formatted(Formatting.RED));
+    public static final Text MSG_CANT_USE = PREFIX.copy().append(new LiteralText(ChatColor.translate(ItsMineConfig.main().message().cantUse)).formatted(Formatting.RED));
 
-    public static final Text MSG_LONG_NAME = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_long_name)).formatted(Formatting.RED));
+    public static final Text MSG_LONG_NAME = PREFIX.copy().append(new LiteralText(ChatColor.translate(ItsMineConfig.main().message().longName)).formatted(Formatting.RED));
 
-    public static final Text MSG_CANT_DO = PREFIX.copy().append(new LiteralText(ChatColor.translate(Config.msg_cant_do)).formatted(Formatting.RED));
+    public static final Text MSG_CANT_DO = PREFIX.copy().append(new LiteralText(ChatColor.translate(ItsMineConfig.main().message().cantDo)).formatted(Formatting.RED));
 
     public static final Text[] GET_STARTED = new MutableText[]{
             header("How to Claim (Basics)")

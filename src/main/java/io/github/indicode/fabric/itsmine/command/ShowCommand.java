@@ -4,10 +4,11 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.ClaimManager;
 import io.github.indicode.fabric.itsmine.ClaimShower;
-import io.github.indicode.fabric.itsmine.Config;
+import io.github.indicode.fabric.itsmine.ItsMine;
+import io.github.indicode.fabric.itsmine.ItsMineConfig;
+import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.util.ArgumentUtil;
 import io.github.indicode.fabric.itsmine.util.ClaimUtil;
 import net.minecraft.server.command.ServerCommandSource;
@@ -53,7 +54,7 @@ public class ShowCommand {
 
     public static int executeShowClaim(ServerCommandSource source, Claim claim, boolean reset, String mode) throws CommandSyntaxException {
         ServerPlayerEntity player = source.getPlayer();
-        if (!reset && ((ClaimShower)player).getShownClaim() != null && !(!Config.claims2d &&((ClaimShower)player).getShownClaim() != claim)) executeShowClaim(source, ((ClaimShower)player).getShownClaim(), true, ((ClaimShower)player).getMode());
+        if (!reset && ((ClaimShower)player).getShownClaim() != null && !(!ItsMineConfig.main().claims2d &&((ClaimShower)player).getShownClaim() != claim)) executeShowClaim(source, ((ClaimShower)player).getShownClaim(), true, ((ClaimShower)player).getMode());
         if (reset && ((ClaimShower)player).getShownClaim() != null) claim = ((ClaimShower)player).getShownClaim();
         if (claim != null) {
             if (!claim.dimension.equals(source.getWorld().getDimension().getType())) {

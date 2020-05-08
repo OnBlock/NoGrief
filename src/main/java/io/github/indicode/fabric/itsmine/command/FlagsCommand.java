@@ -16,13 +16,13 @@ import static io.github.indicode.fabric.itsmine.util.ClaimUtil.querySettings;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
-public class SettingsCommand {
+public class FlagsCommand {
 
     public static void register(LiteralArgumentBuilder<ServerCommandSource> command, boolean admin, RequiredArgumentBuilder<ServerCommandSource, String> claim) {
-            LiteralArgumentBuilder<ServerCommandSource> settings = literal("settings");
+            LiteralArgumentBuilder<ServerCommandSource> settings = literal("flags");
 
             if (!admin) {
-                settings.executes((context) -> sendPage(context.getSource(), Messages.SETTINGS_AND_PERMISSIONS, 1, "Claim Permissions and Settings", "/claim help perms_and_settings %page%"));
+                settings.executes((context) -> sendPage(context.getSource(), Messages.SETTINGS_AND_PERMISSIONS, 1, "Claim Permissions and Flags", "/claim help perms_and_settings %page%"));
 
                 claim.executes((context) -> {
                     Claim claim1 = ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim"));

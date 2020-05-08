@@ -3,6 +3,7 @@ package io.github.indicode.fabric.itsmine.mixin;
 import io.github.indicode.fabric.itsmine.*;
 import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.util.BlockUtil;
+import io.github.indicode.fabric.itsmine.util.MessageUtil;
 import net.minecraft.block.*;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
@@ -25,6 +26,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 import java.util.UUID;
+
 
 /**
  * @author Indigo Amann
@@ -87,10 +89,10 @@ public abstract class ServerPlayerInteractionManagerMixin {
                 if (posPair != null) {
                     posPair = new Pair<>(posPair.getLeft(), pos);
                     ClaimManager.INSTANCE.stickPositions.put(player, posPair);
-                    player.sendSystemMessage(new LiteralText("Position #2 set: " + pos.getX() + (Config.claims2d ? "" : " " + pos.getY()) + " " + pos.getZ()).formatted(Formatting.GREEN));
+                    player.sendSystemMessage(new LiteralText("Position #2 set: " + pos.getX() + (ItsMineConfig.main().claims2d ? "" : " " + pos.getY()) + " " + pos.getZ()).formatted(Formatting.GREEN));
                     if (posPair.getLeft() != null) {
                         player.sendSystemMessage(new LiteralText("Area Selected. Type /claim create <name> to create your claim!").formatted(Formatting.GOLD));
-                        if (!Config.claims2d)
+                        if (!ItsMineConfig.main().claims2d)
                             player.sendSystemMessage(new LiteralText("Remember that claims are three dimensional. Don't forget to expand up/down or select a big enough area...").formatted(Formatting.LIGHT_PURPLE).formatted(Formatting.ITALIC));
                     }
                     return false;
@@ -101,6 +103,7 @@ public abstract class ServerPlayerInteractionManagerMixin {
         if (claim != null) {
             UUID uuid = player.getGameProfile().getId();
             if (!claim.hasPermission(uuid, Claim.Permission.BUILD)) {
+//                MessageUtil.sendText(ItsMineConfig.main().message().breakBlock);
                 player.sendSystemMessage(Messages.MSG_BREAK_BLOCK);
                 return false;
             }

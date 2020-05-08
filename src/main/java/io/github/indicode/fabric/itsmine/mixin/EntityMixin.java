@@ -3,6 +3,7 @@ package io.github.indicode.fabric.itsmine.mixin;
 import io.github.indicode.fabric.itsmine.*;
 import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.claim.ClaimSettings;
+import io.github.indicode.fabric.itsmine.util.ChatColor;
 import io.github.indicode.fabric.itsmine.util.ClaimUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -56,7 +57,7 @@ public abstract class EntityMixin {
                         message = getFormattedEventMessage(player, claim, true);
 
                     if (message != null)
-                        serverPlayerEntity.networkHandler.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.ACTIONBAR, new LiteralText(ChatColor.translate(message)), -1, Config.event_msg_stay_ticks, -1));
+                        serverPlayerEntity.networkHandler.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.ACTIONBAR, new LiteralText(ChatColor.translate(message)), -1, ItsMineConfig.main().message().eventStayTicks, -1));
 
                     if (claim != null && claim.settings.getSetting(ClaimSettings.Setting.ENTER_SOUND)) {
                         serverPlayerEntity.networkHandler.sendPacket(new PlaySoundIdS2CPacket(Registry.SOUND_EVENT.getId(SoundEvents.BLOCK_CONDUIT_ACTIVATE), SoundCategory.MASTER, this.getPos(), 2, 1.2F));
@@ -71,7 +72,7 @@ public abstract class EntityMixin {
             return "";
 
         String str = enter ? claim.enterMessage : claim.leaveMessage;
-        return ChatColor.translate(str == null ? (enter ? Config.msg_enter_default : Config.msg_leave_default) : str).replace("%claim%", claim.name)
+        return ChatColor.translate(str == null ? (enter ? ItsMineConfig.main().message().enterDefault : ItsMineConfig.main().message().leaveDefault) : str).replace("%claim%", claim.name)
                 .replace("%player%", player.getName().asString());
     }
 

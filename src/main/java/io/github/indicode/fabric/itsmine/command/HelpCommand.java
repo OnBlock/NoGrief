@@ -3,7 +3,7 @@ package io.github.indicode.fabric.itsmine.command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import io.github.indicode.fabric.itsmine.ChatColor;
+import io.github.indicode.fabric.itsmine.util.ChatColor;
 import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.Messages;
 import net.minecraft.server.command.ServerCommandSource;

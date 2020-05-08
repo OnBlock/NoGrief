@@ -6,9 +6,10 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.ClaimManager;
-import io.github.indicode.fabric.itsmine.Config;
+import io.github.indicode.fabric.itsmine.ItsMine;
+import io.github.indicode.fabric.itsmine.ItsMineConfig;
+import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.claim.ClaimSettings;
 import net.minecraft.server.command.CommandSource;
 import net.minecraft.server.command.ServerCommandSource;
@@ -114,7 +115,7 @@ public class ArgumentUtil {
     private static final SuggestionProvider<ServerCommandSource> DIRECTION_PROVIDER = (source, builder) -> {
         List<String> strings = new ArrayList<>();
         for (Direction direction: Direction.values()) {
-            if (Config.claims2d && (direction == Direction.DOWN || direction == Direction.UP)) continue;
+            if (ItsMineConfig.main().claims2d && (direction == Direction.DOWN || direction == Direction.UP)) continue;
             strings.add(direction.getName());
         };
         return CommandSource.suggestMatching(strings, builder);
@@ -148,6 +149,9 @@ public class ArgumentUtil {
     public static final SuggestionProvider<ServerCommandSource> SETTINGS_PROVIDER = (source, builder) -> {
         List<String> strings = new ArrayList<>();
         for (ClaimSettings.Setting value : ClaimSettings.Setting.values()) {
+            strings.add(value.id);
+        }
+        for (Claim.Permission value : Claim.Permission.values()) {
             strings.add(value.id);
         }
         return CommandSource.suggestMatching(strings, builder);

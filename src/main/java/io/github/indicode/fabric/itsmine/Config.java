@@ -1,10 +1,13 @@
+/*
 package io.github.indicode.fabric.itsmine;
 
 import io.github.indicode.fabric.tinyconfig.ModConfig;
 
+*/
 /**
  * @author Indigo Amann
- */
+ *//*
+
 public class Config {
     public static int baseClaimBlocks3d = 15625;
     public static int baseClaimBlocks2d = 2500;
@@ -55,3 +58,4 @@ public class Config {
     }
 
 }
+*/

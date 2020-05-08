@@ -1,9 +1,10 @@
 package io.github.indicode.fabric.itsmine.mixin;
 
 import blue.endless.jankson.annotation.Nullable;
+import io.github.indicode.fabric.itsmine.ItsMine;
+import io.github.indicode.fabric.itsmine.ItsMineConfig;
 import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.ClaimManager;
-import io.github.indicode.fabric.itsmine.Config;
 import io.github.indicode.fabric.itsmine.util.ClaimUtil;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket;
@@ -33,10 +34,10 @@ public abstract class AnimalEntityMixin {
             if(claim.isChild){
                 claim = ClaimUtil.getParentClaim(claim);
             }
-            if(claim.getEntities(other.getEntityWorld().getServer().getWorld(other.getEntityWorld().getDimension().getType())) > Config.claim_max_entities_passive){
+            if(claim.getEntities(other.getEntityWorld().getServer().getWorld(other.getEntityWorld().getDimension().getType())) > 100){
                 ServerPlayerEntity player = this.getLovingPlayer();
                 if(player != null){
-                    player.networkHandler.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.ACTIONBAR, new LiteralText("You reached the passive entity limit in your claim!").formatted(Formatting.RED), -1, Config.event_msg_stay_ticks, -1));
+                    player.networkHandler.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.ACTIONBAR, new LiteralText("You reached the passive entity limit in your claim!").formatted(Formatting.RED), -1, ItsMineConfig.main().message().eventStayTicks, -1));
                 }
                 this.resetLoveTicks();
                 cir.setReturnValue(false);

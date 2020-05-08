@@ -24,7 +24,7 @@ public class ClaimManager {
     public List<UUID> flyers = new ArrayList<>();
     public MinecraftServer server;
     public int getClaimBlocks(UUID id) {
-        return blocksLeft.getOrDefault(id, Config.claims2d ? Config.baseClaimBlocks2d : Config.baseClaimBlocks3d);
+        return blocksLeft.getOrDefault(id, ItsMineConfig.main().claims2d ? ItsMineConfig.main().claimBlock().default2D : ItsMineConfig.main().claimBlock().default3D);
     }
     public boolean useClaimBlocks(UUID player, int amount) {
         int blocks = getClaimBlocks(player) - amount;

@@ -5,10 +5,11 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.ClaimManager;
-import io.github.indicode.fabric.itsmine.Config;
+import io.github.indicode.fabric.itsmine.ItsMine;
+import io.github.indicode.fabric.itsmine.ItsMineConfig;
 import io.github.indicode.fabric.itsmine.Messages;
+import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.util.ArgumentUtil;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -105,7 +106,7 @@ public class CreateCommand {
             x =  posA.getX();
             mx = posB.getX();
         }
-        if (!Config.claims2d) {
+        if (!ItsMineConfig.main().claims2d) {
             if (posA.getY() > posB.getY()) {
                 y = posB.getY();
                 my = posA.getY();
@@ -124,7 +125,7 @@ public class CreateCommand {
         BlockPos min = new BlockPos(x, y, z);
         BlockPos max = new BlockPos(mx, my, mz);
         BlockPos sub = max.subtract(min);
-        sub = sub.add(1, Config.claims2d ? 0 : 1,1);
+        sub = sub.add(1, ItsMineConfig.main().claims2d ? 0 : 1,1);
         return new Claim(name, admin ? null : ownerID, min, max, source.getWorld().getDimension().getType(), source.getPlayer().getBlockPos(), true);
     }
 

@@ -61,6 +61,10 @@ public abstract class ServerWorldMixin implements MonitorableWorld {
                 }
             }
         });
+        this.getPlayers().forEach(playerEntity -> {
+            ((ClaimPlayerEntity) playerEntity).tickMessageCooldown();
+        });
+
     }
 
 

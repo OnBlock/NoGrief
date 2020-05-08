@@ -23,12 +23,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * @author Indigo Amann
  */
 @Mixin(PlayerEntity.class)
-public abstract class PlayerEntityMixin extends LivingEntity implements ClaimShower {
-    @Shadow @Final public PlayerScreenHandler playerScreenHandler;
+public abstract class PlayerEntityMixin extends LivingEntity implements ClaimShower, ClaimPlayerEntity {
 
     protected PlayerEntityMixin(EntityType<? extends LivingEntity> entityType_1, World world_1) {
         super(entityType_1, world_1);
     }
+    private int messageCooldown = 0;
     private Claim shownClaim = null;
     private BlockPos lastShowPos = null;
     private String showmode = null;
@@ -56,11 +56,38 @@ public abstract class PlayerEntityMixin extends LivingEntity implements ClaimSho
             ci.cancel();
         }
     }
+
+    @Override
+    public void setMessageCooldown(){
+        messageCooldown = ItsMineConfig.main().message().messageCooldown;
+    }
+
+    @Override
+    public void setMessageCooldown(int cooldown){
+        messageCooldown = cooldown;
+    }
+
+    @Override
+    public void tickMessageCooldown(){
+        if(messageCooldown > 0){
+            messageCooldown--;
+        }
+    }
+
+    @Override
+    public int getMessageCooldown(){
+        return messageCooldown;
+    }
+
+    @Override
+    public boolean shouldMessage(){
+        return messageCooldown == 0;
+    }
+
     @Override
     public void setLastShowPos(BlockPos pos) {
         lastShowPos = pos;
     }
-
     @Override
     public void setShownClaim(Claim claim) {
         shownClaim = claim;

@@ -2,6 +2,7 @@ package io.github.indicode.fabric.itsmine.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import io.github.indicode.fabric.itsmine.ItsMineConfig;
 import io.github.indicode.fabric.itsmine.command.admin.AdminCommand;
 import io.github.indicode.fabric.itsmine.command.subzone.SubzoneCommand;
 import net.minecraft.server.command.ServerCommandSource;
@@ -29,6 +30,7 @@ public class CommandManager {
         BlockCommand.register(command);
         CreateCommand.register(command);
         ClaimsCommand.register(command, dispatcher);
+        DebugCommand.register(command);
         ExpandCommand.register(command, false);
         FlyCommand.register(command);
         HelpCommand.register(command);
@@ -41,7 +43,7 @@ public class CommandManager {
         RentableCommand.register(command, getClaims());
         RentCommand.register(command, getClaims());
         RevenueCommand.register(command, getClaims());
-        SettingsCommand.register(command, false, getClaims());
+        FlagsCommand.register(command, false, getClaims());
         ShowCommand.register(command);
         StickCommand.register(command);
         SubzoneCommand.register(command, dispatcher, false);

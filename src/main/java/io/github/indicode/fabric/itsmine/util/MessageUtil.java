@@ -1,6 +1,10 @@
 package io.github.indicode.fabric.itsmine.util;
 
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import io.github.indicode.fabric.itsmine.ClaimPlayerEntity;
+import io.github.indicode.fabric.itsmine.ItsMineConfig;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
@@ -9,7 +13,7 @@ import java.util.ArrayList;
 
 public class MessageUtil {
 
-    public static void sendPage(ServerCommandSource source, Text header, int entries, int page, String command, ArrayList<Text> content){
+    public static void sendPage(ServerCommandSource source, Text header, int entries, int page, String command, ArrayList<Text> content) {
 
         for (int i=0; i < content.size(); i += entries) {
             System.out.println(content.subList(i, Math.min(content.size(), i + entries)));
@@ -57,10 +61,18 @@ public class MessageUtil {
         sendText(source, message);
     }
 
-    public static void sendText(ServerCommandSource source, LiteralText text){
-        source.sendFeedback(text, false);
+    public static void sendText(ServerCommandSource source, LiteralText text) {
+//        if(((ClaimPlayerEntity) source.getPlayer()).shouldMessage()){
+            source.sendFeedback(text, false);
+//            ((ClaimPlayerEntity) source.getPlayer()).setMessageCooldown();
+//        }
     }
 
-
+//    public static void sendText(PlayerEntity player, LiteralText text) throws CommandSyntaxException {
+//        if(((ClaimPlayerEntity) player).shouldMessage()){
+//            player.sendSystemMessage(new LiteralText(ItsMineConfig.main().prefix).append(text));
+//            ((ClaimPlayerEntity) player).setMessageCooldown();
+//        }
+//    }
 
 }
