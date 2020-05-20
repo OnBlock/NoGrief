@@ -9,8 +9,8 @@ import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.util.ArgumentUtil;
 import io.github.indicode.fabric.itsmine.util.PermissionUtil;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityCategory;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.SpawnGroup;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.LiteralText;
@@ -44,15 +44,15 @@ public class EntitiesCommand {
 
         ArrayList<Entity> entityList = getEntities(claim);
         MutableText message = header("Entities (" + claim.name +") - " + entityList.size()).append(new LiteralText("\n\n"));
-        for(EntityCategory entityCategory : EntityCategory.values()){
+        for(SpawnGroup spawnGroup : SpawnGroup.values()){
             MutableText entities = new LiteralText("");
-            Map<EntityType, Integer> entityMap = sortByType(filterByCategory(entityList, entityCategory));
+            Map<EntityType, Integer> entityMap = sortByType(filterByCategory(entityList, spawnGroup));
             entityMap.forEach((entityType, integer) -> {
                 entities.append(entityType.getName().getString() + ": ").formatted(Formatting.YELLOW).append(new LiteralText(String.valueOf(integer))).formatted(Formatting.GOLD).append("\n");
 
             });
             if(entityMap.size() > 0){
-                message.append(new LiteralText(entityCategory.getName()).styled(style -> {
+                message.append(new LiteralText(spawnGroup.getName()).styled(style -> {
                     return style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, entities)).withFormatting(Formatting.GOLD);
                 }).append(" "));
             }

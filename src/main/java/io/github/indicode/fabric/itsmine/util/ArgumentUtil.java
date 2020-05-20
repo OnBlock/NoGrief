@@ -75,7 +75,7 @@ public class ArgumentUtil {
     private static CompletableFuture<Suggestions> claimSubzoneProvider(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder) throws CommandSyntaxException {
         ServerPlayerEntity player = context.getSource().getPlayer();
         List<String> names = new ArrayList<>();
-        Claim current = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.dimension);
+        Claim current = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.world.getDimension());
         if (current != null) names.add(current.name);
         for (Claim claim : ClaimManager.INSTANCE.getPlayerClaims(player.getGameProfile().getId())) {
             if (claim != null) {

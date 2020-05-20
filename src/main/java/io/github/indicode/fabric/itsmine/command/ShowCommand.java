@@ -26,7 +26,7 @@ public class ShowCommand {
         {
             RequiredArgumentBuilder<ServerCommandSource, String> mode = getShowMode();
             LiteralArgumentBuilder<ServerCommandSource> show = literal("show");
-            show.executes(context -> executeShowClaim(context.getSource(), ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().dimension.getType()), false));
+            show.executes(context -> executeShowClaim(context.getSource(), ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()), false));
             RequiredArgumentBuilder<ServerCommandSource, String> claim = ArgumentUtil.getClaims();
             claim.executes(context -> executeShowClaim(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim")), false));
             mode.executes(context -> executeShowClaim(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim")), false, StringArgumentType.getString(context, "mode")));

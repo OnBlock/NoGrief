@@ -30,7 +30,7 @@ public class CommandManager {
         BlockCommand.register(command);
         CreateCommand.register(command);
         ClaimsCommand.register(command, dispatcher);
-        DebugCommand.register(command);
+//        DebugCommand.register(command);
         ExpandCommand.register(command, false);
         FlyCommand.register(command);
         HelpCommand.register(command);

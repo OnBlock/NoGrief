@@ -58,6 +58,10 @@ public class PermissionUtil {
         }
     }
 
+    public static void reload(){
+        new PermissionUtil();
+    }
+
     public boolean hasPermission(ServerCommandSource src, Command permission, int opLevel) {
         if (present) {
             if (manager == Manager.LUCKPERMS) {

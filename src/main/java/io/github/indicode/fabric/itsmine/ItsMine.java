@@ -3,6 +3,8 @@ package io.github.indicode.fabric.itsmine;
 import io.github.indicode.fabric.itsmine.config.Config;
 import io.github.indicode.fabric.itsmine.util.PermissionUtil;
 import net.fabricmc.api.ModInitializer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Logger;
 
 import java.nio.file.Path;
 
@@ -11,6 +13,9 @@ import java.nio.file.Path;
  */
 public class ItsMine implements ModInitializer {
     private static PermissionUtil permissionUtil;
+    public static int time = 0;
+    public static int executed = 0;
+
 
     @Override
     public void onInitialize() {
@@ -20,6 +25,11 @@ public class ItsMine implements ModInitializer {
 
         //TODO: Enable when developing
         //SharedConstants.isDevelopment = true;
+    }
+
+    public static void reload(){
+        ItsMineConfig.reload();
+//        PermissionUtil.reload();
     }
 
     public static PermissionUtil permissions() {

@@ -32,40 +32,42 @@ public abstract class EntityMixin {
     @Shadow public abstract void tick();
 
     @Shadow public boolean removed;
-    private Claim pclaim = null;
-    @Inject(method = "setPos", at = @At("HEAD"))
-    public void doPrePosActions(double x, double y, double z, CallbackInfo ci) {
-        if (!world.isClient && (Object)this instanceof PlayerEntity) {
-            PlayerEntity player = (PlayerEntity) (Object) this;
-            if (player.getBlockPos() == null) return;
-            pclaim = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.world.dimension.getType());
-        }
-    }
-    @Inject(method = "setPos", at = @At("RETURN"))
-    public void doPostPosActions(double x, double y, double z, CallbackInfo ci) {
-        if (!world.isClient && (Object)this instanceof PlayerEntity) {
-            PlayerEntity player = (PlayerEntity) (Object) this;
-            if (player.getBlockPos() == null) return;
-            Claim claim = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.world.dimension.getType());
-            if (pclaim != claim && player instanceof ServerPlayerEntity) {
-                ServerPlayerEntity serverPlayerEntity = (ServerPlayerEntity)player;
-                if (serverPlayerEntity.networkHandler != null) {
-                    String message = null;
-                    if (pclaim != null && claim == null)
-                        message = getFormattedEventMessage(player, pclaim, false);
-                    else if (claim != null)
-                        message = getFormattedEventMessage(player, claim, true);
 
-                    if (message != null)
-                        serverPlayerEntity.networkHandler.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.ACTIONBAR, new LiteralText(ChatColor.translate(message)), -1, ItsMineConfig.main().message().eventStayTicks, -1));
+//    private Claim pclaim = null;
+//    @Inject(method = "setPos", at = @At("HEAD"))
+//    public void doPrePosActions(double x, double y, double z, CallbackInfo ci) {
+//        if (!world.isClient && (Object)this instanceof PlayerEntity) {
+//            PlayerEntity player = (PlayerEntity) (Object) this;
+//            if (player.getBlockPos() == null) return;
+//            pclaim = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.world.getDimension().getType());
+//        }
+//    }
+//    @Inject(method = "setPos", at = @At("RETURN"))
+//    public void doPostPosActions(double x, double y, double z, CallbackInfo ci) {
+//        if (!world.isClient && (Object)this instanceof PlayerEntity) {
+//            PlayerEntity player = (PlayerEntity) (Object) this;
+//            if (player.getBlockPos() == null) return;
+//            Claim claim = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.world.getDimension().getType());
+//            if (pclaim != claim && player instanceof ServerPlayerEntity) {
+//                ServerPlayerEntity serverPlayerEntity = (ServerPlayerEntity)player;
+//                if (serverPlayerEntity.networkHandler != null) {
+//                    String message = null;
+//                    if (pclaim != null && claim == null)
+//                        message = getFormattedEventMessage(player, pclaim, false);
+//                    else if (claim != null)
+//                        message = getFormattedEventMessage(player, claim, true);
+//
+//                    if (message != null)
+//                        serverPlayerEntity.networkHandler.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.ACTIONBAR, new LiteralText(ChatColor.translate(message)), -1, ItsMineConfig.main().message().eventStayTicks, -1));
+//
+//                    if (claim != null && claim.flags.getFlag(ClaimFlags.Flag.ENTER_SOUND)) {
+//                        serverPlayerEntity.networkHandler.sendPacket(new PlaySoundIdS2CPacket(Registry.SOUND_EVENT.getId(SoundEvents.BLOCK_CONDUIT_ACTIVATE), SoundCategory.MASTER, this.getPos(), 2, 1.2F));
+//                    }
+//                }
+//            }
+//        }
+//    }
 
-                    if (claim != null && claim.flags.getFlag(ClaimFlags.Flag.ENTER_SOUND)) {
-                        serverPlayerEntity.networkHandler.sendPacket(new PlaySoundIdS2CPacket(Registry.SOUND_EVENT.getId(SoundEvents.BLOCK_CONDUIT_ACTIVATE), SoundCategory.MASTER, this.getPos(), 2, 1.2F));
-                    }
-                }
-            }
-        }
-    }
 
     private String getFormattedEventMessage(PlayerEntity player, Claim claim, boolean enter) {
         if (player == null || claim == null)
@@ -86,7 +88,7 @@ public abstract class EntityMixin {
             }
 
             boolean old = player.abilities.allowFlying;
-            Claim claim = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.world.dimension.getType());
+            Claim claim = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.world.getDimension().getType());
 
             if (player instanceof ServerPlayerEntity) {
                 if (

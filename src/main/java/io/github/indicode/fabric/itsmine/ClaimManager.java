@@ -115,7 +115,7 @@ public class ClaimManager {
         return tag;
     }
 
-    public Claim getMainClaimAt(BlockPos pos, DimensionType dimension){
+/*    public Claim getMainClaimAt(BlockPos pos, DimensionType dimension){
         for (Claim claim : claimsByName.values()) {
             if(claim.dimension.equals(dimension) && claim.includesPosition(pos)){
                 return claim.getZoneCovering(pos);
@@ -137,22 +137,27 @@ public class ClaimManager {
         }
         return null;
     }
+    */
 
     @Nullable
     public Claim getClaimAt(BlockPos pos, DimensionType dimension) {
         for (Claim claim : claimsByName.values()) {
-            if (claim.dimension.equals(dimension) && claim.includesPosition(pos)) {
-                for(Claim subzone : claim.children){
-                    if(subzone.dimension.equals(dimension) && subzone.includesPosition(pos)){
-                        return subzone.getZoneCovering(pos);
+            if (claim.dimension.equals(dimension)) {
+                if(claim.includesPosition(pos)) {
+                    for(Claim subzone : claim.children) {
+                        if(subzone.dimension.equals(dimension)) {
+                            if(subzone.includesPosition(pos)){
+                                return subzone;
+                            }
+                        }
                     }
+                    return claim;
                 }
-                return claim.getZoneCovering(pos);
             }
         }
-
         return null;
     }
+
     public void fromNBT(CompoundTag tag) {
         ListTag list = (ListTag) tag.get("claims");
         claimsByName.clear();

@@ -4,8 +4,8 @@ import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.Functions;
 import io.github.indicode.fabric.itsmine.MonitorableWorld;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityCategory;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.SpawnGroup;
 import net.minecraft.server.world.ServerWorld;
 
 import java.util.ArrayList;
@@ -24,7 +24,7 @@ public class EntityUtil {
     }
 
     public static boolean isPassive(Entity entity) {
-        return entity.getType().getCategory().isPeaceful();
+        return entity.getType().getSpawnGroup().isPeaceful();
     }
 
     public static boolean isHostile(Entity entity) {
@@ -41,9 +41,9 @@ public class EntityUtil {
         return entityList;
     }
 
-    public static ArrayList<Entity> filterByCategory(ArrayList<Entity> entityList, EntityCategory entityCategory){
+    public static ArrayList<Entity> filterByCategory(ArrayList<Entity> entityList, SpawnGroup spawnGroup){
         ArrayList<Entity> filteredEntityList = new ArrayList<>();
-        for(Entity entity : entityList) if(entity.getType().getCategory() == entityCategory) filteredEntityList.add(entity);
+        for(Entity entity : entityList) if(entity.getType().getSpawnGroup() == spawnGroup) filteredEntityList.add(entity);
         return filteredEntityList;
     }
 

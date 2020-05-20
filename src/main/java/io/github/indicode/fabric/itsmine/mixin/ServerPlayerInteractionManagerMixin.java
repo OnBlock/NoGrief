@@ -23,7 +23,9 @@ import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.UUID;
 
@@ -37,9 +39,20 @@ public abstract class ServerPlayerInteractionManagerMixin {
 
     @Shadow public ServerWorld world;
 
+    public BlockPos blockPos;
+
+    @Shadow private boolean mining;
+
+    @Inject(method = "interactBlock", at = @At(value = "HEAD"))
+    private void getBlock(ServerPlayerEntity serverPlayerEntity, World world, ItemStack stack, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir){
+        blockPos = hitResult.getBlockPos();
+    }
+
     @Redirect(method = "interactBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;onUse(Lnet/minecraft/world/World;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/Hand;Lnet/minecraft/util/hit/BlockHitResult;)Lnet/minecraft/util/ActionResult;"))
-    private ActionResult interactIfPossible(BlockState blockState, World world, PlayerEntity player, Hand hand, BlockHitResult hit, PlayerEntity player1, World world1, ItemStack itemStack, Hand hand1, BlockHitResult hitResult1) {
+//    private ActionResult interactIfPossible(BlockState blockState, World world, PlayerEntity player, Hand hand, BlockHitResult hit, PlayerEntity player1, World world1, ItemStack itemStack, Hand hand1, BlockHitResult hitResult1) {
+        private ActionResult interactIfPossible(BlockState blockState, World world, PlayerEntity player, Hand hand, BlockHitResult hit){
         BlockPos pos = hit.getBlockPos();
+        ItemStack itemStack = player.getMainHandStack();
         Claim claim = ClaimManager.INSTANCE.getClaimAt(pos, player.world.getDimension().getType());
         if (claim != null) {
             if (!Functions.canInteractWith(claim, blockState.getBlock(), player.getUuid())) {
@@ -63,14 +76,14 @@ public abstract class ServerPlayerInteractionManagerMixin {
     }
 
     @Redirect(method = "interactBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;isEmpty()Z", ordinal = 2))
-    private boolean interactWithItemIfPossible(ItemStack stack, PlayerEntity player, World world, ItemStack itemStack, Hand hand, BlockHitResult hitResult) {
-        BlockPos pos = hitResult.getBlockPos().offset(hitResult.getSide());
-        Claim claim = ClaimManager.INSTANCE.getClaimAt(pos, world.getDimension().getType());
+    private boolean interactWithItemIfPossible(ItemStack stack) {
+//        BlockPos pos = hitResult.getBlockPos().offset(hitResult.getSide());
+//        System.out.println(blockPos.getX() + " " + blockPos.getY() + " " + blockPos.getZ());
+        Claim claim = ClaimManager.INSTANCE.getClaimAt(blockPos, world.getDimension().getType());
         if (claim != null && !stack.isEmpty()) {
             if (Functions.canInteractUsingItem(claim, stack.getItem(), player.getUuid())) {
                 return false;
             }
-
             if (stack.getItem() instanceof BlockItem) {
                 player.sendSystemMessage(Messages.MSG_PLACE_BLOCK);
             }

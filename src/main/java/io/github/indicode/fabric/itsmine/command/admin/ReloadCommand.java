@@ -25,7 +25,7 @@ public class ReloadCommand {
     public static int execute(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         StopWatch watch = new StopWatch();
         watch.start();
-        ItsMineConfig.reload();
+        ItsMine.reload();
         watch.stop();
         String timeElapsed = new DecimalFormat("##.##").format(watch.getTime(TimeUnit.MICROSECONDS));
         context.getSource().getPlayer().sendSystemMessage(new LiteralText("Reloaded! Took " + timeElapsed + "μs").formatted(Formatting.YELLOW));

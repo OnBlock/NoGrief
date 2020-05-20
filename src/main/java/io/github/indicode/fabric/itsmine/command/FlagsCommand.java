@@ -38,7 +38,7 @@ public class FlagsCommand {
             RequiredArgumentBuilder<ServerCommandSource, Boolean> set = argument("set", BoolArgumentType.bool());
 
             id.executes((context) -> executeFlag(context.getSource(), getString(context, "flag"), getString(context, "claim"), true, false, admin));
-            set.executes((context) -> executeFlag(context.getSource(), getString(context, "flag"), null, false, BoolArgumentType.getBool(context, "set"), admin));
+            set.executes((context) -> executeFlag(context.getSource(), getString(context, "flag"), getString(context, "claim"), false, BoolArgumentType.getBool(context, "set"), admin));
 
             id.then(set);
             claim.then(id);

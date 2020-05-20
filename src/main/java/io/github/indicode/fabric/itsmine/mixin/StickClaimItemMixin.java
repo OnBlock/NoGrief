@@ -18,6 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Item.class)
 public class StickClaimItemMixin {
     @Inject(method = "useOnBlock", at = @At("HEAD"), cancellable = true)
+//    private void setStickPositionFirst(ItemUsageContext context, CallbackInfoReturnable<ActionResult> cir) {
     private void setStickPositionFirst(ItemUsageContext context, CallbackInfoReturnable<ActionResult> cir) {
         if (context.getWorld().isClient) return;
         if (!context.getPlayer().isSneaking()) {

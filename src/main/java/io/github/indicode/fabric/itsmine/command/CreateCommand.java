@@ -99,7 +99,7 @@ public class CreateCommand {
         sub = sub.add(1, ItsMineConfig.main().claims2d ? 0 : 1,1);
         int subInt = sub.getX() * (ItsMineConfig.main().claims2d ? 1 : sub.getY()) * sub.getZ();
 
-        Claim claim = new Claim(name, admin ? null : ownerID, min, max, owner.getWorld().getDimension().getType(), owner.getPlayer().getBlockPos(), false);
+        Claim claim = new Claim(name, admin ? null : ownerID, min, max, owner.getWorld().getDimension(), owner.getPlayer().getBlockPos(), false);
         if (cOwnerName != null) claim.customOwnerName = cOwnerName;
         claim.permissionManager.playerPermissions.put(ownerID, new Claim.InvertedPermissionMap());
         if (!ClaimManager.INSTANCE.claimsByName.containsKey(name)) {
@@ -116,7 +116,7 @@ public class CreateCommand {
                     BlockCommand.blocksLeft(owner);
                     executeShowClaim(owner, claim, false);
                     if (admin)
-                        owner.getMinecraftServer().sendSystemMessage(new LiteralText(owner.getPlayer().getGameProfile().getName() + " Has created a new claim(" + claim.name + ") using the admin command."));
+                        owner.getMinecraftServer().sendSystemMessage(new LiteralText(owner.getPlayer().getGameProfile().getName() + " Has created a new claim(" + claim.name + ") using the admin command."), owner.getPlayer().getUuid());
                     return 1;
                 } else {
                     owner.sendFeedback(new LiteralText("You don't have enough claim blocks. You have " + ClaimManager.INSTANCE.getClaimBlocks(ownerID) + ", you need " + subInt + "(" + (subInt - ClaimManager.INSTANCE.getClaimBlocks(ownerID)) + " more)").formatted(Formatting.RED), false);

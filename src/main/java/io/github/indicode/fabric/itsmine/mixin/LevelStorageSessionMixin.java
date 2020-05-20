@@ -62,7 +62,7 @@ public class LevelStorageSessionMixin {
                     claimDataFile.renameTo(old);
                     claimDataFile.delete();
                 } else {
-                    System.out.println("Backup failed!" + claimDataFile.getName() + " may be broken, keeping " + old.getName());
+                    System.out.println("Aborting backup!" + claimDataFile.getName() + " may be broken, keeping " + old.getName());
                 }
             }
             try {

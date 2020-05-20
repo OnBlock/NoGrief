@@ -34,8 +34,8 @@ public class Claim {
     public String customOwnerName, enterMessage, leaveMessage;
     public boolean isChild = false;
     public Claim() {
-
     }
+
     public Claim(CompoundTag tag) {
         fromTag(tag);
     }
@@ -96,34 +96,6 @@ public class Claim {
         return entities.get();
     }
 
-    public Map<EntityType, Integer> getEntitySorted(Map<UUID, Entity> entityMap){
-        AtomicReference<Map<EntityType, Integer>> entityTypeMap = new AtomicReference<>(new HashMap<>());
-        entityMap.forEach((uuid, entity) -> {
-            if(entityTypeMap.get().containsKey(entity.getType())){
-                Map<EntityType, Integer> entityTypeIntegerMap = entityTypeMap.get();
-                entityTypeIntegerMap.put(entity.getType(), entityTypeIntegerMap.get(entity.getType())+1);
-                entityTypeMap.set(entityTypeIntegerMap);
-            } else {
-                Map<EntityType, Integer> entityTypeIntegerMap = entityTypeMap.get();
-                entityTypeIntegerMap.put(entity.getType(), 1);
-                entityTypeMap.set(entityTypeIntegerMap);
-            }
-        });
-        return Functions.sortByValue(entityTypeMap.get());
-    }
-
-    public Map<UUID, Entity> getEntityMap(Claim claim, ServerWorld world){
-        AtomicReference<Map<UUID, Entity>> entityMap = new AtomicReference<>(new HashMap<>());
-        MonitorableWorld monitorableWorld = (MonitorableWorld) world;
-        monitorableWorld.EntityList().forEach((uuid, entity) -> {
-            if(claim.includesPosition(entity.getBlockPos())) {
-                Map<UUID, Entity> entityList = entityMap.get();
-                entityList.put(uuid, entity);
-                entityMap.set(entityList);
-            }
-        });
-        return entityMap.get();
-    }
 
     public boolean intersects(Claim claim, boolean checkOther, boolean checkforsubzone) {
         if (claim == null) return false;
@@ -156,6 +128,8 @@ public class Claim {
         else return checkOther && claim.intersects(this, false, checkforsubzone);
         return false;
     }
+
+/*
     @Nullable
     public Claim getZoneCovering(BlockPos pos) {
         if (includesPosition(pos)) {
@@ -171,7 +145,7 @@ public class Claim {
 
         return null;
     }
-
+*/
     public boolean hasPermission(UUID player, Permission permission) {
         return ClaimManager.INSTANCE.ignoringClaims.contains(player) || permissionManager.hasPermission(player, permission);
     }
@@ -349,7 +323,8 @@ public class Claim {
             if (pos.contains("tpX") && pos.contains("tpY") && pos.contains("tpZ")) {
                 this.tpPos = new BlockPos(pos.getInt("tpX"), pos.getInt("tpY"), pos.getInt("tpZ"));
             }
-            this.dimension = DimensionType.byId(new Identifier(pos.getString("dimension")));
+//            this.dimension = DimensionType.byId(new Identifier(pos.getString("dimension")));
+            this.dimension = DimensionType.method_28514();
         }
         {
             if(!isChild){
@@ -390,7 +365,14 @@ public class Claim {
             }
         }
         {
-            this.flags = new ClaimFlags(tag.getCompound("flags"));
+            CompoundTag flags = tag.getCompound("flags");
+            if(!flags.isEmpty()){
+                this.flags = new ClaimFlags(flags);
+            }
+            CompoundTag settings = tag.getCompound("settings");
+            if(!settings.isEmpty()){
+                this.flags = new ClaimFlags(settings);
+            }
             permissionManager = new PermissionManager();
             permissionManager.fromNBT(tag.getCompound("permissions"));
             if (containsUUID(tag, "top_owner")) claimBlockOwner = getUUID(tag,"top_owner");
