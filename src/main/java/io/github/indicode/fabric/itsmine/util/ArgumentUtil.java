@@ -88,7 +88,7 @@ public class ArgumentUtil {
     private static CompletableFuture<Suggestions> claimProvider(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder) throws CommandSyntaxException {
         ServerPlayerEntity player = context.getSource().getPlayer();
         List<String> names = new ArrayList<>();
-        Claim current = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.dimension);
+        Claim current = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.world.getDimension());
         if (current != null && !current.isChild) names.add(current.name);
         for (Claim claim : ClaimManager.INSTANCE.getPlayerClaims(player.getGameProfile().getId())) {
             if (claim != null && !claim.isChild) {
@@ -101,7 +101,7 @@ public class ArgumentUtil {
     private static CompletableFuture<Suggestions> subzoneProvider(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder) throws CommandSyntaxException {
         ServerPlayerEntity player = context.getSource().getPlayer();
         List<String> names = new ArrayList<>();
-        Claim current = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.dimension);
+        Claim current = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.world.getDimension());
         if (current != null && current.isChild) names.add(current.name);
         for (Claim claim : ClaimManager.INSTANCE.getPlayerClaims(player.getGameProfile().getId())) {
             if (claim != null && claim.isChild) {

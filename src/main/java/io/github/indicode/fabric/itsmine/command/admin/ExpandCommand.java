@@ -26,7 +26,7 @@ public class ExpandCommand {
             RequiredArgumentBuilder<ServerCommandSource, String> direction = getDirections();
 
             direction.executes(context -> expand(
-                    ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
+                    ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension()),
                     IntegerArgumentType.getInteger(context, "distance"),
                     directionByName(getString(context, "direction")),
                     context.getSource(),
@@ -34,7 +34,7 @@ public class ExpandCommand {
             ));
 
             amount.executes(context -> expand(
-                    ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
+                    ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension()),
                     IntegerArgumentType.getInteger(context, "distance"),
                     Direction.getEntityFacingOrder(context.getSource().getPlayer())[0],
                     context.getSource(),
@@ -52,7 +52,7 @@ public class ExpandCommand {
             RequiredArgumentBuilder<ServerCommandSource, String> direction = getDirections();
 
             direction.executes(context -> expand(
-                    ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
+                    ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension()),
                     -IntegerArgumentType.getInteger(context, "distance"),
                     directionByName(getString(context, "direction")),
                     context.getSource(),
@@ -60,7 +60,7 @@ public class ExpandCommand {
             ));
 
             amount.executes(context -> expand(
-                    ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()),
+                    ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension()),
                     -IntegerArgumentType.getInteger(context, "distance"),
                     Direction.getEntityFacingOrder(context.getSource().getPlayer())[0],
                     context.getSource(),

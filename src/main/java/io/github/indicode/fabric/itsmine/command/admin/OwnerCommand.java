@@ -27,7 +27,7 @@ public class OwnerCommand {
             RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = ArgumentUtil.getClaims();
 
             newOwner.executes((context) -> {
-                Claim claim = ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getPlayer().dimension);
+                Claim claim = ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getPlayer().world.getDimension());
                 if (claim == null) {
                     context.getSource().sendError(Messages.INVALID_CLAIM);
                     return -1;
@@ -69,7 +69,7 @@ public class OwnerCommand {
             RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = ArgumentUtil.getClaims();
 
             nameArgument.executes((context) -> {
-                Claim claim = ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getPlayer().dimension);
+                Claim claim = ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getPlayer().world.getDimension());
                 if (claim == null) {
                     context.getSource().sendFeedback(new LiteralText("That claim does not exist").formatted(Formatting.RED), false);
                     return -1;

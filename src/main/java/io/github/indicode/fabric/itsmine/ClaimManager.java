@@ -22,7 +22,7 @@ public class ClaimManager {
     private HashMap<UUID, Integer> blocksLeft = new HashMap<>();
     public List<UUID> ignoringClaims = new ArrayList<>();
     public List<UUID> flyers = new ArrayList<>();
-    public MinecraftServer server;
+    public static MinecraftServer server;
     public int getClaimBlocks(UUID id) {
         return blocksLeft.getOrDefault(id, ItsMineConfig.main().claims2d ? ItsMineConfig.main().claimBlock().default2D : ItsMineConfig.main().claimBlock().default3D);
     }
@@ -159,7 +159,9 @@ public class ClaimManager {
     }
 
     public void fromNBT(CompoundTag tag) {
+        System.out.println("fromNBT");
         ListTag list = (ListTag) tag.get("claims");
+        System.out.println(list.size());
         claimsByName.clear();
         list.forEach(it -> {
             Claim claim = new Claim();

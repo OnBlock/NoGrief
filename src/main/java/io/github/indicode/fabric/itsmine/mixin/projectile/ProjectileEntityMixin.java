@@ -30,7 +30,7 @@ public abstract class ProjectileEntityMixin {
             this.onEntityHit(entityHitResult);
         } else {
             if (this.getOwner() instanceof PlayerEntity) {
-                this.getOwner().sendSystemMessage(Messages.MSG_DAMAGE_ENTITY);
+                this.getOwner().sendSystemMessage(Messages.MSG_DAMAGE_ENTITY, this.getOwner().getUuid());
                 if(projectileEntity.getType() == EntityType.ARROW){
                     projectileEntity.kill();
                 }
@@ -44,7 +44,7 @@ public abstract class ProjectileEntityMixin {
 //
 //        if (((ProjectileEntity)(Object)this).getServer().getPlayerManager().getPlayer(((OwnedProjectile)projectile).getOwner()) != null) {
 //            PlayerEntity playerEntity_1 = ((ProjectileEntity)(Object)this).getServer().getPlayerManager().getPlayer(((OwnedProjectile)projectile).getOwner());
-//            Claim claim = ClaimManager.INSTANCE.getClaimAt(entity.getSenseCenterPos(), entity.world.getDimension().getType());
+//            Claim claim = ClaimManager.INSTANCE.getClaimAt(entity.getSenseCenterPos(), entity.world.getDimension());
 //            if (claim != null && entity != playerEntity_1) {
 //                if (!claim.hasPermission(playerEntity_1.getGameProfile().getId(), Claim.Permission.DAMAGE_ENTITY)) {
 //                    playerEntity_1.sendSystemMessage(Messages.MSG_DAMAGE_ENTITY);

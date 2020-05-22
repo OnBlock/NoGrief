@@ -24,7 +24,7 @@ public class RemoveCommand {
         claim.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim")), true));
         claim.then(confirm);
         delete.then(claim);
-        delete.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition()), context.getSource().getWorld().getDimension().getType()), true));
+        delete.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition()), context.getSource().getWorld().getDimension()), true));
         command.then(delete);
     }
 

@@ -7,6 +7,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.indicode.fabric.itsmine.ItsMine;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.network.ServerPlayerEntity;
 
 import static io.github.indicode.fabric.itsmine.util.ChatColor.translateStringToText;
 
@@ -23,9 +24,10 @@ public class DebugCommand {
 
     private static int execute(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
 //        context.getSource().getPlayer().sendSystemMessage(translateStringToText('&', StringArgumentType.getString(context, "string")));
-        context.getSource().getPlayer().sendSystemMessage(translateStringToText('&', "&eTime elapsed: &6" + ItsMine.time + "μs"));
-        context.getSource().getPlayer().sendSystemMessage(translateStringToText('&', "&eExecuted: &6" + ItsMine.executed));
-        context.getSource().getPlayer().sendSystemMessage(translateStringToText('&', "&eAverage: &6" + ItsMine.time / ItsMine.executed + "μs"));
+        ServerPlayerEntity player = context.getSource().getPlayer();
+        player.sendSystemMessage(translateStringToText('&', "&eTime elapsed: &6" + ItsMine.time + "μs"), player.getUuid());
+        player.sendSystemMessage(translateStringToText('&', "&eExecuted: &6" + ItsMine.executed), player.getUuid());
+        player.sendSystemMessage(translateStringToText('&', "&eAverage: &6" + ItsMine.time / ItsMine.executed + "μs"), player.getUuid());
 
         return 1;
     }

@@ -31,11 +31,11 @@ public abstract class BoatItemMixin extends Item {
         ItemStack itemStack = user.getStackInHand(hand);
         HitResult hitResult = rayTrace(world, user, RayTraceContext.FluidHandling.ANY);
         Vec3d pos = hitResult.getPos();
-        Claim claim = ClaimManager.INSTANCE.getClaimAt(new BlockPos(pos.getX(), pos.getY(), pos.getZ()), user.dimension);
+        Claim claim = ClaimManager.INSTANCE.getClaimAt(new BlockPos(pos.getX(), pos.getY(), pos.getZ()), user.world.getDimension());
 
         if (claim != null){
             if(!claim.hasPermission(user.getUuid(), Claim.Permission.BUILD) || !claim.hasPermission(user.getUuid(), Claim.Permission.SPAWN_BOAT)){
-                user.sendSystemMessage(Messages.NO_PERMISSION);
+                user.sendSystemMessage(Messages.NO_PERMISSION, user.getUuid());
                 cir.setReturnValue(TypedActionResult.fail(itemStack));
             }
         }

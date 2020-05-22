@@ -82,7 +82,7 @@ public class CreateCommand {
                     executeShowClaim(source, claim, false);
                     source.sendFeedback(new LiteralText("").append(new LiteralText("Your subzone was created.").formatted(Formatting.GREEN)), false);
                 }else{
-                    player.sendSystemMessage(new LiteralText("Your subzone would overlap with another subzone").formatted(Formatting.RED));
+                    player.sendSystemMessage(new LiteralText("Your subzone would overlap with another subzone").formatted(Formatting.RED), player.getUuid());
                 }
                 if (subZone != null) {
                     ClaimManager.INSTANCE.stickPositions.remove(player);
@@ -90,7 +90,7 @@ public class CreateCommand {
                 }
                 return 0;
             }else{
-                player.sendSystemMessage(new LiteralText("Subzone must be inside the original claim, in the same dimension").formatted(Formatting.RED));
+                player.sendSystemMessage(new LiteralText("Subzone must be inside the original claim, in the same dimension").formatted(Formatting.RED), player.getUuid());
             }
         }
         return 0;
@@ -126,12 +126,12 @@ public class CreateCommand {
         BlockPos max = new BlockPos(mx, my, mz);
         BlockPos sub = max.subtract(min);
         sub = sub.add(1, ItsMineConfig.main().claims2d ? 0 : 1,1);
-        return new Claim(name, admin ? null : ownerID, min, max, source.getWorld().getDimension().getType(), source.getPlayer().getBlockPos(), true);
+        return new Claim(name, admin ? null : ownerID, min, max, source.getWorld().getDimension(), source.getPlayer().getBlockPos(), true);
     }
 
     private static Claim validateAndGet(ServerCommandSource source, @Nullable String  claimName, boolean admin) throws CommandSyntaxException {
         ServerPlayerEntity player = source.getPlayer();
-        Claim claim = claimName == null ? ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.dimension) :
+        Claim claim = claimName == null ? ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.world.getDimension()) :
                 ClaimManager.INSTANCE.claimsByName.get(claimName);
 
         if (claim == null) {

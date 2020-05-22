@@ -31,11 +31,11 @@ public class FlyCommand {
         ServerPlayerEntity player = context.getSource().getPlayer();
         if (set) {
             ClaimManager.INSTANCE.flyers.add(player.getUuid());
-            player.sendSystemMessage(new LiteralText("Enabled Ability to fly in Claims").formatted(Formatting.GREEN));
+            player.sendSystemMessage(new LiteralText("Enabled Ability to fly in Claims").formatted(Formatting.GREEN), player.getUuid());
             return 1;
         }
 
-        player.sendSystemMessage(new LiteralText("Disabled Ability to fly in Claims").formatted(Formatting.RED));
+        player.sendSystemMessage(new LiteralText("Disabled Ability to fly in Claims").formatted(Formatting.RED), player.getUuid());
         ClaimManager.INSTANCE.flyers.remove(player.getUuid());
         return -1;
     }

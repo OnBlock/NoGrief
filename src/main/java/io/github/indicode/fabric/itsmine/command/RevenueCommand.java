@@ -26,7 +26,7 @@ public class RevenueCommand {
     public static void register(LiteralArgumentBuilder<ServerCommandSource> command, RequiredArgumentBuilder<ServerCommandSource, String> claim) {
         LiteralArgumentBuilder<ServerCommandSource> revenue = literal("revenue");
         RequiredArgumentBuilder<ServerCommandSource, Boolean> claimRevenue = argument("claimRevenue", BoolArgumentType.bool());
-        revenue.executes(context -> revenue(context.getSource(), ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition()), context.getSource().getWorld().getDimension().getType()), false));
+        revenue.executes(context -> revenue(context.getSource(), ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition()), context.getSource().getWorld().getDimension()), false));
         revenue.requires(PERMISSION_CHECK_ADMIN);
         claim.executes(context -> revenue(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim")), false));
         claimRevenue.executes(context -> revenue(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim")), true));

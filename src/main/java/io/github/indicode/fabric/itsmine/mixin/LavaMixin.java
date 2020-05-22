@@ -26,8 +26,8 @@ public class LavaMixin {
     @Inject(method = "flow", at = @At("HEAD"), cancellable = true)
     private void dontFlow(WorldAccess world, BlockPos newPos, BlockState state, Direction direction, FluidState fluidState, CallbackInfo ci) {
         BlockPos oldPos = newPos.offset(direction.getOpposite());
-        Claim oldClaim = ClaimManager.INSTANCE.getClaimAt(oldPos, world.getDimension().getType());
-        Claim newClaim = ClaimManager.INSTANCE.getClaimAt(newPos, world.getDimension().getType());
+        Claim oldClaim = ClaimManager.INSTANCE.getClaimAt(oldPos, world.getDimension());
+        Claim newClaim = ClaimManager.INSTANCE.getClaimAt(newPos, world.getDimension());
         if (oldClaim != newClaim) {
             if (oldClaim == null) {
                 if (!newClaim.flags.getFlag(ClaimFlags.Flag.FLUID_CROSSES_BORDERS)) ci.cancel();
@@ -42,8 +42,8 @@ public class LavaMixin {
     }
     @Redirect(method = "onRandomTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)Z"))
     public boolean neverGonnaBurnMeUp(World world, BlockPos newPos, BlockState blockState_1, World world_1, BlockPos oldPos, FluidState fluidState_1, Random random_1) {
-        Claim oldClaim = ClaimManager.INSTANCE.getClaimAt(oldPos, world.getDimension().getType());
-        Claim newClaim = ClaimManager.INSTANCE.getClaimAt(newPos, world.getDimension().getType());
+        Claim oldClaim = ClaimManager.INSTANCE.getClaimAt(oldPos, world.getDimension());
+        Claim newClaim = ClaimManager.INSTANCE.getClaimAt(newPos, world.getDimension());
         if (oldClaim != newClaim) {
             if (oldClaim == null) {
                 if (!newClaim.flags.getFlag(ClaimFlags.Flag.FLUID_CROSSES_BORDERS))

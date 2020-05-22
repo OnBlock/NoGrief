@@ -29,8 +29,8 @@ public abstract class FireBlockMixin {
 
     @Redirect(method = "scheduledTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/FireBlock;trySpreadingFire(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;ILjava/util/Random;I)V"))
     private void dontBurnClaims(FireBlock fireBlock, World world, BlockPos newPos, int int_1, Random random_1, int int_2, BlockState blockState_1, ServerWorld serverWorld_1, BlockPos oldPos, Random random_1_) {
-        Claim oldClaim = ClaimManager.INSTANCE.getClaimAt(oldPos, world.getDimension().getType());
-        Claim newClaim = ClaimManager.INSTANCE.getClaimAt(newPos, world.getDimension().getType());
+        Claim oldClaim = ClaimManager.INSTANCE.getClaimAt(oldPos, world.getDimension());
+        Claim newClaim = ClaimManager.INSTANCE.getClaimAt(newPos, world.getDimension());
         if (oldClaim != newClaim) {
             if (oldClaim == null) {
                 if (!newClaim.flags.getFlag(ClaimFlags.Flag.FIRE_CROSSES_BORDERS)) return;
@@ -46,8 +46,8 @@ public abstract class FireBlockMixin {
     }
     @Redirect(method = "scheduledTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z", ordinal = 1))
     private boolean dontCauseFire2(ServerWorld world, BlockPos newPos, BlockState blockState_1, int int_1, BlockState blockState_1_, ServerWorld serverWorld_1, BlockPos oldPos, Random random_1_) {
-            Claim oldClaim = ClaimManager.INSTANCE.getClaimAt(oldPos, world.getDimension().getType());
-            Claim newClaim = ClaimManager.INSTANCE.getClaimAt(newPos, world.getDimension().getType());
+            Claim oldClaim = ClaimManager.INSTANCE.getClaimAt(oldPos, world.getDimension());
+            Claim newClaim = ClaimManager.INSTANCE.getClaimAt(newPos, world.getDimension());
             if (oldClaim != newClaim) {
                 if (oldClaim == null) {
                     if (!newClaim.flags.getFlag(ClaimFlags.Flag.FIRE_CROSSES_BORDERS))
@@ -74,11 +74,11 @@ public abstract class FireBlockMixin {
         if (directions.isEmpty()) {
             return world.setBlockState(oldPos, blockState_1, int_1);
         }
-        Claim oldClaim = ClaimManager.INSTANCE.getClaimAt(oldPos, world.getDimension().getType());
+        Claim oldClaim = ClaimManager.INSTANCE.getClaimAt(oldPos, world.getDimension());
         Iterator<Direction> iterator = directions.iterator();
         for (Direction direction = iterator.next(); iterator.hasNext(); direction = iterator.next()) {
             BlockPos newPos = oldPos.offset(direction);
-            Claim newClaim = ClaimManager.INSTANCE.getClaimAt(newPos, world.getDimension().getType());
+            Claim newClaim = ClaimManager.INSTANCE.getClaimAt(newPos, world.getDimension());
             if (oldClaim != newClaim) {
                 if (oldClaim == null) {
                     if (!newClaim.flags.getFlag(ClaimFlags.Flag.FIRE_CROSSES_BORDERS)) iterator.remove();

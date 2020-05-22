@@ -27,8 +27,8 @@ public class PistonBlockMixin {
     private static void youCantMoveMe(BlockState blockState_1, World world, BlockPos newPos, Direction direction, boolean boolean_1, Direction direction_2, CallbackInfoReturnable<Boolean> ci) {
         boolean pushing = direction == direction_2;
         BlockPos oldPos = newPos.offset(direction_2.getOpposite());
-        Claim oldClaim = ClaimManager.INSTANCE.getClaimAt(oldPos, world.getDimension().getType());
-        Claim newClaim = ClaimManager.INSTANCE.getClaimAt(newPos, world.getDimension().getType());
+        Claim oldClaim = ClaimManager.INSTANCE.getClaimAt(oldPos, world.getDimension());
+        Claim newClaim = ClaimManager.INSTANCE.getClaimAt(newPos, world.getDimension());
         if (oldClaim != newClaim) {
             if (oldClaim == null) {
                 if (!newClaim.flags.getFlag(ClaimFlags.Flag.PISTON_FROM_OUTSIDE)) ci.setReturnValue(false);

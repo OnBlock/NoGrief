@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import static io.github.indicode.fabric.itsmine.util.WorldUtil.getServerWorld;
 
 public class EntityUtil {
 
@@ -33,7 +32,7 @@ public class EntityUtil {
 
     public static ArrayList<Entity> getEntities(Claim claim){
         ArrayList<Entity> entityList = new ArrayList<>();
-        ServerWorld world = getServerWorld(claim.dimension);
+        ServerWorld world = WorldUtil.getServerWorld(claim.dimension);
         MonitorableWorld monitorableWorld = (MonitorableWorld) world;
         monitorableWorld.EntityList().forEach((uuid, entity) -> {
             if(claim.includesPosition(entity.getBlockPos())) entityList.add(entity);

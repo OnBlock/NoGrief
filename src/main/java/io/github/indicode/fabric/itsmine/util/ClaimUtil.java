@@ -7,6 +7,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import io.github.indicode.fabric.itsmine.*;
 import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.claim.ClaimFlags;
+import net.minecraft.nbt.NbtIo;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
@@ -14,6 +15,10 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -116,7 +121,7 @@ public class ClaimUtil {
     }
     public static int executeFlag(ServerCommandSource source, String input, @Nullable String claimName, boolean isQuery, boolean value, boolean admin) throws CommandSyntaxException {
         ServerPlayerEntity player = source.getPlayer();
-        Claim claim1 = claimName == null || claimName.isEmpty() ? ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.dimension) :
+        Claim claim1 = claimName == null || claimName.isEmpty() ? ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.world.getDimension()) :
                 ClaimManager.INSTANCE.claimsByName.get(claimName);
         if (claim1 == null) {
             source.sendError(Messages.INVALID_CLAIM);
@@ -142,7 +147,7 @@ public class ClaimUtil {
     }
     public static int executePermission(ServerCommandSource source, String input, @Nullable String claimName, boolean isQuery, boolean value, boolean admin) throws CommandSyntaxException {
         ServerPlayerEntity player = source.getPlayer();
-        Claim claim1 = claimName == null ? ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.dimension) :
+        Claim claim1 = claimName == null ? ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.world.getDimension()) :
                 ClaimManager.INSTANCE.claimsByName.get(claimName);
         if (claim1 == null) {
             source.sendError(Messages.INVALID_CLAIM);
@@ -196,6 +201,30 @@ public class ClaimUtil {
                         .formatted(Formatting.YELLOW)
                 , false);
         return 1;
+    }
+
+    public static void readWorldProperties() {
+        File claims = new File(ItsMine.getDirectory() + "/world/claims.dat");
+        File claims_old = new File(ItsMine.getDirectory() + "/world/claims.dat_old");
+        if (!claims.exists()) {
+            if (claims_old.exists()) {}
+            else return;
+        }
+        try {
+            if (!claims.exists() && claims_old.exists()) throw new FileNotFoundException();
+            ClaimManager.INSTANCE.fromNBT(NbtIo.readCompressed(new FileInputStream(claims)));
+        } catch (IOException e) {
+            System.out.println("Could not load " + claims.getName() + ":");
+            e.printStackTrace();
+            if (claims_old.exists()) {
+                System.out.println("Attempting to load backup claims...");
+                try {
+                    ClaimManager.INSTANCE.fromNBT(NbtIo.readCompressed(new FileInputStream(claims_old)));
+                } catch (IOException e2) {
+                    throw new RuntimeException("Could not load claims.dat_old - Crashing server to save data. Remove or fix claims.dat or claims.dat_old to continue");
+                }
+            }
+        }
     }
 
 }

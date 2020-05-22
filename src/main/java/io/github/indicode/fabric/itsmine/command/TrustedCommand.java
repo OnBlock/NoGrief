@@ -26,7 +26,7 @@ public class TrustedCommand {
         RequiredArgumentBuilder<ServerCommandSource, String> claimArgument = ArgumentUtil.getClaims();
         trusted.executes((context)-> {
             ServerPlayerEntity player = context.getSource().getPlayer();
-            Claim claim = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.dimension);
+            Claim claim = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.world.getDimension());
             if (claim == null) {
                 context.getSource().sendError(Messages.INVALID_CLAIM);
                 return -1;

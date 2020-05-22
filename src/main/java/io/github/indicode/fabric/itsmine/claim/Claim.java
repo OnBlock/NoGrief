@@ -2,6 +2,7 @@ package io.github.indicode.fabric.itsmine.claim;
 
 import blue.endless.jankson.annotation.Nullable;
 import io.github.indicode.fabric.itsmine.*;
+import io.github.indicode.fabric.itsmine.util.WorldUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.ItemStack;
@@ -11,6 +12,8 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.dimension.DimensionType;
 
 import java.util.*;
@@ -240,7 +243,7 @@ public class Claim {
             pos.putInt("maxX", max.getX());
             pos.putInt("maxY", max.getY());
             pos.putInt("maxZ", max.getZ());
-            pos.putString("dimension", DimensionType.getId(dimension).toString());
+            pos.putString("dimension", WorldUtil.getDimensionNameWithNameSpace(dimension));
             if (tpPos != null) {
                 pos.putInt("tpX", this.tpPos.getX());
                 pos.putInt("tpY", this.tpPos.getY());
@@ -309,6 +312,7 @@ public class Claim {
         return tag;
     }
     public void fromTag(CompoundTag tag) {
+        System.out.println("Loading claim");
         {
             CompoundTag pos = tag.getCompound("position");
             int minX = pos.getInt("minX");
@@ -323,8 +327,8 @@ public class Claim {
             if (pos.contains("tpX") && pos.contains("tpY") && pos.contains("tpZ")) {
                 this.tpPos = new BlockPos(pos.getInt("tpX"), pos.getInt("tpY"), pos.getInt("tpZ"));
             }
-//            this.dimension = DimensionType.byId(new Identifier(pos.getString("dimension")));
-            this.dimension = DimensionType.method_28514();
+
+            this.dimension = WorldUtil.getDimensionType(pos.getString("dimension"));
         }
         {
             if(!isChild){

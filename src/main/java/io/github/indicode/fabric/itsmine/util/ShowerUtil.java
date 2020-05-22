@@ -53,7 +53,7 @@ public class ShowerUtil {
                 showCorner(player, claim, state);break;
             }
             default: {
-                player.sendSystemMessage(new LiteralText("Unknown mode").formatted(Formatting.RED));
+                player.sendSystemMessage(new LiteralText("Unknown mode").formatted(Formatting.RED), player.getUuid());
             }
         }
     }

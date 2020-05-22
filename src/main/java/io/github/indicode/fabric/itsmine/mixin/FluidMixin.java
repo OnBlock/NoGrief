@@ -23,8 +23,8 @@ public class FluidMixin {
     @Inject(method = "flow", at = @At("HEAD"), cancellable = true)
     private void dontFlow(WorldAccess world, BlockPos newPos, BlockState state, Direction direction, FluidState fluidState, CallbackInfo ci) {
         BlockPos oldPos = newPos.offset(direction.getOpposite());
-        Claim oldClaim = ClaimManager.INSTANCE.getClaimAt(oldPos, world.getDimension().getType());
-        Claim newClaim = ClaimManager.INSTANCE.getClaimAt(newPos, world.getDimension().getType());
+        Claim oldClaim = ClaimManager.INSTANCE.getClaimAt(oldPos, world.getDimension());
+        Claim newClaim = ClaimManager.INSTANCE.getClaimAt(newPos, world.getDimension());
         if (oldClaim != newClaim) {
             if (oldClaim == null) {
                 if (!newClaim.flags.getFlag(ClaimFlags.Flag.FLUID_CROSSES_BORDERS)) ci.cancel();

@@ -39,7 +39,7 @@ public abstract class EntityMixin {
 //        if (!world.isClient && (Object)this instanceof PlayerEntity) {
 //            PlayerEntity player = (PlayerEntity) (Object) this;
 //            if (player.getBlockPos() == null) return;
-//            pclaim = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.world.getDimension().getType());
+//            pclaim = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.world.getDimension());
 //        }
 //    }
 //    @Inject(method = "setPos", at = @At("RETURN"))
@@ -47,7 +47,7 @@ public abstract class EntityMixin {
 //        if (!world.isClient && (Object)this instanceof PlayerEntity) {
 //            PlayerEntity player = (PlayerEntity) (Object) this;
 //            if (player.getBlockPos() == null) return;
-//            Claim claim = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.world.getDimension().getType());
+//            Claim claim = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.world.getDimension());
 //            if (pclaim != claim && player instanceof ServerPlayerEntity) {
 //                ServerPlayerEntity serverPlayerEntity = (ServerPlayerEntity)player;
 //                if (serverPlayerEntity.networkHandler != null) {
@@ -88,7 +88,7 @@ public abstract class EntityMixin {
             }
 
             boolean old = player.abilities.allowFlying;
-            Claim claim = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.world.getDimension().getType());
+            Claim claim = ClaimManager.INSTANCE.getClaimAt(player.getBlockPos(), player.world.getDimension());
 
             if (player instanceof ServerPlayerEntity) {
                 if (

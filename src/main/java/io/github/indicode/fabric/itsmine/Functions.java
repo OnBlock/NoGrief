@@ -130,10 +130,10 @@ public class Functions {
             return true;
 
         ServerPlayerEntity owner = server.getPlayerManager().getPlayer(uuid);
-        Claim claim = ClaimManager.INSTANCE.getClaimAt(entity.getBlockPos(), entity.world.getDimension().getType());
+        Claim claim = ClaimManager.INSTANCE.getClaimAt(entity.getBlockPos(), entity.world.getDimension());
 
         if (claim != null && owner != null && !claim.hasPermission(owner.getUuid(), Claim.Permission.DAMAGE_ENTITY)) {
-            owner.sendSystemMessage(Messages.MSG_DAMAGE_ENTITY);
+            owner.sendSystemMessage(Messages.MSG_DAMAGE_ENTITY, owner.getUuid());
             return false;
         }
 

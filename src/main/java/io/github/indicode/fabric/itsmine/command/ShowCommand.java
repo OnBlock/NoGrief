@@ -26,7 +26,7 @@ public class ShowCommand {
         {
             RequiredArgumentBuilder<ServerCommandSource, String> mode = getShowMode();
             LiteralArgumentBuilder<ServerCommandSource> show = literal("show");
-            show.executes(context -> executeShowClaim(context.getSource(), ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension().getType()), false));
+            show.executes(context -> executeShowClaim(context.getSource(), ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getWorld().getDimension()), false));
             RequiredArgumentBuilder<ServerCommandSource, String> claim = ArgumentUtil.getClaims();
             claim.executes(context -> executeShowClaim(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim")), false));
             mode.executes(context -> executeShowClaim(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim")), false, StringArgumentType.getString(context, "mode")));
@@ -57,7 +57,7 @@ public class ShowCommand {
         if (!reset && ((ClaimShower)player).getShownClaim() != null && !(!ItsMineConfig.main().claims2d &&((ClaimShower)player).getShownClaim() != claim)) executeShowClaim(source, ((ClaimShower)player).getShownClaim(), true, ((ClaimShower)player).getMode());
         if (reset && ((ClaimShower)player).getShownClaim() != null) claim = ((ClaimShower)player).getShownClaim();
         if (claim != null) {
-            if (!claim.dimension.equals(source.getWorld().getDimension().getType())) {
+            if (!claim.dimension.equals(source.getWorld().getDimension())) {
                 if (claim == ((ClaimShower)player).getShownClaim()) ((ClaimShower)player).setShownClaim(null); // just so we dont have extra packets on this
                 source.sendFeedback(new LiteralText("That claim is not in this dimension").formatted(Formatting.RED), false);
                 return 0;

@@ -53,13 +53,13 @@ public abstract class ServerPlayerInteractionManagerMixin {
         private ActionResult interactIfPossible(BlockState blockState, World world, PlayerEntity player, Hand hand, BlockHitResult hit){
         BlockPos pos = hit.getBlockPos();
         ItemStack itemStack = player.getMainHandStack();
-        Claim claim = ClaimManager.INSTANCE.getClaimAt(pos, player.world.getDimension().getType());
+        Claim claim = ClaimManager.INSTANCE.getClaimAt(pos, player.world.getDimension());
         if (claim != null) {
             if (!Functions.canInteractWith(claim, blockState.getBlock(), player.getUuid())) {
                 if (!itemStack.isEmpty() && !(itemStack.getItem() instanceof BlockItem)) {
-                    player.sendSystemMessage(Messages.MSG_INTERACT_BLOCK);
+                    player.sendSystemMessage(Messages.MSG_INTERACT_BLOCK, player.getUuid());
                 } else if (BlockUtil.isContainer(blockState.getBlock())) {
-                    player.sendSystemMessage(Messages.MSG_OPEN_CONTAINER);
+                    player.sendSystemMessage(Messages.MSG_OPEN_CONTAINER, player.getUuid());
                 }
 
                 return ActionResult.FAIL;
@@ -79,13 +79,13 @@ public abstract class ServerPlayerInteractionManagerMixin {
     private boolean interactWithItemIfPossible(ItemStack stack) {
 //        BlockPos pos = hitResult.getBlockPos().offset(hitResult.getSide());
 //        System.out.println(blockPos.getX() + " " + blockPos.getY() + " " + blockPos.getZ());
-        Claim claim = ClaimManager.INSTANCE.getClaimAt(blockPos, world.getDimension().getType());
+        Claim claim = ClaimManager.INSTANCE.getClaimAt(blockPos, world.getDimension());
         if (claim != null && !stack.isEmpty()) {
             if (Functions.canInteractUsingItem(claim, stack.getItem(), player.getUuid())) {
                 return false;
             }
             if (stack.getItem() instanceof BlockItem) {
-                player.sendSystemMessage(Messages.MSG_PLACE_BLOCK);
+                player.sendSystemMessage(Messages.MSG_PLACE_BLOCK, player.getUuid());
             }
 
             return true;
@@ -102,22 +102,22 @@ public abstract class ServerPlayerInteractionManagerMixin {
                 if (posPair != null) {
                     posPair = new Pair<>(posPair.getLeft(), pos);
                     ClaimManager.INSTANCE.stickPositions.put(player, posPair);
-                    player.sendSystemMessage(new LiteralText("Position #2 set: " + pos.getX() + (ItsMineConfig.main().claims2d ? "" : " " + pos.getY()) + " " + pos.getZ()).formatted(Formatting.GREEN));
+                    player.sendSystemMessage(new LiteralText("Position #2 set: " + pos.getX() + (ItsMineConfig.main().claims2d ? "" : " " + pos.getY()) + " " + pos.getZ()).formatted(Formatting.GREEN), player.getUuid());
                     if (posPair.getLeft() != null) {
-                        player.sendSystemMessage(new LiteralText("Area Selected. Type /claim create <name> to create your claim!").formatted(Formatting.GOLD));
+                        player.sendSystemMessage(new LiteralText("Area Selected. Type /claim create <name> to create your claim!").formatted(Formatting.GOLD), player.getUuid());
                         if (!ItsMineConfig.main().claims2d)
-                            player.sendSystemMessage(new LiteralText("Remember that claims are three dimensional. Don't forget to expand up/down or select a big enough area...").formatted(Formatting.LIGHT_PURPLE).formatted(Formatting.ITALIC));
+                            player.sendSystemMessage(new LiteralText("Remember that claims are three dimensional. Don't forget to expand up/down or select a big enough area...").formatted(Formatting.LIGHT_PURPLE).formatted(Formatting.ITALIC), player.getUuid());
                     }
                     return false;
                 }
             }
         }
-        Claim claim = ClaimManager.INSTANCE.getClaimAt(pos, player.world.getDimension().getType());
+        Claim claim = ClaimManager.INSTANCE.getClaimAt(pos, player.world.getDimension());
         if (claim != null) {
             UUID uuid = player.getGameProfile().getId();
             if (!claim.hasPermission(uuid, Claim.Permission.BUILD)) {
 //                MessageUtil.sendText(ItsMineConfig.main().message().breakBlock);
-                player.sendSystemMessage(Messages.MSG_BREAK_BLOCK);
+                player.sendSystemMessage(Messages.MSG_BREAK_BLOCK, player.getUuid());
                 return false;
             }
 

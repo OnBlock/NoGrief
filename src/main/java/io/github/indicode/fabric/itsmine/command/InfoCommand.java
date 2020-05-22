@@ -8,6 +8,7 @@ import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.ClaimManager;
 import io.github.indicode.fabric.itsmine.Messages;
 import io.github.indicode.fabric.itsmine.util.TimeUtil;
+import io.github.indicode.fabric.itsmine.util.WorldUtil;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.LiteralText;
@@ -25,7 +26,7 @@ public class InfoCommand {
         LiteralArgumentBuilder<ServerCommandSource> info = literal("info");
         info.executes(context -> info(
                 context.getSource(),
-                ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition()), context.getSource().getWorld().getDimension().getType())
+                ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition()), context.getSource().getWorld().getDimension())
         ));
         claim.executes(context -> info(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim"))
         ));
@@ -65,7 +66,7 @@ public class InfoCommand {
                 .append(new LiteralText(" "))
                 .append(new LiteralText("Max ").formatted(Formatting.WHITE).append(max))));
         text.append(pos);
-        text.append(newInfoLine("Dimension", new LiteralText(Registry.DIMENSION_TYPE.getId(claim.dimension).getPath())));
+        text.append(newInfoLine("Dimension", new LiteralText(WorldUtil.getDimensionName(claim.dimension))));
         if(claim.rent.isRented()){
             GameProfile tenant = claim.rent.getTenant() == null ? null : source.getMinecraftServer().getUserCache().getByUuid(claim.rent.getTenant());
             text.append(newInfoLine("Status", new LiteralText("Rented").formatted(Formatting.RED).styled(style -> {

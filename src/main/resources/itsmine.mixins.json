@@ -32,7 +32,8 @@
     "EnderDragonEntityMixin",
     "FarmlandBlockMixin",
     "BoatItemMixin",
-    "ServerCommandOutputMixin"
+    "ServerCommandOutputMixin",
+    "MinecraftServerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -23,7 +23,7 @@ public class SpawnRestrictionMixin {
 			cir.setReturnValue(false);
 			return;
 		}
-		Claim claim = ClaimManager.INSTANCE.getClaimAt(pos, world.getDimension().getType());
+		Claim claim = ClaimManager.INSTANCE.getClaimAt(pos, world.getDimension());
 		if (claim != null && !claim.flags.getFlag(ClaimFlags.Flag.MOB_SPAWNING)) {
 			cir.setReturnValue(false);
 		}

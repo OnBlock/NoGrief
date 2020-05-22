@@ -23,10 +23,10 @@ public class ProjectileEntityMixin {
 
         if (((ProjectileEntity)(Object)this).getServer().getPlayerManager().getPlayer(((OwnedProjectile)projectile).getOwner()) != null) {
             PlayerEntity playerEntity_1 = ((ProjectileEntity)(Object)this).getServer().getPlayerManager().getPlayer(((OwnedProjectile)projectile).getOwner());
-            Claim claim = ClaimManager.INSTANCE.getClaimAt(entity.getBlockPos(), entity.world.getDimension().getType());
+            Claim claim = ClaimManager.INSTANCE.getClaimAt(entity.getBlockPos(), entity.world.getDimension());
             if (claim != null && entity != playerEntity_1) {
                 if (!claim.hasPermission(playerEntity_1.getGameProfile().getId(), Claim.Permission.DAMAGE_ENTITY)) {
-                    playerEntity_1.sendSystemMessage(Messages.MSG_DAMAGE_ENTITY);
+                    playerEntity_1.sendSystemMessage(Messages.MSG_DAMAGE_ENTITY, playerEntity_1.getUuid());
                     projectile.kill(); // You do not want an arrow bouncing between two armor stands
                     return false;
                 }

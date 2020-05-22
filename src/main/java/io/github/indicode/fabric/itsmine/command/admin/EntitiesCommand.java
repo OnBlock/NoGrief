@@ -29,7 +29,7 @@ public class EntitiesCommand {
         LiteralArgumentBuilder<ServerCommandSource> entity = literal("entities");
         entity.requires(source -> ItsMine.permissions().hasPermission(source, PermissionUtil.Command.ADMIN_MODIFY, 2));
         RequiredArgumentBuilder<ServerCommandSource, String> claim = ArgumentUtil.getClaims();
-        entity.executes(context -> execute(context, ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getPlayer().dimension)));
+        entity.executes(context -> execute(context, ClaimManager.INSTANCE.getClaimAt(context.getSource().getPlayer().getBlockPos(), context.getSource().getPlayer().world.getDimension())));
         claim.executes(context -> execute(context, ClaimManager.INSTANCE.getClaim(StringArgumentType.getString(context, "claim"))));
         entity.then(claim);
         command.then(entity);

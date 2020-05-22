@@ -30,7 +30,7 @@ public class RemoveCommand {
         claim.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.claimsByName.get(getString(context, "claim")), admin));
         claim.then(confirm);
         delete.then(claim);
-        delete.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition()), context.getSource().getWorld().getDimension().getType()), admin));
+        delete.executes(context -> requestDelete(context.getSource(), ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition()), context.getSource().getWorld().getDimension()), admin));
         command.then(delete);
     }
     public static int requestDelete(ServerCommandSource sender, Claim claim, boolean admin) throws CommandSyntaxException {

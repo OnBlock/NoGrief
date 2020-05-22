@@ -53,7 +53,7 @@ public class TransferCommand {
             player.then(confirm);
             claim.then(player);
             transfer.then(claim);
-            transfer.executes(context -> requestTransfer(context.getSource(), ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition()), context.getSource().getWorld().getDimension().getType()), EntityArgumentType.getPlayer(context, "player"), false));
+            transfer.executes(context -> requestTransfer(context.getSource(), ClaimManager.INSTANCE.getClaimAt(new BlockPos(context.getSource().getPosition()), context.getSource().getWorld().getDimension()), EntityArgumentType.getPlayer(context, "player"), false));
             command.then(transfer);
     }
 
@@ -63,8 +63,9 @@ public class TransferCommand {
             sender.sendFeedback(new LiteralText("You have no pending claim transfers").formatted(Formatting.RED), false);
             return 0;
         }
-        if (sender.getMinecraftServer().getPlayerManager().getPlayer(claim.claimBlockOwner) != null) {
-            sender.getMinecraftServer().getPlayerManager().getPlayer(claim.claimBlockOwner).sendSystemMessage(new LiteralText("").append(new LiteralText(sender.getPlayer().getGameProfile().getName() + " has taken ownership of the claim \"" + claim.name + "\"").formatted(Formatting.YELLOW)));
+        ServerPlayerEntity player = sender.getMinecraftServer().getPlayerManager().getPlayer(claim.claimBlockOwner);
+        if (player != null) {
+            player.sendSystemMessage(new LiteralText("").append(new LiteralText(sender.getPlayer().getGameProfile().getName() + " has taken ownership of the claim \"" + claim.name + "\"").formatted(Formatting.YELLOW)), player.getUuid());
         }
         Claim.ClaimPermissionMap op = claim.permissionManager.playerPermissions.get(claim.claimBlockOwner);
         claim.permissionManager.playerPermissions.put(claim.claimBlockOwner, claim.permissionManager.playerPermissions.get(sender.getPlayer().getGameProfile().getId()));
@@ -140,7 +141,7 @@ public class TransferCommand {
                             style.withBold(true);
                             style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/claim transfer -accept-" + claim.name + " " + player.getEntityName() + " confirm"));
                             return style;
-                        })));
+                        })), player.getUuid());
         pendingClaimTransfers.put(player.getGameProfile().getId(), claim.name);
         return 0;
     }
