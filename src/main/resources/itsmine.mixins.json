@@ -3,8 +3,7 @@
   "package": "io.github.indicode.fabric.itsmine.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "MinecraftServerMixin",
-    "WorldSaveHandlerMixin",
+    "LevelStorageSessionMixin",
     "CommandManagerMixin",
     "BlockUpdatePacketMixin",
     "BucketItemMixin",
@@ -32,10 +31,9 @@
     "EntityMixin",
     "EnderDragonEntityMixin",
     "FarmlandBlockMixin",
-    "BoatItemMixin"
-  ],
-  "client": [
-    "IntegratedServerMixin"
+    "BoatItemMixin",
+    "ServerCommandOutputMixin",
+    "MinecraftServerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

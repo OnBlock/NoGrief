@@ -1,6 +1,8 @@
-package io.github.indicode.fabric.itsmine;
+package io.github.indicode.fabric.itsmine.util;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import io.github.indicode.fabric.itsmine.ItsMine;
+import io.github.indicode.fabric.itsmine.ItsMineConfig;
 import io.github.indicode.fabric.permissions.PermChangeBehavior;
 import io.github.indicode.fabric.permissions.Thimble;
 import net.fabricmc.loader.api.FabricLoader;
@@ -16,15 +18,16 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
 import java.util.UUID;
+import java.util.function.Predicate;
 
-public class Permissions {
+public class PermissionUtil {
     private Manager manager;
     private boolean present;
 
-    public Permissions() {
+    public PermissionUtil() {
         Logger logger = (Logger) LogManager.getLogger("ItsMine");
         logger.info("Setting up Permissions...");
-        this.manager = Manager.fromString(Config.permissionManager);
+        this.manager = Manager.fromString(ItsMineConfig.main().permissionManager);
 
         if (manager == Manager.VANILLA) {
             this.present = false;
@@ -53,6 +56,10 @@ public class Permissions {
                 }
             });
         }
+    }
+
+    public static void reload(){
+        new PermissionUtil();
     }
 
     public boolean hasPermission(ServerCommandSource src, Command permission, int opLevel) {
@@ -212,4 +219,6 @@ public class Permissions {
             return "itsmine." + this.NODE;
         }
     }
+
+
 }

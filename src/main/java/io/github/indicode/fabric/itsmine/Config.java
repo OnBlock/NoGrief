@@ -1,14 +1,19 @@
+/*
 package io.github.indicode.fabric.itsmine;
 
 import io.github.indicode.fabric.tinyconfig.ModConfig;
 
+*/
 /**
  * @author Indigo Amann
- */
+ *//*
+
 public class Config {
     public static int baseClaimBlocks3d = 15625;
     public static int baseClaimBlocks2d = 2500;
     public static boolean claims2d = true;
+    public static int rent_maxseconds = 7776000;
+    public static int claim_max_entities_passive = 75;
     public static String permissionManager = "luckperms";
     public static String prefix = "&8[&aClaims&8]&r ";
     public static String msg_no_perm = "&c&lHey!&r&c Sorry but you don't have permission to do that";
@@ -23,6 +28,7 @@ public class Config {
     public static String msg_cant_enter = "&c&lHey!&r&c Sorry but you don't have permission to enter this claim!";
     public static String msg_cant_use = "&c&lHey!&r&c Sorry but you can't to use that here!";
     public static String msg_long_name = "&cThe name of the Claim must be less than 30 characters!";
+    public static String msg_cant_do ="&c&lHey!&r&c Sorry but you can't do that!";
 
     public static int event_msg_stay_ticks = -1;
     private static ModConfig modConfig = new ModConfig("itsmine");
@@ -31,6 +37,8 @@ public class Config {
             claims2d = config.getBool("2D claims", claims2d, "Claims extending from y 0 to y 256");
             baseClaimBlocks2d = config.getInt("2D base claim blocks", baseClaimBlocks2d, "Area Filled: " + ItsMine.blocksToAreaString2d(baseClaimBlocks2d));
             baseClaimBlocks3d = config.getInt("3D base claim blocks", baseClaimBlocks3d, "Area Filled: " + ItsMine.blocksToAreaString3d(baseClaimBlocks3d));
+            rent_maxseconds = config.getInt("rent.maxdays", rent_maxseconds, "Maximum rent time in seconds (eg. 90d = 7776000)");
+            claim_max_entities_passive = config.getInt("claim.max.passive", claim_max_entities_passive, "Maximum allowed passive entities per claim");
             permissionManager = config.getString("permissionManager", permissionManager, "Values: thimble, luckperms, vanilla");
             prefix = config.getString("msg.prefix", prefix);
             msg_interact_entity = config.getString("msg.interact.entity", msg_interact_entity);
@@ -44,8 +52,10 @@ public class Config {
             msg_cant_enter = config.getString("msg.cant_enter", msg_cant_enter);
             msg_cant_use = config.getString("msg.cant_use", msg_cant_use);
             msg_long_name = config.getString("msg.long_name", msg_long_name);
+            msg_cant_do = config.getString("msg.cant_do", msg_cant_do);
             event_msg_stay_ticks = config.getInt("event.msg.stay_ticks", event_msg_stay_ticks, "Sets how many ticks an event message will stay on action bar, Default: -1");
         });
     }
 
 }
+*/

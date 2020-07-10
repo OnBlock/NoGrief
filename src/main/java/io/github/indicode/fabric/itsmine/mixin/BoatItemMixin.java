@@ -1,9 +1,8 @@
 package io.github.indicode.fabric.itsmine.mixin;
 
-import io.github.indicode.fabric.itsmine.Claim;
+import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.ClaimManager;
 import io.github.indicode.fabric.itsmine.Messages;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BoatItem;
 import net.minecraft.item.Item;
@@ -13,7 +12,6 @@ import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.ModifiableWorld;
 import net.minecraft.world.RayTraceContext;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -33,12 +31,13 @@ public abstract class BoatItemMixin extends Item {
         ItemStack itemStack = user.getStackInHand(hand);
         HitResult hitResult = rayTrace(world, user, RayTraceContext.FluidHandling.ANY);
         Vec3d pos = hitResult.getPos();
+        Claim claim = ClaimManager.INSTANCE.getClaimAt(new BlockPos(pos.getX(), pos.getY(), pos.getZ()), user.world.getDimension());
 
-        Claim claim = ClaimManager.INSTANCE.getClaimAt(new BlockPos(pos.getX(), pos.getY(), pos.getZ()), user.dimension);
-
-        if (claim != null && !claim.hasPermission(user.getUuid(), Claim.Permission.BUILD)) {
-            user.sendMessage(Messages.NO_PERMISSION);
-            cir.setReturnValue(TypedActionResult.fail(itemStack));
+        if (claim != null){
+            if(!claim.hasPermission(user.getUuid(), Claim.Permission.BUILD) || !claim.hasPermission(user.getUuid(), Claim.Permission.SPAWN_BOAT)){
+                user.sendSystemMessage(Messages.NO_PERMISSION, user.getUuid());
+                cir.setReturnValue(TypedActionResult.fail(itemStack));
+            }
         }
 
     }

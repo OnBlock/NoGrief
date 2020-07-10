@@ -1,12 +1,11 @@
 package io.github.indicode.fabric.itsmine.mixin;
 
-import io.github.indicode.fabric.itsmine.Claim;
+import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.ClaimManager;
-import net.minecraft.block.Block;
+import io.github.indicode.fabric.itsmine.claim.ClaimFlags;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.PistonBlock;
 import net.minecraft.block.piston.PistonHandler;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
@@ -16,7 +15,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,17 +27,17 @@ public class PistonBlockMixin {
     private static void youCantMoveMe(BlockState blockState_1, World world, BlockPos newPos, Direction direction, boolean boolean_1, Direction direction_2, CallbackInfoReturnable<Boolean> ci) {
         boolean pushing = direction == direction_2;
         BlockPos oldPos = newPos.offset(direction_2.getOpposite());
-        Claim oldClaim = ClaimManager.INSTANCE.getClaimAt(oldPos, world.getDimension().getType());
-        Claim newClaim = ClaimManager.INSTANCE.getClaimAt(newPos, world.getDimension().getType());
+        Claim oldClaim = ClaimManager.INSTANCE.getClaimAt(oldPos, world.getDimension());
+        Claim newClaim = ClaimManager.INSTANCE.getClaimAt(newPos, world.getDimension());
         if (oldClaim != newClaim) {
             if (oldClaim == null) {
-                if (!newClaim.settings.getSetting(Claim.ClaimSettings.Setting.PISTON_FROM_OUTSIDE)) ci.setReturnValue(false);
+                if (!newClaim.flags.getFlag(ClaimFlags.Flag.PISTON_FROM_OUTSIDE)) ci.setReturnValue(false);
             }
             else if (newClaim == null) {
-                if (!oldClaim.settings.getSetting(Claim.ClaimSettings.Setting.PISTON_FROM_INSIDE)) ci.setReturnValue(false);
+                if (!oldClaim.flags.getFlag(ClaimFlags.Flag.PISTON_FROM_INSIDE)) ci.setReturnValue(false);
             } else {
-                if (!oldClaim.settings.getSetting(Claim.ClaimSettings.Setting.PISTON_FROM_INSIDE) ||
-                        !newClaim.settings.getSetting(Claim.ClaimSettings.Setting.PISTON_FROM_OUTSIDE)) ci.setReturnValue(false);
+                if (!oldClaim.flags.getFlag(ClaimFlags.Flag.PISTON_FROM_INSIDE) ||
+                        !newClaim.flags.getFlag(ClaimFlags.Flag.PISTON_FROM_OUTSIDE)) ci.setReturnValue(false);
             }
         }
     }

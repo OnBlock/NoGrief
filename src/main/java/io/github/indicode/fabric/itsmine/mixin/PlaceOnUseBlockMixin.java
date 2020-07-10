@@ -1,8 +1,7 @@
 package io.github.indicode.fabric.itsmine.mixin;
 
-import io.github.indicode.fabric.itsmine.Claim;
+import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.ClaimManager;
-import io.github.indicode.fabric.itsmine.Functions;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BucketItem;
 import net.minecraft.item.Item;
@@ -26,7 +25,7 @@ public class PlaceOnUseBlockMixin extends Item {
     @Redirect(method = "use", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;canPlayerModifyAt(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/math/BlockPos;)Z"))
     public boolean canActuallyModify(World world, PlayerEntity playerEntity_1, BlockPos blockPos_1) {
         if (!(world instanceof ServerWorld)) return world.canPlayerModifyAt(playerEntity_1, blockPos_1);
-        Claim claim = ClaimManager.INSTANCE.getClaimAt(blockPos_1, playerEntity_1.world.getDimension().getType());
+        Claim claim = ClaimManager.INSTANCE.getClaimAt(blockPos_1, playerEntity_1.world.getDimension());
         if (claim != null && !claim.hasPermission(playerEntity_1.getUuid(), Claim.Permission.BUILD)) {
             if ((Object) this instanceof LilyPadItem){
                 ((ServerWorld)world).getChunkManager().markForUpdate(blockPos_1);

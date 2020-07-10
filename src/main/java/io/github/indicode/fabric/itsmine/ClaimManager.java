@@ -1,9 +1,9 @@
 package io.github.indicode.fabric.itsmine;
 
+import io.github.indicode.fabric.itsmine.claim.Claim;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Pair;
@@ -11,7 +11,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.dimension.DimensionType;
 import org.jetbrains.annotations.Nullable;
 
-import javax.naming.Name;
 import java.util.*;
 
 /**
@@ -23,8 +22,9 @@ public class ClaimManager {
     private HashMap<UUID, Integer> blocksLeft = new HashMap<>();
     public List<UUID> ignoringClaims = new ArrayList<>();
     public List<UUID> flyers = new ArrayList<>();
+    public static MinecraftServer server;
     public int getClaimBlocks(UUID id) {
-        return blocksLeft.getOrDefault(id, Config.claims2d ? Config.baseClaimBlocks2d : Config.baseClaimBlocks3d);
+        return blocksLeft.getOrDefault(id, ItsMineConfig.main().claims2d ? ItsMineConfig.main().claimBlock().default2D : ItsMineConfig.main().claimBlock().default3D);
     }
     public boolean useClaimBlocks(UUID player, int amount) {
         int blocks = getClaimBlocks(player) - amount;
@@ -42,8 +42,13 @@ public class ClaimManager {
         if (!useClaimBlocks(player, amount)) blocksLeft.put(player, 0);
     }
     public void setClaimBlocks(Collection<ServerPlayerEntity> players, int amount) {
-        players.forEach(player -> setClaimBlocks(player.getGameProfile().getId(), -amount));
+        players.forEach(player -> setClaimBlocks(player.getGameProfile().getId(), amount));
     }
+
+    public Claim getClaim(String name){
+        return claimsByName.get(name);
+    }
+
     public void setClaimBlocks(UUID player, int amount) {
         blocksLeft.put(player, Math.max(amount, 0));
     }
@@ -58,22 +63,37 @@ public class ClaimManager {
         });
         return list;
     }
+
     public boolean addClaim(Claim claim) {
         if (claimsByName.containsKey(claim.name)) return false;
-        if (wouldIntersect(claim)) return false;
+        if (wouldIntersect(claim) && !claim.isChild) return false;
         claimsByName.put(claim.name, claim);
         return true;
     }
     public boolean wouldIntersect(Claim claim) {
         for (Claim value : claimsByName.values()) {
-            if(!claim.name.equals(value.name) && claim.intersects(value)) return true;
+            if(!value.isChild && !claim.name.equals(value.name) && (claim.intersects(value) || value.intersects(claim))) return true;
+        }
+        return false;
+    }
+
+    public boolean wouldSubzoneIntersect(Claim claim) {
+        for (Claim value : claimsByName.values()) {
+                if(!claim.name.equals(value.name) && claim.intersects(value, true, true)){
+                    return true;
+                }
+
         }
         return false;
     }
     public CompoundTag toNBT() {
         CompoundTag tag =  new CompoundTag();
         ListTag list = new ListTag();
-        claimsByName.values().forEach(claim -> list.add(claim.toTag()));
+        claimsByName.values().forEach(claim -> {
+            if(!claim.isChild){
+                list.add(claim.toTag());
+            }
+        });
         tag.put("claims", list);
         CompoundTag blocksLeftTag = new CompoundTag();
         blocksLeft.forEach((id, amount) -> {if (id != null) blocksLeftTag.putInt(id.toString(), amount);});
@@ -94,23 +114,62 @@ public class ClaimManager {
         tag.put("ignoring", ignoring);
         return tag;
     }
-    @Nullable
-    public Claim getClaimAt(BlockPos pos, DimensionType dimension) {
+
+/*    public Claim getMainClaimAt(BlockPos pos, DimensionType dimension){
         for (Claim claim : claimsByName.values()) {
-            if (claim.dimension.equals(dimension) && claim.includesPosition(pos)) {
+            if(claim.dimension.equals(dimension) && claim.includesPosition(pos)){
                 return claim.getZoneCovering(pos);
             }
         }
-
         return null;
     }
+
+    public Claim getSubzoneClaimAt(BlockPos pos, DimensionType dimension) {
+        for (Claim claim : claimsByName.values()) {
+            if (claim.dimension.equals(dimension) && claim.includesPosition(pos)) {
+                for(Claim subzone : claim.children){
+                    if(subzone.dimension.equals(dimension) && subzone.includesPosition(pos)){
+                        return subzone.getZoneCovering(pos);
+                    }
+                }
+                return null;
+            }
+        }
+        return null;
+    }
+    */
+
+    @Nullable
+    public Claim getClaimAt(BlockPos pos, DimensionType dimension) {
+        for (Claim claim : claimsByName.values()) {
+            if (claim.dimension.equals(dimension)) {
+                if(claim.includesPosition(pos)) {
+                    for(Claim subzone : claim.children) {
+                        if(subzone.dimension.equals(dimension)) {
+                            if(subzone.includesPosition(pos)){
+                                return subzone;
+                            }
+                        }
+                    }
+                    return claim;
+                }
+            }
+        }
+        return null;
+    }
+
     public void fromNBT(CompoundTag tag) {
+        System.out.println("fromNBT");
         ListTag list = (ListTag) tag.get("claims");
+        System.out.println(list.size());
         claimsByName.clear();
         list.forEach(it -> {
             Claim claim = new Claim();
             claim.fromTag((CompoundTag) it);
             claimsByName.put(claim.name, claim);
+            for(Claim subzone : claim.children){
+                claimsByName.put(subzone.name, subzone);
+            }
         });
         CompoundTag blocksLeftTag = tag.getCompound("blocksLeft");
         blocksLeft.clear();

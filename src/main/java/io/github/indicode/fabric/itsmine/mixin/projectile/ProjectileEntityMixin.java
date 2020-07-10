@@ -4,7 +4,9 @@ import blue.endless.jankson.annotation.Nullable;
 import io.github.indicode.fabric.itsmine.Functions;
 import io.github.indicode.fabric.itsmine.Messages;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.ArrowEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.util.hit.EntityHitResult;
 import org.spongepowered.asm.mixin.Mixin;
@@ -28,20 +30,24 @@ public abstract class ProjectileEntityMixin {
             this.onEntityHit(entityHitResult);
         } else {
             if (this.getOwner() instanceof PlayerEntity) {
-                this.getOwner().sendMessage(Messages.MSG_DAMAGE_ENTITY);
+                this.getOwner().sendSystemMessage(Messages.MSG_DAMAGE_ENTITY, this.getOwner().getUuid());
+                if(projectileEntity.getType() == EntityType.ARROW){
+                    projectileEntity.kill();
+                }
             }
         }
     }
+
 //    public boolean imInvincible(Entity entity, DamageSource damageSource_1, float float_1) {
 //        if (entity.world.isClient()) return entity.damage(damageSource_1, float_1);
 //        ProjectileEntity projectile = (ProjectileEntity)(Object)this;
 //
 //        if (((ProjectileEntity)(Object)this).getServer().getPlayerManager().getPlayer(((OwnedProjectile)projectile).getOwner()) != null) {
 //            PlayerEntity playerEntity_1 = ((ProjectileEntity)(Object)this).getServer().getPlayerManager().getPlayer(((OwnedProjectile)projectile).getOwner());
-//            Claim claim = ClaimManager.INSTANCE.getClaimAt(entity.getSenseCenterPos(), entity.world.getDimension().getType());
+//            Claim claim = ClaimManager.INSTANCE.getClaimAt(entity.getSenseCenterPos(), entity.world.getDimension());
 //            if (claim != null && entity != playerEntity_1) {
 //                if (!claim.hasPermission(playerEntity_1.getGameProfile().getId(), Claim.Permission.DAMAGE_ENTITY)) {
-//                    playerEntity_1.sendMessage(Messages.MSG_DAMAGE_ENTITY);
+//                    playerEntity_1.sendSystemMessage(Messages.MSG_DAMAGE_ENTITY);
 //                    projectile.kill(); // You do not want an arrow bouncing between two armor stands
 //                    return false;
 //                }

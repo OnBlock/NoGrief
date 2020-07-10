@@ -1,7 +1,9 @@
-package io.github.indicode.fabric.itsmine;
+package io.github.indicode.fabric.itsmine.util;
 
 import com.google.common.collect.Maps;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.apache.commons.lang3.Validate;
@@ -9,6 +11,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -239,6 +242,28 @@ public enum ChatColor {
             }
         }
         return new String(b);
+    }
+
+    public static Text translateStringToText(char altColorChar, String input) {
+        String[] strings = input.split("(?=(((\\&([0-9]|[a-f])){1}(\\&(k|l|m|n|o|r)){0,5}))|^(\\&([0-9]|[a-f]))?(\\&(k|l|m|n|o|r)){1,5})");
+        MutableText text = new LiteralText("");
+        for(String string : strings) {
+            System.out.println(string);
+            char[] b = string.toCharArray();
+            ArrayList<Formatting> formattings = new ArrayList<>();
+            for (int i = 0; i < b.length - 1; i++) {
+                if(b[i] == altColorChar && "0123456789AaBbCcDdEeFfKkLlMmNnOoRr".indexOf(b[i+1]) > -1){
+                    ChatColor color = getByChar(b[i+1]);
+                    formattings.add(color.getFormattingByChar(b[i+1]));
+                }
+            }
+            MutableText part = new LiteralText(removeAlternateColorCodes('&', string))/*.formatted(formattings.get(0))*/;
+            for(Formatting formatting : formattings){
+                part.formatted(formatting);
+            }
+            text.append(part/*new LiteralText(removeAlternateColorCodes('&', string)).formatted(formattings.toArray(new Formatting[formattings.size()]))*/);
+        }
+    return text;
     }
 
     public static String reverseTranslate(String textToTranslate, char altColorChar) {

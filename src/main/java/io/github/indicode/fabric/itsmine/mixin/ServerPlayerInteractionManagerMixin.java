@@ -1,13 +1,14 @@
 package io.github.indicode.fabric.itsmine.mixin;
 
 import io.github.indicode.fabric.itsmine.*;
+import io.github.indicode.fabric.itsmine.claim.Claim;
+import io.github.indicode.fabric.itsmine.util.BlockUtil;
+import io.github.indicode.fabric.itsmine.util.MessageUtil;
 import net.minecraft.block.*;
-import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.server.world.ServerWorld;
@@ -22,9 +23,12 @@ import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.UUID;
+
 
 /**
  * @author Indigo Amann
@@ -35,16 +39,27 @@ public abstract class ServerPlayerInteractionManagerMixin {
 
     @Shadow public ServerWorld world;
 
+    public BlockPos blockPos;
+
+    @Shadow private boolean mining;
+
+    @Inject(method = "interactBlock", at = @At(value = "HEAD"))
+    private void getBlock(ServerPlayerEntity serverPlayerEntity, World world, ItemStack stack, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir){
+        blockPos = hitResult.getBlockPos();
+    }
+
     @Redirect(method = "interactBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;onUse(Lnet/minecraft/world/World;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/Hand;Lnet/minecraft/util/hit/BlockHitResult;)Lnet/minecraft/util/ActionResult;"))
-    private ActionResult interactIfPossible(BlockState blockState, World world, PlayerEntity player, Hand hand, BlockHitResult hit, PlayerEntity player1, World world1, ItemStack itemStack, Hand hand1, BlockHitResult hitResult1) {
+//    private ActionResult interactIfPossible(BlockState blockState, World world, PlayerEntity player, Hand hand, BlockHitResult hit, PlayerEntity player1, World world1, ItemStack itemStack, Hand hand1, BlockHitResult hitResult1) {
+        private ActionResult interactIfPossible(BlockState blockState, World world, PlayerEntity player, Hand hand, BlockHitResult hit){
         BlockPos pos = hit.getBlockPos();
-        Claim claim = ClaimManager.INSTANCE.getClaimAt(pos, player.world.getDimension().getType());
+        ItemStack itemStack = player.getMainHandStack();
+        Claim claim = ClaimManager.INSTANCE.getClaimAt(pos, player.world.getDimension());
         if (claim != null) {
             if (!Functions.canInteractWith(claim, blockState.getBlock(), player.getUuid())) {
                 if (!itemStack.isEmpty() && !(itemStack.getItem() instanceof BlockItem)) {
-                    player.sendMessage(Messages.MSG_INTERACT_BLOCK);
-                } else if (BlockUtils.isContainer(blockState.getBlock())) {
-                    player.addMessage(Messages.MSG_OPEN_CONTAINER, true);
+                    player.sendSystemMessage(Messages.MSG_INTERACT_BLOCK, player.getUuid());
+                } else if (BlockUtil.isContainer(blockState.getBlock())) {
+                    player.sendSystemMessage(Messages.MSG_OPEN_CONTAINER, player.getUuid());
                 }
 
                 return ActionResult.FAIL;
@@ -61,16 +76,16 @@ public abstract class ServerPlayerInteractionManagerMixin {
     }
 
     @Redirect(method = "interactBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;isEmpty()Z", ordinal = 2))
-    private boolean interactWithItemIfPossible(ItemStack stack, PlayerEntity player, World world, ItemStack itemStack, Hand hand, BlockHitResult hitResult) {
-        BlockPos pos = hitResult.getBlockPos().offset(hitResult.getSide());
-        Claim claim = ClaimManager.INSTANCE.getClaimAt(pos, world.getDimension().getType());
+    private boolean interactWithItemIfPossible(ItemStack stack) {
+//        BlockPos pos = hitResult.getBlockPos().offset(hitResult.getSide());
+//        System.out.println(blockPos.getX() + " " + blockPos.getY() + " " + blockPos.getZ());
+        Claim claim = ClaimManager.INSTANCE.getClaimAt(blockPos, world.getDimension());
         if (claim != null && !stack.isEmpty()) {
             if (Functions.canInteractUsingItem(claim, stack.getItem(), player.getUuid())) {
                 return false;
             }
-
             if (stack.getItem() instanceof BlockItem) {
-                player.addMessage(Messages.MSG_PLACE_BLOCK, true);
+                player.sendSystemMessage(Messages.MSG_PLACE_BLOCK, player.getUuid());
             }
 
             return true;
@@ -87,21 +102,22 @@ public abstract class ServerPlayerInteractionManagerMixin {
                 if (posPair != null) {
                     posPair = new Pair<>(posPair.getLeft(), pos);
                     ClaimManager.INSTANCE.stickPositions.put(player, posPair);
-                    player.sendMessage(new LiteralText("Position #2 set: " + pos.getX() + (Config.claims2d ? "" : " " + pos.getY()) + " " + pos.getZ()).formatted(Formatting.GREEN));
+                    player.sendSystemMessage(new LiteralText("Position #2 set: " + pos.getX() + (ItsMineConfig.main().claims2d ? "" : " " + pos.getY()) + " " + pos.getZ()).formatted(Formatting.GREEN), player.getUuid());
                     if (posPair.getLeft() != null) {
-                        player.sendMessage(new LiteralText("Area Selected. Type /claim create <name> to create your claim!").formatted(Formatting.GOLD));
-                        if (!Config.claims2d)
-                            player.sendMessage(new LiteralText("Remember that claims are three dimensional. Don't forget to expand up/down or select a big enough area...").formatted(Formatting.LIGHT_PURPLE, Formatting.ITALIC));
+                        player.sendSystemMessage(new LiteralText("Area Selected. Type /claim create <name> to create your claim!").formatted(Formatting.GOLD), player.getUuid());
+                        if (!ItsMineConfig.main().claims2d)
+                            player.sendSystemMessage(new LiteralText("Remember that claims are three dimensional. Don't forget to expand up/down or select a big enough area...").formatted(Formatting.LIGHT_PURPLE).formatted(Formatting.ITALIC), player.getUuid());
                     }
                     return false;
                 }
             }
         }
-        Claim claim = ClaimManager.INSTANCE.getClaimAt(pos, player.world.getDimension().getType());
+        Claim claim = ClaimManager.INSTANCE.getClaimAt(pos, player.world.getDimension());
         if (claim != null) {
             UUID uuid = player.getGameProfile().getId();
             if (!claim.hasPermission(uuid, Claim.Permission.BUILD)) {
-                player.addMessage(Messages.MSG_BREAK_BLOCK, true);
+//                MessageUtil.sendText(ItsMineConfig.main().message().breakBlock);
+                player.sendSystemMessage(Messages.MSG_BREAK_BLOCK, player.getUuid());
                 return false;
             }
 

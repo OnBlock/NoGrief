@@ -1,7 +1,8 @@
 package io.github.indicode.fabric.itsmine.mixin;
 
-import io.github.indicode.fabric.itsmine.Claim;
+import io.github.indicode.fabric.itsmine.claim.Claim;
 import io.github.indicode.fabric.itsmine.ClaimManager;
+import io.github.indicode.fabric.itsmine.claim.ClaimFlags;
 import net.minecraft.block.FarmlandBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
@@ -16,9 +17,9 @@ public abstract class FarmlandBlockMixin {
 
     @Inject(method = "onLandedUpon", at = @At(value = "HEAD", target = "Lnet/minecraft/block/FarmlandBlock;onLandedUpon(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/entity/Entity;F)V"), cancellable = true)
     private void dontYouDareFarmMe(World world, BlockPos pos, Entity entity, float distance, CallbackInfo ci) {
-        Claim claim = ClaimManager.INSTANCE.getClaimAt(pos, world.dimension.getType());
+        Claim claim = ClaimManager.INSTANCE.getClaimAt(pos, world.getDimension());
 
-        if (claim != null && !claim.settings.getSetting(Claim.ClaimSettings.Setting.BREAK_FARMLANDS)) {
+        if (claim != null && !claim.flags.getFlag(ClaimFlags.Flag.BREAK_FARMLANDS)) {
             ci.cancel();
         }
     }
